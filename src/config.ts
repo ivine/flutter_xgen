@@ -1,4 +1,4 @@
-const FAGConstants = {
+const FXGAssetsConstants = {
   KEY_PROJECT_NAME: "name",
   KEY_CONFIGURATION_MAP: "flutter_assets_generator",
   KEY_OUTPUT_DIR: "output_dir",
@@ -16,7 +16,7 @@ const FAGConstants = {
   VALUE_OUTPUT_FILENAME: "assets"
 } as const;
 
-class GeneratorConfig {
+class AssetsGeneratorConfig {
   outputDir: string;
   className: string;
   packageName: string;
@@ -53,4 +53,4 @@ class GeneratorConfig {
   }
 }
 
-export { FAGConstants, GeneratorConfig };
+export { FXGAssetsConstants, AssetsGeneratorConfig };

@@ -2,7 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
-import * as FAGCommand from './command_names';
+import * as FXGCommand from './command_names';
 import AssetsGenerator from './assets_generator';
 
 // TODO: auto_detection
@@ -11,13 +11,13 @@ let assetsWatcher: vscode.FileSystemWatcher;
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-	for (let commandName of Object.values(FAGCommand.FAGCommandNames)) {
+	for (let commandName of Object.values(FXGCommand.FXGCommandNames)) {
 		let disposable = vscode.commands.registerCommand(commandName, () => {
-			if (commandName === FAGCommand.FAGCommandNames.Generate) {
+			if (commandName === FXGCommand.FXGCommandNames.AssetsGenerate) {
 				assetsGenerate();
-			} else if (commandName === FAGCommand.FAGCommandNames.StartWatch) {
+			} else if (commandName === FXGCommand.FXGCommandNames.AssetsStartWatch) {
 				assetsWatch(context);
-			} else if (commandName === FAGCommand.FAGCommandNames.StopWatch) {
+			} else if (commandName === FXGCommand.FXGCommandNames.AssetsStopWatch) {
 				assetsStopWatch();
 			}
 		});
@@ -29,10 +29,10 @@ export function activate(context: vscode.ExtensionContext) {
 async function assetsGenerate() {
   try {
     await new AssetsGenerator()?.generate();
-    vscode.window.showInformationMessage(`Flutter Assets Generator: Assets.dart 生成成功`);
+    vscode.window.showInformationMessage(`Flutter XGen: Assets.dart 生成成功`);
   } catch (error) {
     console.error(error);
-    vscode.window.showErrorMessage('Flutter Assets Generator: Assets.dart 生成失败');
+    vscode.window.showErrorMessage(`${error}`);
   }
 }
 
@@ -54,7 +54,7 @@ async function assetsWatch(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(assetsWatcher);
 
-	vscode.window.setStatusBarMessage('Flutter Assets Generator: Assets 文件夹监听已开启', 3000);
+	vscode.window.setStatusBarMessage('Flutter XGen: Assets 文件夹监听已开启', 3000);
 }
 
 async function assetsStopWatch() {
@@ -62,7 +62,7 @@ async function assetsStopWatch() {
 		return;
 	}
 	assetsWatcher.dispose();
-	vscode.window.setStatusBarMessage('Flutter Assets Generator: Assets 文件夹监听已关闭', 3000);
+	vscode.window.setStatusBarMessage('Flutter XGen: Assets 文件夹监听已关闭', 3000);
 }
 
 

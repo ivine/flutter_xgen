@@ -1,9 +1,28 @@
 {
-  "name": "flutter-assets-generator",
-  "displayName": "flutter_assets_generator",
-  "description": "flutter assets generator vscode version",
+  "name": "flutter-xgen",
+  "displayName": "Flutter XGen",
+  "description": "A plugin designed to create a Flutter resources file from pubspec.yaml.",
   "license": "MIT",
   "version": "0.0.1",
+  "publisher": "Dengwww",
+  "author": {
+    "name": "Dengwww",
+    "email": "vinzry@163.com"
+  },
+  "icon": "images/icon.png",
+  "keywords": [
+    "flutter",
+    "xgen",
+    "assets generate",
+    "assets",
+    "generate",
+    "vscode",
+    "watch"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ivine/flutter_xgen.git"
+  },
   "engines": {
     "vscode": "^1.87.0"
   },
@@ -15,16 +34,16 @@
   "contributes": {
     "commands": [
       {
-        "command": "FAG.FlutterAssetsGenerate",
-        "title": "Flutter Assets Generator: Assets.dart 生成"
+        "command": "FXG.FlutterXGenAssetsGenerate",
+        "title": "Flutter XGen: Assets.dart 生成"
       },
       {
-        "command": "FAG.FlutterAssetsStartWatch",
-        "title": "Flutter Assets Generator: 开始监听 Assets 文件夹"
+        "command": "FXG.FlutterXGenAssetsStartWatch",
+        "title": "Flutter XGen: 开始监听 Assets 文件夹"
       },
       {
-        "command": "FAG.FlutterAssetsStopWatch",
-        "title": "Flutter Assets Generator: 停止监听 Assets 文件夹"
+        "command": "FXG.FlutterXGenAssetsStopWatch",
+        "title": "Flutter XGen: 停止监听 Assets 文件夹"
       }
     ]
   },

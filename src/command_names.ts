@@ -1,13 +1,13 @@
-enum FAGCommandNames {
-  Generate = "FAG.FlutterAssetsGenerate",
-  StartWatch = "FAG.FlutterAssetsStartWatch",
-  StopWatch = "FAG.FlutterAssetsStopWatch",
+enum FXGCommandNames {
+  AssetsGenerate = "FXG.FlutterXGenAssetsGenerate",
+  AssetsStartWatch = "FXG.FlutterXGenAssetsStartWatch",
+  AssetsStopWatch = "FXG.FlutterXGenAssetsStopWatch",
 }
 
-const FAGCommandTitle: { [key in FAGCommandNames]: string } = {
-  [FAGCommandNames.Generate]: "Flutter Assets Generator: Assets.dart 生成",
-  [FAGCommandNames.StartWatch]: "Flutter Assets Generator: 开始监听 Assets 文件夹",
-  [FAGCommandNames.StopWatch]: "Flutter Assets Generator: 停止监听 Assets 文件夹",
+const FXGCommandTitle: { [key in FXGCommandNames]: string } = {
+  [FXGCommandNames.AssetsGenerate]: "Flutter XGen: Assets.dart 生成",
+  [FXGCommandNames.AssetsStartWatch]: "Flutter XGen: 开始监听 Assets 文件夹",
+  [FXGCommandNames.AssetsStopWatch]: "Flutter XGen: 停止监听 Assets 文件夹",
 };
 
-export { FAGCommandNames, FAGCommandTitle };
+export { FXGCommandNames, FXGCommandTitle };

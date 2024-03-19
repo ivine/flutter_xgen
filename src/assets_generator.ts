@@ -5,7 +5,7 @@ const p = require('path');
 const yaml = require('js-yaml');
 
 import AssetFile from './asset_file';
-import { FAGConstants, GeneratorConfig } from './config';
+import { FXGAssetsConstants, AssetsGeneratorConfig } from './config';
 
 class AssetsGenerator {
   constructor() {}
@@ -21,24 +21,24 @@ class AssetsGenerator {
     }
   }
 
-  config: GeneratorConfig | null = null;
+  config: AssetsGeneratorConfig | null = null;
 
   public async generate() {
     try {
       let yamlData = await this.parseYamlFile();
-      let fagConfigs = yamlData?.[FAGConstants.KEY_CONFIGURATION_MAP] as any;
-      let packageName = yamlData?.[FAGConstants.KEY_PROJECT_NAME] as string;
+      let fxgAssetsConfigs = yamlData?.[FXGAssetsConstants.KEY_CONFIGURATION_MAP] as any;
+      let packageName = yamlData?.[FXGAssetsConstants.KEY_PROJECT_NAME] as string;
 
-      let outputDir = fagConfigs?.[FAGConstants.KEY_OUTPUT_DIR] ?? FAGConstants.VALUE_OUTPUT_DIR;
-      let className = fagConfigs?.[FAGConstants.KEY_CLASS_NAME] ?? FAGConstants.VALUE_CLASS_NAME;
-      let autoDetection = fagConfigs?.[FAGConstants.KEY_AUTO_DETECTION] ?? false;
-      let namedWithParent = fagConfigs?.[FAGConstants.KEY_NAMED_WITH_PARENT] ?? true;
-      let leadingWithPackageName = fagConfigs?.[FAGConstants.KEY_LEADING_WITH_PACKAGE_NAME] ?? false;
-      let outputFilename = fagConfigs?.[FAGConstants.KEY_OUTPUT_FILENAME] ?? FAGConstants.VALUE_OUTPUT_FILENAME;
-      let filenameSplitPattern = fagConfigs?.[FAGConstants.KEY_FILENAME_SPLIT_PATTERN] ?? FAGConstants.VALUE_FILENAME_SPLIT_PATTERN;
-      let pathIgnore = fagConfigs?.[FAGConstants.KEY_PATH_IGNORE] ?? FAGConstants.VALUE_PATH_IGNORE;
+      let outputDir = fxgAssetsConfigs?.[FXGAssetsConstants.KEY_OUTPUT_DIR] ?? FXGAssetsConstants.VALUE_OUTPUT_DIR;
+      let className = fxgAssetsConfigs?.[FXGAssetsConstants.KEY_CLASS_NAME] ?? FXGAssetsConstants.VALUE_CLASS_NAME;
+      let autoDetection = fxgAssetsConfigs?.[FXGAssetsConstants.KEY_AUTO_DETECTION] ?? false;
+      let namedWithParent = fxgAssetsConfigs?.[FXGAssetsConstants.KEY_NAMED_WITH_PARENT] ?? true;
+      let leadingWithPackageName = fxgAssetsConfigs?.[FXGAssetsConstants.KEY_LEADING_WITH_PACKAGE_NAME] ?? false;
+      let outputFilename = fxgAssetsConfigs?.[FXGAssetsConstants.KEY_OUTPUT_FILENAME] ?? FXGAssetsConstants.VALUE_OUTPUT_FILENAME;
+      let filenameSplitPattern = fxgAssetsConfigs?.[FXGAssetsConstants.KEY_FILENAME_SPLIT_PATTERN] ?? FXGAssetsConstants.VALUE_FILENAME_SPLIT_PATTERN;
+      let pathIgnore = fxgAssetsConfigs?.[FXGAssetsConstants.KEY_PATH_IGNORE] ?? FXGAssetsConstants.VALUE_PATH_IGNORE;
       
-      this.config = new GeneratorConfig(
+      this.config = new AssetsGeneratorConfig(
         outputDir,
         className,
         packageName,
@@ -52,6 +52,11 @@ class AssetsGenerator {
       );
 
       let assetsPaths = yamlData?.flutter?.assets;
+      if (!Array.isArray(assetsPaths)) {
+        throw(Error("未配置 flutter: assets: 路径"));
+      } else if (assetsPaths.length === 0) {
+        throw(Error("flutter: assets: 路径为空"));
+      }
       if (Array.isArray(pathIgnore) && pathIgnore.length > 0) {
         // 过滤路径
         assetsPaths = assetsPaths.filter((item1: string)=> !pathIgnore.some(item2 => item1.includes(item2)));
@@ -86,6 +91,7 @@ class AssetsGenerator {
       this.generateAssetsFile(fileItemList);
 
     } catch (err) {
+      console.log(`err: ${err}`);
       throw(err);
     }
   }
@@ -97,7 +103,8 @@ class AssetsGenerator {
       const data = yaml.load(fileContents);
       return data;
     } catch (err) {
-      throw(err);
+      console.log(`err: ${err}`);
+      throw(Error("无法解析 pubspec.yaml 文件。"));
     }
   }
 
@@ -107,7 +114,8 @@ class AssetsGenerator {
       const data = fs.readFileSync(absolutePath, 'utf8');
       return data;
     } catch (err) {
-      throw(err);
+      console.log(`err: ${err}`);
+      throw(Error(`${path}, 文件读取失败。`));
     }
   }
 
@@ -150,8 +158,9 @@ class AssetsGenerator {
       // 生成assets类的内容并写入文件
       const assetsClassContent = this.generateAssetsDotDartFileContent(generatedVarList);
       fs.writeFileSync(generatedAssetsFilePath, assetsClassContent);
-    } catch (error) {
-      throw(error);
+    } catch (err) {
+      console.log(`err: ${err}`);
+      throw(Error(`${fileName} 生成失败。`));
     }
   }
 
