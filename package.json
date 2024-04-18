@@ -44,8 +44,33 @@
       {
         "command": "FXG.FlutterXGenAssetsStopWatch",
         "title": "Flutter XGen: 停止监听 Assets 文件夹"
+      },
+      {
+        "command": "FXG.PreviewFile",
+        "title": "Flutter XGen: 预览文件"
       }
-    ]
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "FXG",
+          "title": "FlutterXGen",
+          "icon": "images/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "FXG": [
+        {
+          "id": "FXG-Assets",
+          "name": "Assets"
+        },
+        {
+          "id": "FXG-L10n",
+          "name": "l10n"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "yarn run package",
@@ -58,10 +83,17 @@
     "lint": "eslint src --ext ts",
     "test": "vscode-test"
   },
+  "dependencies": {
+    "@vscode/webview-ui-toolkit": "^1.4.0",
+    "js-yaml": "^4.1.0",
+    "uuid": "^9.0.1"
+  },
   "devDependencies": {
     "@types/mocha": "^10.0.6",
     "@types/node": "18.x",
+    "@types/uuid": "^9.0.8",
     "@types/vscode": "^1.87.0",
+    "@types/vscode-webview": "^1.57.5",
     "@typescript-eslint/eslint-plugin": "^7.0.2",
     "@typescript-eslint/parser": "^7.0.2",
     "@vscode/test-cli": "^0.0.6",
@@ -71,8 +103,5 @@
     "typescript": "^5.3.3",
     "webpack": "^5.90.3",
     "webpack-cli": "^5.1.4"
-  },
-  "dependencies": {
-    "js-yaml": "^4.1.0"
   }
 }
