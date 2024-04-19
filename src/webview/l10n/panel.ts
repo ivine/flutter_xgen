@@ -59,8 +59,8 @@ export class L10nPanel {
         {
           // Enable JavaScript in the webview
           enableScripts: true,
-          // Restrict the webview to only load resources from the `out` directory
-          localResourceRoots: [Uri.joinPath(extensionUri, "out")],
+          // Restrict the webview to only load resources from the `dist/webview` directory
+          localResourceRoots: [Uri.joinPath(extensionUri, "dist/webview/l10n")],
         }
       );
 
@@ -98,7 +98,7 @@ export class L10nPanel {
    * rendered within the webview panel
    */
   private _getWebviewContent(webview: Webview, extensionUri: Uri) {
-    const webviewUri = getUri(webview, extensionUri, ["out", "webview.js"]);
+    const webviewUri = getUri(webview, extensionUri, ["dist", 'webview', 'l10n', "webview.js"]);
     const nonce = getNonce();
     // Tip: Install the es6-string-html VS Code extension to enable code highlighting below
     return /*html*/ `
