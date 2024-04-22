@@ -3,8 +3,7 @@
 	"tasks": [
 		{
 			"type": "npm",
-			"script": "watch",
-			"problemMatcher": "$esbuild-watch",
+			"script": "webpack-dev",
 			"isBackground": true,
 			"presentation": {
 				"reveal": "never"
