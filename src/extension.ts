@@ -10,7 +10,7 @@ import AssetsGenerator from './assets_generator';
 import { AssetsSideBar } from './side_bar/assets';
 import { L10nSideBar } from './side_bar/l10n';
 
-import { L10nPanel } from './webview/l10n/panel';
+import { FXGWebPanel } from './webview/panel';
 
 // TODO: auto_detection
 let assetsWatcher: vscode.FileSystemWatcher;
@@ -43,7 +43,7 @@ export function activate(context: vscode.ExtensionContext) {
 					vscode.window.showTextDocument(doc, { preview: true });
 				});
 			} else if (commandName === FXGCommand.FXGCommandNames.Previewl10nJson) {
-				L10nPanel.render(context.extensionUri);
+				FXGWebPanel.render(context.extensionUri, data);
 			}
 		});
 

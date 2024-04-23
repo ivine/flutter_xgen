@@ -3,10 +3,18 @@
 	"tasks": [
 		{
 			"type": "npm",
-			"script": "webpack-dev",
+			"script": "watch",
+			"problemMatcher": [
+				"$ts-webpack",
+				"$tsc-watch"
+			],
 			"isBackground": true,
 			"presentation": {
-				"reveal": "never"
+				"echo": true,
+				"reveal": "never",
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": false
 			},
 			"group": {
 				"kind": "build",

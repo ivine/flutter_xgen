@@ -28,8 +28,12 @@ export class L10nSideBar implements vscode.TreeDataProvider<FXGTreeItem> {
       return Promise.resolve([]);
     }
 
+    let dir = path.join(this.workspace, 'lib', 'l10n');
+    let files = this.allLocalizationFileToFileItem(dir);
+
     let items: FXGTreeItem[] = [];
     if (element?.type === L10nTreeNodeType.project) {
+
       // json
       let json = new JsonItem(
         vscode.TreeItemCollapsibleState.None,
@@ -39,14 +43,12 @@ export class L10nSideBar implements vscode.TreeDataProvider<FXGTreeItem> {
         {
           command: FXGCommandNames.Previewl10nJson,
           title: 'Flutter XGen: 预览文件',
-          arguments: [""],
+          arguments: [files.map((e) => e.filePath)],
         }
       );
       items.push(json);
 
       // files
-      let dir = path.join(this.workspace, 'lib', 'l10n');
-      let files = this.allLocalizationFileToFileItem(dir);
       items = [...items, ...files];
     } else {
       // project
