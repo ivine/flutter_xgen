@@ -1,5 +1,6 @@
-import { Disposable, Webview, WebviewPanel, window, Uri, ViewColumn } from "vscode";
+import { Disposable, Webview, WebviewPanel, window, Uri, ViewColumn, WebviewPanelOnDidChangeViewStateEvent } from "vscode";
 import { getUri, getNonce } from "../util/webview.util";
+import * as vscode from 'vscode';
 
 import * as fs from 'fs';
 import * as path from 'path';
@@ -27,15 +28,9 @@ export class FXGWebPanel {
    */
   private constructor(panel: WebviewPanel, extensionUri: Uri) {
     this._panel = panel;
-
-    // Set an event listener to listen for when the panel is disposed (i.e. when the user closes
-    // the panel or when the panel is closed programmatically)
     this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
-
-    // Set the HTML content for the webview panel
+    this._panel.onDidChangeViewState(this.onDidChangeViewState)
     this._panel.webview.html = this._getWebviewContent(this._panel.webview, extensionUri);
-
-    // Set an event listener to listen for messages passed from the webview context
     this._setWebviewMessageListener(this._panel.webview);
   }
 
@@ -47,23 +42,28 @@ export class FXGWebPanel {
    */
   public static render(extensionUri: Uri, arbFiles: string[]) {
     if (FXGWebPanel.currentPanel) {
-      // If the webview panel already exists reveal it
       FXGWebPanel.currentPanel._panel.reveal(ViewColumn.One);
     } else {
-      // If a webview panel does not already exist create and show a new one
+      var workspaceFolderUri: Uri | null = null;
+      const workspaceFolders = vscode.workspace.workspaceFolders;
+      if (workspaceFolders && workspaceFolders.length > 0) {
+        const workspaceFolder = workspaceFolders[0];
+        workspaceFolderUri = vscode.Uri.file(workspaceFolder.uri.fsPath);
+      }
+      var localResRoots = [Uri.joinPath(extensionUri, "dist"), Uri.joinPath(extensionUri, "webview_ui")];
+      if (workspaceFolderUri) {
+        localResRoots.push(workspaceFolderUri)
+      }
+
       const panel = window.createWebviewPanel(
-        // Panel view type
         "showL10nUI",
-        // Panel title
         "FXG UI",
-        // The editor column the panel should be displayed in
         ViewColumn.One,
-        // Extra panel configurations
         {
-          // Enable JavaScript in the webview
           enableScripts: true,
-          // Restrict the webview to only load resources from the `dist` and `webview_ui` directories
-          localResourceRoots: [Uri.joinPath(extensionUri, "dist"), Uri.joinPath(extensionUri, "webview_ui")],
+          // localResourceRoots: [Uri.joinPath(extensionUri, "dist"), Uri.joinPath(extensionUri, "webview_ui")],
+          retainContextWhenHidden: true,
+          localResourceRoots: localResRoots,
         }
       );
 
@@ -127,7 +127,7 @@ export class FXGWebPanel {
         <head>
           <meta charset="UTF-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-          <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
+          <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} https:; script-src ${webview.cspSource}; style-src ${webview.cspSource}; 'nonce-${nonce}';">
           <link rel="stylesheet" type="text/css" href="${stylesUri}">
           <title>FXG UI</title>
         </head>
@@ -164,5 +164,13 @@ export class FXGWebPanel {
       undefined,
       this._disposables
     );
+  }
+
+  private onDidChangeViewState(e: WebviewPanelOnDidChangeViewStateEvent) {
+    if (e.webviewPanel.visible) {
+      // 同步一下文件状态
+      // l10n
+      // assets
+    }
   }
 }

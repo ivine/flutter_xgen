@@ -1,12 +1,11 @@
+import { useEffect, useState } from 'react';
 import { VSCodePanels, VSCodePanelTab, VSCodePanelView } from '@vscode/webview-ui-toolkit/react';
 
 import L10nPage from './l10n/l10n.page';
 
 import "./App.css";
-import { useEffect, useState } from 'react';
 
 function App() {
-
   const [l10nJSONData, setL10nJSONData] = useState<Map<string, string>>(new Map());
 
   useEffect(() => {

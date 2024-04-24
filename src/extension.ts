@@ -11,6 +11,7 @@ import { AssetsSideBar } from './side_bar/assets';
 import { L10nSideBar } from './side_bar/l10n';
 
 import { FXGWebPanel } from './webview/panel';
+import FileManager from './manager/file.manager';
 
 // TODO: auto_detection
 let assetsWatcher: vscode.FileSystemWatcher;
@@ -30,6 +31,10 @@ vscode.window.registerTreeDataProvider(
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+
+	// manager 初始化
+	FileManager.getInstance(workspaceDir());
+
 	for (let commandName of Object.values(FXGCommand.FXGCommandNames)) {
 		let disposable = vscode.commands.registerCommand(commandName, (data: any) => {
 			if (commandName === FXGCommand.FXGCommandNames.AssetsGenerate) {

@@ -2,8 +2,9 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"type": "npm",
-			"script": "watch",
+			"label": "watch",
+			"type": "shell",
+			"command": "source ~/.zshrc && which node && yarn watch",
 			"problemMatcher": [
 				"$ts-webpack",
 				"$tsc-watch"
