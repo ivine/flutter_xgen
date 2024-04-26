@@ -82,8 +82,12 @@
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts"
   },
+  "dependencies": {
+    "lodash": "^4.17.21"
+  },
   "devDependencies": {
     "@types/glob": "^8.1.0",
+    "@types/lodash": "^4.17.0",
     "@types/node": "^20.12.7",
     "@types/vscode": "^1.88.0",
     "@typescript-eslint/eslint-plugin": "^7.7.1",

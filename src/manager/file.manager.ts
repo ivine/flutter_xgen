@@ -1,23 +1,29 @@
 import * as fs from 'fs'
+import * as vscode from 'vscode';
 
 class FileManager {
   private static instance: FileManager | null = null
-  private rootPath: string
+  private rootPath: string = ""
 
   private l10nFilePaths: string[] = []
   private assetsDirs: string[] = []
 
-  private constructor(rootPath: string) {
-    this.rootPath = rootPath
+  private constructor() {
     this.refreshFilePathsAndDirs()
   }
 
-  static getInstance(rootPath: string): FileManager {
+  static getInstance(): FileManager {
     if (!FileManager.instance) {
-      FileManager.instance = new FileManager(rootPath)
+      FileManager.instance = new FileManager()
     }
     return FileManager.instance
   }
+
+  public setup(rootPath: string) {
+    this.rootPath = rootPath
+  }
+
+  public dispose() { }
 
   // 刷新
   public refreshFilePathsAndDirs() {

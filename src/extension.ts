@@ -12,9 +12,17 @@ import { L10nSideBar } from './side_bar/l10n';
 
 import { FXGWebPanel } from './webview/panel';
 import FileManager from './manager/file.manager';
+import WatcherManager from './manager/watcher.manager';
 
 // TODO: auto_detection
-let assetsWatcher: vscode.FileSystemWatcher;
+let assetsWatcher: vscode.FileSystemWatcher | null = null;
+let globalContext: vscode.ExtensionContext;
+function initializeExtension(context: vscode.ExtensionContext) {
+	globalContext = context;
+}
+export function getExtensionContext(): vscode.ExtensionContext | null {
+	return globalContext;
+}
 
 const assetsSideBar = new AssetsSideBar('FXG-Assets', workspaceDir() ?? "");
 vscode.window.registerTreeDataProvider(
@@ -31,9 +39,11 @@ vscode.window.registerTreeDataProvider(
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+	initializeExtension(context)
 
 	// manager 初始化
-	FileManager.getInstance(workspaceDir());
+	FileManager.getInstance().setup(workspaceDir())
+	WatcherManager.getInstance().setup(workspaceDir())
 
 	for (let commandName of Object.values(FXGCommand.FXGCommandNames)) {
 		let disposable = vscode.commands.registerCommand(commandName, (data: any) => {
@@ -68,6 +78,7 @@ async function assetsGenerate() {
 
 async function assetsWatch(context: vscode.ExtensionContext) {
 	assetsStopWatch();
+
 	assetsWatcher = vscode.workspace.createFileSystemWatcher('**/assets/**/*');
 
 	const changeDisposable = assetsWatcher.onDidChange((uri) => {
@@ -98,25 +109,15 @@ async function assetsStopWatch() {
 function workspaceDir(): string | null {
 	if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
 		// 获取第一个工作区的路径
-		const workspaceFolder = vscode.workspace.workspaceFolders[0];
-		return workspaceFolder.uri.fsPath;
+		const workspaceFolder = vscode.workspace.workspaceFolders[0]
+		return workspaceFolder.uri.fsPath
 	} else {
 		// 没有打开的工作区
-		return null;
+		return null
 	}
 }
 
-
-function getWebviewContent(context: vscode.ExtensionContext, webPath: string) {
-	const resourcePath = path.join(context.extensionPath, webPath);
-	const html = fs.readFileSync(resourcePath, 'utf-8');
-	// const dirPath = path.dirname(resourcePath);
-	// // vscode不支持直接加载本地资源，需要替换成其专有路径格式，这里只是简单的将样式和JS的路径替换
-	// html = html.replace(/(<link.+?href="|<script.+?src="|<img.+?src=")(.+?)"/g, (m, $1, $2) => {
-	// 	return $1 + vscode.Uri.file(path.resolve(dirPath, $2)).with({ scheme: 'vscode-resource' }).toString() + '"';
-	// });
-	return html;
-}
-
 // This method is called when your extension is deactivated
-export function deactivate() { }
+export function deactivate() {
+	WatcherManager.getInstance().dispose()
+}
