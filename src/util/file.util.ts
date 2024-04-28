@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+const yaml = require('js-yaml');
 
 export class FileUtil {
   /**
@@ -38,6 +39,20 @@ export class FileUtil {
     return arrayOfFiles;
   }
 
+  public static getProjectAllArbFiles(projectDir: string): string[] {
+    let results: string[] = []
+    let arbDir: string = `${projectDir}/lib/l10n` // TODO: 读取 pubspec.yaml - 如果有添加 intl/arb-dir 字段，需要更换路径
+    let filePaths = FileUtil.getDirAllFiles(arbDir)
+    for (let p of filePaths) {
+      const extension = path.extname(p)
+      if (extension !== '.arb') {
+        continue
+      }
+      results.push(p)
+    }
+    return results
+  }
+
   // 检查给定路径的文件或目录是否存在。
   public static pathExists(p: string): boolean {
     return fs.existsSync(p);
@@ -53,5 +68,16 @@ export class FileUtil {
         }
       })
     })
+  }
+
+  public static async readYamlFile(filePath: string): Promise<any> {
+    try {
+      const fileContents = await this.readFile(filePath);
+      const data = yaml.load(fileContents);
+      return data;
+    } catch (error) {
+      console.log("file.util - readYamlFile, error: ", error);
+    }
+    return null
   }
 }

@@ -93,15 +93,21 @@
         }
       ]
     },
+    "viewsWelcome": [
+      {
+        "view": "nodeDependencies",
+        "contents": "No node dependencies found [learn more](https://www.npmjs.com/).\n[Add Dependency](command:nodeDependencies.addEntry)"
+      }
+    ],
     "views": {
       "FXG": [
         {
-          "id": "FXG-Assets",
+          "id": "FXG_Assets",
           "name": "Assets"
         },
         {
-          "id": "FXG-L10n",
-          "name": "l10n"
+          "id": "FXG_Intl",
+          "name": "Localizations"
         }
       ]
     }

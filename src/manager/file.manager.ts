@@ -5,9 +5,6 @@ class FileManager {
   private static instance: FileManager | null = null
   private rootPath: string = ""
 
-  private l10nFilePaths: string[] = []
-  private assetsDirs: string[] = []
-
   private constructor() {
     this.refreshFilePathsAndDirs()
   }

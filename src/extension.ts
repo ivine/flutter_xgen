@@ -13,6 +13,7 @@ import { L10nSideBar } from './side_bar/l10n';
 import { FXGWebPanel } from './webview/panel';
 import FileManager from './manager/file.manager';
 import WatcherManager from './manager/watcher.manager';
+import TreeViewManager from './manager/tree_view.manager';
 
 let globalContext: vscode.ExtensionContext;
 function initializeExtension(context: vscode.ExtensionContext) {
@@ -37,9 +38,11 @@ export function activate(context: vscode.ExtensionContext) {
 	initializeExtension(context)
 
 	// manager 初始化
+	const wsDir = workspaceDir()
 	CommandManager.getInstance().setup();
-	FileManager.getInstance().setup(workspaceDir())
-	WatcherManager.getInstance().setup(workspaceDir())
+	FileManager.getInstance().setup(wsDir)
+	WatcherManager.getInstance().setup(wsDir)
+	TreeViewManager.getInstance().setup(wsDir)
 }
 
 export function deactivate() {
@@ -58,17 +61,17 @@ export function deactivate() {
 // TODO: auto_detection
 let assetsWatcher: vscode.FileSystemWatcher | null = null;
 
-const assetsSideBar = new AssetsSideBar('FXG-Assets', workspaceDir() ?? "");
-vscode.window.registerTreeDataProvider(
-	assetsSideBar.id,
-	assetsSideBar
-);
+// const assetsSideBar = new AssetsSideBar('FXG-Assets', workspaceDir() ?? "");
+// vscode.window.registerTreeDataProvider(
+// 	assetsSideBar.id,
+// 	assetsSideBar
+// );
 
-const l10nSideBar = new L10nSideBar('FXG-L10n', workspaceDir() ?? "");
-vscode.window.registerTreeDataProvider(
-	l10nSideBar.id,
-	l10nSideBar
-);
+// const l10nSideBar = new L10nSideBar('FXG-Intl', workspaceDir() ?? "");
+// vscode.window.registerTreeDataProvider(
+// 	l10nSideBar.id,
+// 	l10nSideBar
+// );
 
 
 async function assetsGenerate() {

@@ -8,7 +8,7 @@ export class SideBar implements vscode.TreeDataProvider<SideBarItem> {
 
   constructor(id: string, context?: vscode.ExtensionContext, rootSideBars?: SideBarItem[]) {
     this.id = id,
-    this.context = context;
+      this.context = context;
     this.rootSideBars = rootSideBars || [];
     this.context = context;
   }
@@ -22,7 +22,7 @@ export class SideBar implements vscode.TreeDataProvider<SideBarItem> {
   ): vscode.ProviderResult<SideBarItem[]> {
     var childrenList: any = [];
     console.log(`dw test, this.id --> ${this.id}`);
-    if (this.id === 'FXG-l10n') {
+    if (this.id === 'FXG-Localizations') {
       childrenList = [
         new SideBarItem("1", vscode.TreeItemCollapsibleState.None),
         new SideBarItem("2", vscode.TreeItemCollapsibleState.None),
