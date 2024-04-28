@@ -16,7 +16,7 @@ export class FileUtil {
     excludePatterns: RegExp[] = []
   ): string[] {
     let arrayOfFiles: string[] = [];
-    
+
     // 添加默认排除规则：排除 .DS_Store 文件
     const defaultExcludePatterns = [/\.DS_Store$/];
     const allExcludePatterns = defaultExcludePatterns.concat(excludePatterns);
@@ -41,5 +41,17 @@ export class FileUtil {
   // 检查给定路径的文件或目录是否存在。
   public static pathExists(p: string): boolean {
     return fs.existsSync(p);
+  }
+
+  public static readFile(filePath: string): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      fs.readFile(filePath, 'utf-8', (err, data) => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve(data)
+        }
+      })
+    })
   }
 }

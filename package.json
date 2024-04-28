@@ -31,47 +31,6 @@
   ],
   "activationEvents": [],
   "main": "./dist/extension.js",
-  "contributes": {
-    "commands": [
-      {
-        "command": "FXG.FlutterXGenAssetsGenerate",
-        "title": "Flutter XGen: Assets.dart 生成"
-      },
-      {
-        "command": "FXG.FlutterXGenAssetsStartWatch",
-        "title": "Flutter XGen: 开始监听 Assets 文件夹"
-      },
-      {
-        "command": "FXG.FlutterXGenAssetsStopWatch",
-        "title": "Flutter XGen: 停止监听 Assets 文件夹"
-      },
-      {
-        "command": "FXG.PreviewFile",
-        "title": "Flutter XGen: 预览文件"
-      }
-    ],
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "FXG",
-          "title": "FlutterXGen",
-          "icon": "images/icon.svg"
-        }
-      ]
-    },
-    "views": {
-      "FXG": [
-        {
-          "id": "FXG-Assets",
-          "name": "Assets"
-        },
-        {
-          "id": "FXG-L10n",
-          "name": "l10n"
-        }
-      ]
-    }
-  },
   "scripts": {
     "install_all": "yarn && cd webview_ui && yarn",
     "dev_webview": "cd webview_ui && yarn dev",
@@ -97,5 +56,54 @@
     "prettier": "^3.2.5",
     "typescript": "^5.4.5",
     "vscode-test": "^1.6.1"
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "FXG.generateAssets",
+        "title": "Flutter XGen: 生成 Assets.dart"
+      },
+      {
+        "command": "FXG.startWatchAssets",
+        "title": "Flutter XGen: 开始监听 Assets 文件夹"
+      },
+      {
+        "command": "FXG.stopWatchAssets",
+        "title": "Flutter XGen: 停止监听 Assets 文件夹"
+      },
+      {
+        "command": "FXG.generateIntl",
+        "title": "Flutter XGen: 生成 arb 本地化文件"
+      },
+      {
+        "command": "FXG.startWatchIntl",
+        "title": "Flutter XGen: 开始监听 arb 文件夹"
+      },
+      {
+        "command": "FXG.stopWatchIntl",
+        "title": "Flutter XGen: 停止监听 arb 文件夹"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "FXG",
+          "title": "FlutterXGen",
+          "icon": "images/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "FXG": [
+        {
+          "id": "FXG-Assets",
+          "name": "Assets"
+        },
+        {
+          "id": "FXG-L10n",
+          "name": "l10n"
+        }
+      ]
+    }
   }
 }

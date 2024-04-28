@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 const fs = require('fs');
 
-import * as FXGCommand from './command_names';
+import CommandManager, * as FXGCommand from './manager/command.manager';
 import AssetsGenerator from './assets_generator';
 import { AssetsSideBar } from './side_bar/assets';
 import { L10nSideBar } from './side_bar/l10n';
@@ -14,8 +14,6 @@ import { FXGWebPanel } from './webview/panel';
 import FileManager from './manager/file.manager';
 import WatcherManager from './manager/watcher.manager';
 
-// TODO: auto_detection
-let assetsWatcher: vscode.FileSystemWatcher | null = null;
 let globalContext: vscode.ExtensionContext;
 function initializeExtension(context: vscode.ExtensionContext) {
 	globalContext = context;
@@ -23,6 +21,42 @@ function initializeExtension(context: vscode.ExtensionContext) {
 export function getExtensionContext(): vscode.ExtensionContext | null {
 	return globalContext;
 }
+
+function workspaceDir(): string | null {
+	if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
+		// 获取第一个工作区的路径
+		const workspaceFolder = vscode.workspace.workspaceFolders[0]
+		return workspaceFolder.uri.fsPath
+	} else {
+		// 没有打开的工作区
+		return null
+	}
+}
+
+export function activate(context: vscode.ExtensionContext) {
+	initializeExtension(context)
+
+	// manager 初始化
+	CommandManager.getInstance().setup();
+	FileManager.getInstance().setup(workspaceDir())
+	WatcherManager.getInstance().setup(workspaceDir())
+}
+
+export function deactivate() {
+	WatcherManager.getInstance().dispose()
+}
+
+
+
+
+
+
+
+
+
+
+// TODO: auto_detection
+let assetsWatcher: vscode.FileSystemWatcher | null = null;
 
 const assetsSideBar = new AssetsSideBar('FXG-Assets', workspaceDir() ?? "");
 vscode.window.registerTreeDataProvider(
@@ -36,35 +70,6 @@ vscode.window.registerTreeDataProvider(
 	l10nSideBar
 );
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
-	initializeExtension(context)
-
-	// manager 初始化
-	FileManager.getInstance().setup(workspaceDir())
-	WatcherManager.getInstance().setup(workspaceDir())
-
-	for (let commandName of Object.values(FXGCommand.FXGCommandNames)) {
-		let disposable = vscode.commands.registerCommand(commandName, (data: any) => {
-			if (commandName === FXGCommand.FXGCommandNames.AssetsGenerate) {
-				assetsGenerate();
-			} else if (commandName === FXGCommand.FXGCommandNames.AssetsStartWatch) {
-				assetsWatch(context);
-			} else if (commandName === FXGCommand.FXGCommandNames.AssetsStopWatch) {
-				assetsStopWatch();
-			} else if (commandName === FXGCommand.FXGCommandNames.PreviewFile) {
-				vscode.workspace.openTextDocument(data).then((doc) => {
-					vscode.window.showTextDocument(doc, { preview: true });
-				});
-			} else if (commandName === FXGCommand.FXGCommandNames.Previewl10nJson) {
-				FXGWebPanel.render(context.extensionUri, data);
-			}
-		});
-
-		context.subscriptions.push(disposable);
-	}
-}
 
 async function assetsGenerate() {
 	try {
@@ -104,20 +109,4 @@ async function assetsStopWatch() {
 	}
 	assetsWatcher.dispose();
 	vscode.window.setStatusBarMessage('Flutter XGen: Assets 文件夹监听已关闭', 3000);
-}
-
-function workspaceDir(): string | null {
-	if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
-		// 获取第一个工作区的路径
-		const workspaceFolder = vscode.workspace.workspaceFolders[0]
-		return workspaceFolder.uri.fsPath
-	} else {
-		// 没有打开的工作区
-		return null
-	}
-}
-
-// This method is called when your extension is deactivated
-export function deactivate() {
-	WatcherManager.getInstance().dispose()
 }

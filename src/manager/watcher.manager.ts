@@ -6,8 +6,14 @@ import _ from 'lodash'
 import { getExtensionContext } from '../extension';
 
 enum WatcherType {
-  assets = "assets",
-  intl = "intl",
+  assets = "Assets",
+  intl = "Intl",
+}
+
+enum WatcherEventType {
+  onCreated = "onCreated",
+  onChanged = "onChanged",
+  onDeleted = "onDeleted",
 }
 
 export default class WatcherManager {
@@ -37,15 +43,31 @@ export default class WatcherManager {
     this.watcherList = []
   }
 
-  public startWatch(type: WatcherType, paths: string[]) {
+  public startWatch(type: WatcherType, projectDir: string, watchFilePath: string) {
     switch (type) {
-      case WatcherType.assets:
-
+      case WatcherType.assets: {
+        let wathcer = new AssetFileWatcher(projectDir, watchFilePath)
+        let result = _.find(this.watcherList, function (o) { return o.id < wathcer.id })
+        if (result) {
+          result.start()
+        } else {
+          wathcer.start()
+          this.watcherList.push(wathcer)
+        }
+      }
         break;
 
-      case WatcherType.intl:
+      case WatcherType.intl: {
+        let wathcer = new IntlFileWatcher(projectDir, watchFilePath)
+        let result = _.find(this.watcherList, function (o) { return o.id < wathcer.id })
+        if (result) {
+          result.start()
+        } else {
+          wathcer.start()
+          this.watcherList.push(wathcer)
+        }
+      } break;
 
-        break;
       default:
         break;
     }
@@ -64,24 +86,59 @@ export default class WatcherManager {
 class FileWatcher {
   id: string
   projectPath: string
-  dir: string
+  watchFilePath: string
   type: WatcherType
   watcher: vscode.FileSystemWatcher | null = null
 
-  constructor(projectPath: string, dir: string, type: WatcherType) {
+  constructor(projectPath: string, watchFilePath: string, type: WatcherType) {
     this.projectPath = projectPath
     this.id = `${projectPath}_${type}`
-    this.dir = dir
+    this.watchFilePath = watchFilePath
     this.type = type
   }
 
   public start() {
     this.stop()
-    this.watcher = vscode.workspace.createFileSystemWatcher(`${this.dir}**/*`)
+
+    this.watcher = vscode.workspace.createFileSystemWatcher(`${this.watchFilePath}/**/*`)
+    this.watcher.onDidCreate((uri) => {
+      this.onWatchingEvent(WatcherEventType.onCreated, uri)
+    })
+    this.watcher.onDidChange((uri) => {
+      this.onWatchingEvent(WatcherEventType.onChanged, uri)
+    })
+    this.watcher.onDidDelete((uri) => {
+      this.onWatchingEvent(WatcherEventType.onDeleted, uri)
+    })
+    getExtensionContext().subscriptions.push(this.watcher)
+
+    vscode.window.setStatusBarMessage(`Flutter XGen: ${this.type} 文件夹监听已开启`, 3000)
   }
 
   public stop() {
     this.watcher.dispose()
     this.watcher = null
+  }
+
+  public onWatchingEvent(event: WatcherEventType, uri: vscode.Uri) { }
+}
+
+class AssetFileWatcher extends FileWatcher {
+  constructor(projectPath: string, watchFilePath: string) {
+    super(projectPath, watchFilePath, WatcherType.assets);
+  }
+
+  public onWatchingEvent(event: WatcherEventType, uri: vscode.Uri) {
+    console.log('asset file watch on event: ', event, ', uri: ', uri)
+  }
+}
+
+class IntlFileWatcher extends FileWatcher {
+  constructor(projectPath: string, watchFilePath: string) {
+    super(projectPath, watchFilePath, WatcherType.intl);
+  }
+
+  public onWatchingEvent(event: WatcherEventType, uri: vscode.Uri) {
+    console.log('intl file watch on event: ', event, ', uri: ', uri)
   }
 }
