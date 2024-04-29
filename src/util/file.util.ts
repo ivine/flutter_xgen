@@ -1,7 +1,7 @@
-import * as vscode from 'vscode';
-import * as fs from 'fs';
-import * as path from 'path';
-const yaml = require('js-yaml');
+import * as vscode from 'vscode'
+import * as fs from 'fs'
+import * as path from 'path'
+const yaml = require('js-yaml')
 
 export class FileUtil {
   /**
@@ -16,27 +16,27 @@ export class FileUtil {
     includeSubDirs: boolean = false,
     excludePatterns: RegExp[] = []
   ): string[] {
-    let arrayOfFiles: string[] = [];
+    let arrayOfFiles: string[] = []
 
     // 添加默认排除规则：排除 .DS_Store 文件
-    const defaultExcludePatterns = [/\.DS_Store$/];
-    const allExcludePatterns = defaultExcludePatterns.concat(excludePatterns);
+    const defaultExcludePatterns = [/\.DS_Store$/]
+    const allExcludePatterns = defaultExcludePatterns.concat(excludePatterns)
 
     const readDirRecursively = (currentDir: string) => {
-      const entries = fs.readdirSync(currentDir, { withFileTypes: true });
+      const entries = fs.readdirSync(currentDir, { withFileTypes: true })
       entries.forEach((entry) => {
-        const fullPath = path.join(currentDir, entry.name);
+        const fullPath = path.join(currentDir, entry.name)
         if (entry.isDirectory() && includeSubDirs) {
-          readDirRecursively(fullPath);
+          readDirRecursively(fullPath)
         } else if (!allExcludePatterns.some(pattern => pattern.test(entry.name))) {
-          arrayOfFiles.push(fullPath);
+          arrayOfFiles.push(fullPath)
         }
-      });
-    };
+      })
+    }
 
-    readDirRecursively(dir);
+    readDirRecursively(dir)
 
-    return arrayOfFiles;
+    return arrayOfFiles
   }
 
   public static getProjectAllArbFiles(projectDir: string): string[] {
@@ -55,7 +55,7 @@ export class FileUtil {
 
   // 检查给定路径的文件或目录是否存在。
   public static pathExists(p: string): boolean {
-    return fs.existsSync(p);
+    return fs.existsSync(p)
   }
 
   public static readFile(filePath: string): Promise<string> {
@@ -70,14 +70,46 @@ export class FileUtil {
     })
   }
 
-  public static async readYamlFile(filePath: string): Promise<any> {
+  public static async readYamlFile(filePath: string): Promise<any | null> {
     try {
-      const fileContents = await this.readFile(filePath);
-      const data = yaml.load(fileContents);
-      return data;
+      const fileContents = await this.readFile(filePath)
+      const data = yaml.load(fileContents)
+      return data
     } catch (error) {
-      console.log("file.util - readYamlFile, error: ", error);
+      console.log("file.util - readYamlFile, error: ", error)
     }
     return null
+  }
+
+  public static getFileNameWithExtension(filePath: string, extension: string | boolean = true): string {
+    const { name, ext } = path.parse(filePath)
+    const fileExtension = extension === true ? ext : extension ? `.${extension}` : ''
+    return `${name}${fileExtension}`
+  }
+
+  public static getFileExtension(filePath: string): string {
+    const { ext } = path.parse(filePath)
+    return ext
+  }
+
+  public static async checkIfPathIsDir(filePath: string): Promise<boolean> {
+    try {
+      const stats = await fs.promises.stat(filePath)
+      return stats.isDirectory()
+    } catch (error) {
+      return false // 如果路径不存在或发生其他错误
+    }
+  }
+
+  public static async isFileSuitableForTextDocument(filePath: string): Promise<boolean> {
+    const textFileExtensions: string[] = [
+      "txt", "md", "html", "css", "scss", "less", "js", "jsx", "ts", "tsx",
+      "json", "xml", "yaml", "yml", "csv", "log", "ini", "cfg", "conf",
+      "bat", "sh", "cmd", "ps1", "py", "rb", "java", "cpp", "c", "h", "hpp",
+      "cs", "go", "php", "pl", "perl", "lua", "sql", "swift", "coffee", "dart",
+      "r", "rs", "hs", "elm", "f", "fs", "fsharp", "fsx", "clj", "cljs", "cljc"
+    ] // TODO: 这样做好像不太合理
+    const fileExtension: string = FileUtil.getFileExtension(filePath).replaceAll('.', "")
+    return textFileExtensions.includes(fileExtension)
   }
 }

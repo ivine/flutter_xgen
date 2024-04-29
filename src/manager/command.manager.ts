@@ -1,6 +1,6 @@
-import * as vscode from 'vscode';
-import { FileUtil } from '../util/file.util';
-import { getExtensionContext } from '../extension';
+import * as vscode from 'vscode'
+import { FileUtil } from '../util/file.util'
+import { getExtensionContext } from '../extension'
 
 export interface FXGCommandData {
   title: string
@@ -90,9 +90,7 @@ export default class CommandManager {
         let value: FXGCommandData = this.internalCommands.get(key)
         let disposable = vscode.commands.registerCommand(value.command, (data: any) => {
           if (value.command == FXGCommandType.openFile) {
-            vscode.workspace.openTextDocument(data).then((doc) => {
-              vscode.window.showTextDocument(doc, { preview: true });
-            });
+            this.previewFile(data)
           } else if (value.command === FXGCommandType.openWebView) {
             console.log("dw test, internalCommands data: ", value)
             console.log("dw test, internalCommands data: ", data)
@@ -120,20 +118,32 @@ export default class CommandManager {
     // for (let commandName of Object.values(FXGCommand.FXGCommandNames)) {
     // 	let disposable = vscode.commands.registerCommand(commandName, (data: any) => {
     // 		if (commandName === FXGCommand.FXGCommandNames.AssetsGenerate) {
-    // 			assetsGenerate();
+    // 			assetsGenerate()
     // 		} else if (commandName === FXGCommand.FXGCommandNames.AssetsStartWatch) {
-    // 			assetsWatch(context);
+    // 			assetsWatch(context)
     // 		} else if (commandName === FXGCommand.FXGCommandNames.AssetsStopWatch) {
-    // 			assetsStopWatch();
+    // 			assetsStopWatch()
     // 		} else if (commandName === FXGCommand.FXGCommandNames.PreviewFile) {
     // 			vscode.workspace.openTextDocument(data).then((doc) => {
-    // 				vscode.window.showTextDocument(doc, { preview: true });
-    // 			});
+    // 				vscode.window.showTextDocument(doc, { preview: true })
+    // 			})
     // 		} else if (commandName === FXGCommand.FXGCommandNames.Previewl10nJson) {
-    // 			FXGWebPanel.render(context.extensionUri, data);
+    // 			FXGWebPanel.render(context.extensionUri, data)
     // 		}
-    // 	});
-    // 	context.subscriptions.push(disposable);
+    // 	})
+    // 	context.subscriptions.push(disposable)
     // }
+  }
+
+  private async previewFile(filePath: string) {
+    let canTextDocPreview = await FileUtil.isFileSuitableForTextDocument(filePath)
+    if (canTextDocPreview) {
+      vscode.workspace.openTextDocument(filePath).then((doc) => {
+        vscode.window.showTextDocument(doc, { preview: true })
+      })
+    } else {
+      let ext = FileUtil.getFileExtension(filePath)
+      console.log("dw test, ext: ", ext)
+    }
   }
 }

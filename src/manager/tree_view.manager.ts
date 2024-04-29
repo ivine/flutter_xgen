@@ -1,5 +1,6 @@
 import * as vscode from 'vscode'
-import { IntlTreeView } from '../tree_view/intl/intl.tree_view';
+import { IntlTreeView } from '../tree_view/intl.tree_view';
+import { AssetsTreeView } from '../tree_view/assets.tree_view';
 
 enum TreeViewType {
   assets,
@@ -63,9 +64,11 @@ export default class TreeViewManager {
 
   private registerTreeDataProvider() {
     for (let t of this.treeViewTypes) {
+      let id: string = TreeViewUtil.getTreeViewId(t)
       if (t == TreeViewType.intl) {
-        let id: string = TreeViewUtil.getTreeViewId(t)
         vscode.window.registerTreeDataProvider(id, new IntlTreeView(id, this.rootPath, []))
+      } else if (t == TreeViewType.assets) {
+        vscode.window.registerTreeDataProvider(id, new AssetsTreeView(id, this.rootPath, []))
       }
     }
   }
