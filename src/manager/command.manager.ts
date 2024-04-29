@@ -36,7 +36,7 @@ export default class CommandManager {
     // 插件自身需要的 commands
     this.internalCommands = new Map()
     this.internalCommands.set(FXGCommandType.openWebView, { title: "Flutter XGen: 打开 XGen", command: FXGCommandType.openWebView })
-    this.internalCommands.set(FXGCommandType.openFile, { title: "Flutter XGen: 预览文件", command: FXGCommandType.openWebView })
+    this.internalCommands.set(FXGCommandType.openFile, { title: "Flutter XGen: 预览文件", command: FXGCommandType.openFile })
 
     // 用户可以操作的 commands
     this.pkgCommands = new Map()
@@ -85,8 +85,28 @@ export default class CommandManager {
       return
     }
 
-    for (let value of Array.from(this.pkgCommands.values())) {
+    for (let key of Array.from(this.internalCommands.keys())) {
       try {
+        let value: FXGCommandData = this.internalCommands.get(key)
+        let disposable = vscode.commands.registerCommand(value.command, (data: any) => {
+          if (value.command == FXGCommandType.openFile) {
+            vscode.workspace.openTextDocument(data).then((doc) => {
+              vscode.window.showTextDocument(doc, { preview: true });
+            });
+          } else if (value.command === FXGCommandType.openWebView) {
+            console.log("dw test, internalCommands data: ", value)
+            console.log("dw test, internalCommands data: ", data)
+          }
+        })
+        context.subscriptions.push(disposable)
+      } catch (error) {
+        console.log('command.manager.ts, registerCommand - this.internalCommands, error: ', error)
+      }
+    }
+
+    for (let key of Array.from(this.pkgCommands.keys())) {
+      try {
+        let value = this.pkgCommands.get(key)
         let disposable = vscode.commands.registerCommand(value.command, (data: any) => {
           console.log("dw test, pkgCommands data: ", value)
           console.log("dw test, pkgCommands data: ", data)

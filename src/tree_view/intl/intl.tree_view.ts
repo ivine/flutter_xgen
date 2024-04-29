@@ -1,5 +1,4 @@
 import * as vscode from 'vscode'
-import * as fs from 'fs'
 import * as path from 'path'
 
 import { FileUtil } from '../../util/file.util'
@@ -25,10 +24,21 @@ class IntlTreeItem extends vscode.TreeItem {
 
   ) {
     super(label, collapsibleState)
+
+    if (itemType === IntlTreeItemType.project) {
+      this.iconPath = new vscode.ThemeIcon('project')
+    } else if (itemType === IntlTreeItemType.allJson) {
+      this.iconPath = new vscode.ThemeIcon('json')
+    } else if (itemType === IntlTreeItemType.arbFile) {
+      this.iconPath = new vscode.ThemeIcon('file')
+    }
   }
 }
 
 export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeItem> {
+  private _onDidChangeTreeData: vscode.EventEmitter<IntlTreeItem | undefined | null | void> = new vscode.EventEmitter<IntlTreeItem | undefined | null | void>();
+  readonly onDidChangeTreeData: vscode.Event<IntlTreeItem | undefined | null | void> = this._onDidChangeTreeData.event;
+
   public id: string
   public rootPath: string
   public workspaceDirs: string[]
@@ -46,15 +56,20 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeItem> {
     this.treeItems = []
 
     // 当前项目
-    let rootProjectItems: IntlTreeItem = await this.assembleIntlTreeItem(this.rootPath)
-    this.treeItems = [...this.treeItems, rootProjectItems]
+    let rootProjectItem: IntlTreeItem = await this.assembleIntlTreeItem(this.rootPath)
+    this.treeItems.push(rootProjectItem)
 
     // 其他子项目
     for (let p of this.workspaceDirs) {
       if (p === this.rootPath) {
         continue;
       }
+      let subProjectItems: IntlTreeItem = await this.assembleIntlTreeItem(this.rootPath)
+      this.treeItems.push(subProjectItems)
     }
+
+    // refresh
+    this._onDidChangeTreeData.fire()
   }
 
   getTreeItem(element: IntlTreeItem): vscode.TreeItem {
@@ -70,7 +85,7 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeItem> {
       console.log("intl.tree_view, treeItems is empty")
       return Promise.resolve([])
     }
-    if (element && element.itemType === IntlTreeItemType.project) {
+    if (element && element !== undefined && element.itemType === IntlTreeItemType.project) {
       // leaf
       let leafs: IntlTreeItem[] = []
       for (let e of this.treeItems) {
@@ -95,10 +110,10 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeItem> {
 
       // arb file json
       let allArbJsonItem: IntlTreeItem = new IntlTreeItem(
-        "all_arb_json",
+        "all_arb_file_data.json",
         vscode.TreeItemCollapsibleState.None,
         [],
-        IntlTreeItemType.arbFile,
+        IntlTreeItemType.allJson,
         "",
         projectName,
         projectDir,
