@@ -57,9 +57,10 @@ export class AssetsTreeNode extends TreeNode {
 
     if (nodeType === TreeNodeType.folder) {
       this.iconPath = ""
+      this.description = validFile ? "" : "  路径无效" // 添加操作事件
     } else if (nodeType === TreeNodeType.file) {
-      let tmpIconPath = TreeViewUtil.getIconPathForFilePath(nodeAbsolutePath)
       this.iconPath = new vscode.ThemeIcon('file')
+      // this.description = validFile ? "" : "  文件无效"
     }
   }
 }

@@ -2,15 +2,9 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
-import * as path from 'path';
-const fs = require('fs');
-
-import CommandManager, * as FXGCommand from './manager/command.manager';
+import CommandManager from './manager/command.manager';
 import AssetsGenerator from './assets_generator';
-import { AssetsSideBar } from './side_bar/assets';
-import { L10nSideBar } from './side_bar/l10n';
 
-import { FXGWebPanel } from './webview/panel';
 import FileManager from './manager/file.manager';
 import WatcherManager from './manager/watcher.manager';
 import TreeViewManager from './manager/tree_view.manager';

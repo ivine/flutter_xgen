@@ -1,7 +1,7 @@
 import * as vscode from 'vscode'
 
 import { FileUtil } from '../util/file.util'
-import { FXGCommandType } from '../manager/command.manager'
+import { FXGCommandData, FXGCommandType, getFXGCommandData } from '../manager/command.manager'
 
 import { TreeNodeType, AssetsTreeNode } from './tree_node'
 import TreeViewUtil from './tree_view.util'
@@ -124,17 +124,21 @@ export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
     let treeItem: AssetsTreeNode | null = null
     try {
       let itemName = FileUtil.getFileNameWithExtension(itemPath)
-      let itemRelativePath: string = itemPath.replaceAll(projectDir, "")
-      let isDir: boolean = await FileUtil.checkIfPathIsDir(itemPath)
+      let itemRelativePath: string = itemPath.replaceAll(`${projectDir}/`, "")
+      let isFolder: boolean = await FileUtil.checkIfPathIsDir(itemPath)
       let validPath: boolean = true
       let subTreeNodes: AssetsTreeNode[] = []
-      if (isDir) {
+      if (isFolder) {
         // 1.检查目录是否有效
+        // TODO: 优化一下
         validPath = false
         for (let p of validAssetsRelativePaths) {
-          if (itemRelativePath.startsWith(p)) {
+          // e.g.: itemRelativePath = assets/img/user/avatar + "/"", p = assets/img/user
+          let matchResult = `${itemRelativePath}/`.replace(`${p}`, "") // 不包含 "/"，表示已经是最后一级文件夹，则该目录有效
+          // console.log(`itemRelativePath: ${itemRelativePath}, p: ${p}, matchResult: ${matchResult}`)
+          if (!matchResult.includes("/")) {
             validPath = true
-            break;
+            break
           }
         }
 
@@ -147,23 +151,27 @@ export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
           }
           subTreeNodes.push(item)
         }
+      } else {
+        // 文件
+      }
+
+      let command: vscode.Command | null = null
+      if (
+        !isFolder) {
+        command = await this.getTreeNodeCommandData(itemPath)
       }
 
       subTreeNodes = TreeViewUtil.sortTreeNodeList<AssetsTreeNode>(subTreeNodes) // 排序
       treeItem = new AssetsTreeNode(
         itemName,
-        isDir ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None,
+        isFolder ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None,
 
-        isDir ? TreeNodeType.folder : TreeNodeType.file,
+        isFolder ? TreeNodeType.folder : TreeNodeType.file,
         projectDir,
         projectName,
         subTreeNodes,
         itemPath,
-        isDir ? null : {
-          title: FXGCommandType.openFile,
-          command: FXGCommandType.openFile,
-          arguments: [itemPath],
-        },
+        command,
 
         validPath,
       );
@@ -172,5 +180,26 @@ export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
     }
 
     return Promise.resolve(treeItem)
+  }
+
+  async getTreeNodeCommandData(filePath: string): Promise<vscode.Command> {
+    let resultCommand: vscode.Command | null = null
+    let canTextDocPreview = await FileUtil.isFileSuitableForTextDocument(filePath)
+    if (canTextDocPreview) {
+      let commandData: FXGCommandData = getFXGCommandData(FXGCommandType.openFile)
+      resultCommand = {
+        title: commandData.title,
+        command: commandData.command,
+        arguments: [filePath]
+      }
+    } else {
+      let commandData: FXGCommandData = getFXGCommandData(FXGCommandType.openFXGBinaryPreviewWeb)
+      resultCommand = {
+        title: commandData.title,
+        command: commandData.command,
+        arguments: [filePath]
+      }
+    }
+    return Promise.resolve(resultCommand)
   }
 }

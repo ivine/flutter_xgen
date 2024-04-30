@@ -107,7 +107,8 @@ export class FileUtil {
       "json", "xml", "yaml", "yml", "csv", "log", "ini", "cfg", "conf",
       "bat", "sh", "cmd", "ps1", "py", "rb", "java", "cpp", "c", "h", "hpp",
       "cs", "go", "php", "pl", "perl", "lua", "sql", "swift", "coffee", "dart",
-      "r", "rs", "hs", "elm", "f", "fs", "fsharp", "fsx", "clj", "cljs", "cljc"
+      "r", "rs", "hs", "elm", "f", "fs", "fsharp", "fsx", "clj", "cljs", "cljc",
+      "arb"
     ] // TODO: 这样做好像不太合理
     const fileExtension: string = FileUtil.getFileExtension(filePath).replaceAll('.', "")
     return textFileExtensions.includes(fileExtension)

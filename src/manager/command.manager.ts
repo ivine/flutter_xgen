@@ -1,6 +1,8 @@
 import * as vscode from 'vscode'
 import { FileUtil } from '../util/file.util'
 import { getExtensionContext } from '../extension'
+import { FXGUIWebPanel } from '../webview/fxg_web_panel'
+import { FXGBinaryWebPanel } from '../webview/binary_web_panel'
 
 export interface FXGCommandData {
   title: string
@@ -16,7 +18,29 @@ export enum FXGCommandType {
   stopWatchIntl = "FXG.stopWatchIntl",
 
   openFile = "FXG.openFile",
-  openWebView = "FXG.openWebView",
+  openFXGUIWeb = "FXG.openFXGUIWeb",
+  openFXGBinaryPreviewWeb = "FXG.openFXGBinaryPreviewWeb",
+}
+
+export function getFXGCommandData(type: FXGCommandType): FXGCommandData | null {
+  let result: FXGCommandData | null = null
+  switch (type) {
+    case FXGCommandType.openFile:
+      result = { title: "Flutter XGen: 打开文件", command: FXGCommandType.openFile }
+      break;
+
+    case FXGCommandType.openFXGUIWeb:
+      result = { title: "Flutter XGen: 打开 FXG UI", command: FXGCommandType.openFXGUIWeb }
+      break;
+
+    case FXGCommandType.openFXGBinaryPreviewWeb:
+      result = { title: "Flutter XGen: FXG 预览文件", command: FXGCommandType.openFXGBinaryPreviewWeb }
+      break;
+
+    default:
+      break;
+  }
+  return result
 }
 
 export default class CommandManager {
@@ -35,8 +59,9 @@ export default class CommandManager {
   public async setup() {
     // 插件自身需要的 commands
     this.internalCommands = new Map()
-    this.internalCommands.set(FXGCommandType.openWebView, { title: "Flutter XGen: 打开 XGen", command: FXGCommandType.openWebView })
-    this.internalCommands.set(FXGCommandType.openFile, { title: "Flutter XGen: 预览文件", command: FXGCommandType.openFile })
+    this.internalCommands.set(FXGCommandType.openFile, getFXGCommandData(FXGCommandType.openFile))
+    this.internalCommands.set(FXGCommandType.openFXGUIWeb, getFXGCommandData(FXGCommandType.openFXGUIWeb))
+    this.internalCommands.set(FXGCommandType.openFXGBinaryPreviewWeb, getFXGCommandData(FXGCommandType.openFXGBinaryPreviewWeb))
 
     // 用户可以操作的 commands
     this.pkgCommands = new Map()
@@ -91,9 +116,10 @@ export default class CommandManager {
         let disposable = vscode.commands.registerCommand(value.command, (data: any) => {
           if (value.command == FXGCommandType.openFile) {
             this.previewFile(data)
-          } else if (value.command === FXGCommandType.openWebView) {
-            console.log("dw test, internalCommands data: ", value)
-            console.log("dw test, internalCommands data: ", data)
+          } else if (value.command === FXGCommandType.openFXGUIWeb) {
+            FXGUIWebPanel.render(context.extensionUri, data)
+          } else if (value.command === FXGCommandType.openFXGBinaryPreviewWeb) {
+            FXGBinaryWebPanel.render(context.extensionUri, data)
           }
         })
         context.subscriptions.push(disposable)

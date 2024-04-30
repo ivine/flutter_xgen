@@ -86,8 +86,8 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
         [],
         "",
         {
-          title: FXGCommandType.openWebView,
-          command: FXGCommandType.openWebView,
+          title: FXGCommandType.openFXGUIWeb,
+          command: FXGCommandType.openFXGUIWeb,
           arguments: [rootArbFilePaths],
         },
 
