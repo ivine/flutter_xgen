@@ -11,3 +11,5 @@ commintlint.config.*
 CHANGELOG.md
 LICENSE
 out
+
+webview_ui

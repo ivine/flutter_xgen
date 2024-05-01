@@ -8,7 +8,7 @@ export default defineConfig({
     port: 5173,
   },
   build: {
-    outDir: "../dist/webview_ui",
+    outDir: "dist",
     rollupOptions: {
       output: {
         entryFileNames: `assets/[name].js`,
@@ -16,6 +16,6 @@ export default defineConfig({
         assetFileNames: `assets/[name].[ext]`
       }
     },
-    sourcemap: true,
+    sourcemap: true, // TODO: 区分生产和开发
   },
 })

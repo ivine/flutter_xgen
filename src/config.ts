@@ -1,3 +1,5 @@
+export const isDebugMode = true;
+
 const FXGAssetsConstants = {
   KEY_PROJECT_NAME: "name",
   KEY_CONFIGURATION_MAP: "flutter_assets_generator",
