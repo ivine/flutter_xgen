@@ -4,17 +4,17 @@ import * as path from 'path'
 
 import { getUri, getNonce } from "../util/webview.util"
 import { WebViewType, WebViewTypeData, getWebViewTypeData } from "./const"
+import { InteractionEvent, InteractionEventType } from '../manager/interaction.manager'
 
 export class FXGUIWebPanel {
   public static currentPanel: FXGUIWebPanel | undefined
   private readonly _panel: vscode.WebviewPanel
   private _disposables: vscode.Disposable[] = []
 
-  private _arbFiles: string[]
-
-  private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, arbFiles: string[]) {
-    this._arbFiles = arbFiles
-
+  private constructor(
+    panel: vscode.WebviewPanel,
+    extensionUri: vscode.Uri,
+  ) {
     this._panel = panel
     this._panel.onDidDispose(() => this.dispose(), null, this._disposables)
     this._panel.onDidChangeViewState(this.onDidChangeViewState)
@@ -22,7 +22,7 @@ export class FXGUIWebPanel {
     this._setWebviewMessageListener(this._panel.webview)
   }
 
-  public static render(extensionUri: vscode.Uri, arbFiles: string[]) {
+  public static render(extensionUri: vscode.Uri) {
     // 获取配置的类型
     let webViewTypeData: WebViewTypeData = getWebViewTypeData(WebViewType.fxg)
     let viewType: string = webViewTypeData.viewType
@@ -53,26 +53,45 @@ export class FXGUIWebPanel {
           localResourceRoots: localResRoots,
         }
       )
-      FXGUIWebPanel.currentPanel = new FXGUIWebPanel(panel, extensionUri, arbFiles)
+      FXGUIWebPanel.currentPanel = new FXGUIWebPanel(panel, extensionUri)
     }
 
+    let arbFileTreeJson = {}
+    let intlFileTreeJson = {}
+    let previewFileJson = {}
+
+    try {
+      // arbFileTreeJson = JSON
+    } catch (error) {
+
+    }
+
+    FXGUIWebPanel.currentPanel._panel.webview.postMessage(
+      {
+        type: InteractionEventType.sync,
+        content: {
+          arbFileTreeJson,
+          intlFileTreeJson,
+          previewFileJson,
+        },
+      }
+    )
+
     // TODO: 优化一下
-    let jsonMap = {}
-    for (let tmpPath of arbFiles) {
-      const fileContent = fs.readFileSync(tmpPath, 'utf-8')
-      const fileName = path.basename(tmpPath)
-      jsonMap[fileName] = fileContent
-    }
-    if (jsonMap) {
-      setTimeout(() => {
-        FXGUIWebPanel.currentPanel._panel.webview.postMessage({ type: 'fileContent', content: jsonMap })
-      }, 500)
-    }
+    // let jsonMap = {}
+    // for (let tmpPath of arbFiles) {
+    //   const fileContent = fs.readFileSync(tmpPath, 'utf-8')
+    //   const fileName = path.basename(tmpPath)
+    //   jsonMap[fileName] = fileContent
+    // }
+    // if (jsonMap) {
+    //   setTimeout(() => {
+    //     FXGUIWebPanel.currentPanel._panel.webview.postMessage({ type: 'fileContent', content: jsonMap })
+    //   }, 500)
+    // }
   }
 
   public dispose() {
-    this._arbFiles = []
-
     FXGUIWebPanel.currentPanel = undefined
     this._panel.dispose()
     while (this._disposables.length) {

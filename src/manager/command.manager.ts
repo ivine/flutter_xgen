@@ -1,8 +1,10 @@
 import * as vscode from 'vscode'
+
 import { FileUtil } from '../util/file.util'
-import { getExtensionContext } from '../extension'
 import { FXGUIWebPanel } from '../webview/fxg_web_panel'
-import { FXGBinaryWebPanel } from '../webview/binary_web_panel'
+
+import { getExtensionContext } from '../extension'
+import { InteractionEvent } from './interaction.manager'
 
 export interface FXGCommandData {
   title: string
@@ -19,7 +21,6 @@ export enum FXGCommandType {
 
   openFile = "FXG.openFile",
   openFXGUIWeb = "FXG.openFXGUIWeb",
-  openFXGBinaryPreviewWeb = "FXG.openFXGBinaryPreviewWeb",
 }
 
 export function getFXGCommandData(type: FXGCommandType): FXGCommandData | null {
@@ -31,10 +32,6 @@ export function getFXGCommandData(type: FXGCommandType): FXGCommandData | null {
 
     case FXGCommandType.openFXGUIWeb:
       result = { title: "Flutter XGen: 打开 FXG UI", command: FXGCommandType.openFXGUIWeb }
-      break;
-
-    case FXGCommandType.openFXGBinaryPreviewWeb:
-      result = { title: "Flutter XGen: FXG 预览文件", command: FXGCommandType.openFXGBinaryPreviewWeb }
       break;
 
     default:
@@ -61,7 +58,6 @@ export default class CommandManager {
     this.internalCommands = new Map()
     this.internalCommands.set(FXGCommandType.openFile, getFXGCommandData(FXGCommandType.openFile))
     this.internalCommands.set(FXGCommandType.openFXGUIWeb, getFXGCommandData(FXGCommandType.openFXGUIWeb))
-    this.internalCommands.set(FXGCommandType.openFXGBinaryPreviewWeb, getFXGCommandData(FXGCommandType.openFXGBinaryPreviewWeb))
 
     // 用户可以操作的 commands
     this.pkgCommands = new Map()
@@ -117,9 +113,7 @@ export default class CommandManager {
           if (value.command == FXGCommandType.openFile) {
             this.previewFile(data)
           } else if (value.command === FXGCommandType.openFXGUIWeb) {
-            FXGUIWebPanel.render(context.extensionUri, data)
-          } else if (value.command === FXGCommandType.openFXGBinaryPreviewWeb) {
-            FXGBinaryWebPanel.render(context.extensionUri, data)
+            FXGUIWebPanel.render(context.extensionUri) // TODO: add event
           }
         })
         context.subscriptions.push(disposable)

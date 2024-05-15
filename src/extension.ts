@@ -8,6 +8,7 @@ import AssetsGenerator from './assets_generator';
 import FileManager from './manager/file.manager';
 import WatcherManager from './manager/watcher.manager';
 import TreeViewManager from './manager/tree_view.manager';
+import WorkspaceManager from './manager/workspace.manager';
 
 let globalContext: vscode.ExtensionContext;
 function initializeExtension(context: vscode.ExtensionContext) {
@@ -33,7 +34,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// manager 初始化
 	const wsDir = workspaceDir()
-	CommandManager.getInstance().setup();
+	CommandManager.getInstance().setup()
+	WorkspaceManager.getInstance().setup(wsDir)
 	FileManager.getInstance().setup(wsDir)
 	WatcherManager.getInstance().setup(wsDir)
 	TreeViewManager.getInstance().setup(wsDir)

@@ -58,6 +58,15 @@ export class FileUtil {
     return fs.existsSync(p)
   }
 
+  public static async pathIsDir(filePath: string): Promise<boolean> {
+    try {
+      const stats = await fs.promises.stat(filePath)
+      return stats.isDirectory()
+    } catch (error) {
+      return false // 如果路径不存在或发生其他错误
+    }
+  }
+
   public static readFile(filePath: string): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       fs.readFile(filePath, 'utf-8', (err, data) => {
@@ -81,6 +90,11 @@ export class FileUtil {
     return null
   }
 
+  public static getFileName(filePath: string, extension: string | boolean = true): string {
+    const { name, ext } = path.parse(filePath)
+    const fileExtension = extension === true ? ext : extension ? `.${extension}` : ''
+    return `${name}${fileExtension}`
+  }
   public static getFileNameWithExtension(filePath: string, extension: string | boolean = true): string {
     const { name, ext } = path.parse(filePath)
     const fileExtension = extension === true ? ext : extension ? `.${extension}` : ''
@@ -112,5 +126,24 @@ export class FileUtil {
     ] // TODO: 这样做好像不太合理
     const fileExtension: string = FileUtil.getFileExtension(filePath).replaceAll('.', "")
     return textFileExtensions.includes(fileExtension)
+  }
+
+  static sortFiles(list: string[]): string[] {
+    return list.sort((a, b) => {
+
+      let aIsFolder = FileUtil.pathIsDir(a)
+      let bIsFolder = FileUtil.pathIsDir(b)
+
+      let aFileName = FileUtil.getFileNameWithExtension(a)
+      let bFileName = FileUtil.getFileNameWithExtension(b)
+
+      if (aIsFolder && !bIsFolder) {
+        return -1; // 文件夹排在前面
+      } else if (!aIsFolder && bIsFolder) {
+        return 1; // 文件排在后面
+      } else {
+        return aFileName.localeCompare(bFileName); // 相同类型按名称排序
+      }
+    });
   }
 }

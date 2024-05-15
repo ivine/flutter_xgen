@@ -4,12 +4,7 @@ import TreeViewUtil from './tree_view.util'
 export enum TreeNodeType {
   file,
   folder,
-}
-
-export enum IntlTreeNodeType {
-  project,
-  arbFile,
-  allJson,
+  preview,
 }
 
 export class TreeNode extends vscode.TreeItem {
@@ -78,7 +73,6 @@ export class IntlTreeNode extends TreeNode {
     public readonly command: vscode.Command | null = null,
 
     // 自定义
-    public readonly intlTreeNodeType: IntlTreeNodeType,
   ) {
     super(
       label,
@@ -90,13 +84,5 @@ export class IntlTreeNode extends TreeNode {
       nodeAbsolutePath,
       command
     )
-
-    if (intlTreeNodeType === IntlTreeNodeType.project) {
-      this.iconPath = new vscode.ThemeIcon('project')
-    } else if (intlTreeNodeType === IntlTreeNodeType.allJson) {
-      this.iconPath = new vscode.ThemeIcon('json')
-    } else if (intlTreeNodeType === IntlTreeNodeType.arbFile) {
-      this.iconPath = new vscode.ThemeIcon('file')
-    }
   }
 }
