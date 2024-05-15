@@ -33,11 +33,11 @@
   "main": "./dist/extension.js",
   "scripts": {
     "install_all": "yarn && cd webview_ui && yarn",
+    "dev": "tsc -watch -p ./",
     "dev_webview": "cd webview_ui && yarn dev",
-    "build_webview": "cd webview_ui && yarn build",
+    "build": "tsc -p ./ && source webview_ui.sh",
+    "build_webview": "source webview_ui.sh",
     "vscode_prepublish": "npm run compile",
-    "compile": "cd webview_ui && yarn build && cd .. && tsc -p ./",
-    "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts"
   },

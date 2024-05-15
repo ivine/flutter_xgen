@@ -2,11 +2,11 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "watch",
+			"label": "dev",
 			"type": "shell",
-			"command": "source ~/.zshrc && which node && yarn watch",
+			"command": "source ~/.zshrc && which node && yarn dev",
 			"problemMatcher": [
-				"$ts-webpack",
+				// "$ts-webpack",
 				"$tsc-watch"
 			],
 			"isBackground": true,
