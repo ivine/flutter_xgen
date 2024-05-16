@@ -12,7 +12,6 @@ export default class InteractionManager {
 
 // 事件
 export interface InteractionEvent {
-  token: string | undefined | null
   timestamp: number
   eventType: InteractionEventType
   projectInfo: InteractionProjectInfo
@@ -33,10 +32,10 @@ export enum InteractionEventType {
   sync_intl = 100002,
   sync_preview = 100003,
 
-
   // VSCode Extension --> Web
-  extToWeb_assets = 300100,
-  extToWeb_assets_previewItem = 300110,
+  extToWeb_preview = 300100,
+  extToWeb_preview_assets = 300101,
+  extToWeb_preview_localization = 300102,
 
   // Web --> VSCode Extension
 

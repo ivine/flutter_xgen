@@ -113,7 +113,7 @@ export default class CommandManager {
           if (value.command == FXGCommandType.openFile) {
             this.previewFile(data)
           } else if (value.command === FXGCommandType.openFXGUIWeb) {
-            FXGUIWebPanel.render(context.extensionUri) // TODO: add event
+            FXGUIWebPanel.render(context.extensionUri, data)
           }
         })
         context.subscriptions.push(disposable)
@@ -134,25 +134,6 @@ export default class CommandManager {
         console.log('command.manager.ts, registerCommand - this.pkgCommands, error: ', error)
       }
     }
-
-    // for (let commandName of Object.values(FXGCommand.FXGCommandNames)) {
-    // 	let disposable = vscode.commands.registerCommand(commandName, (data: any) => {
-    // 		if (commandName === FXGCommand.FXGCommandNames.AssetsGenerate) {
-    // 			assetsGenerate()
-    // 		} else if (commandName === FXGCommand.FXGCommandNames.AssetsStartWatch) {
-    // 			assetsWatch(context)
-    // 		} else if (commandName === FXGCommand.FXGCommandNames.AssetsStopWatch) {
-    // 			assetsStopWatch()
-    // 		} else if (commandName === FXGCommand.FXGCommandNames.PreviewFile) {
-    // 			vscode.workspace.openTextDocument(data).then((doc) => {
-    // 				vscode.window.showTextDocument(doc, { preview: true })
-    // 			})
-    // 		} else if (commandName === FXGCommand.FXGCommandNames.Previewl10nJson) {
-    // 			FXGWebPanel.render(context.extensionUri, data)
-    // 		}
-    // 	})
-    // 	context.subscriptions.push(disposable)
-    // }
   }
 
   private async previewFile(filePath: string) {
@@ -163,7 +144,7 @@ export default class CommandManager {
       })
     } else {
       let ext = FileUtil.getFileExtension(filePath)
-      console.log("dw test, ext: ", ext)
+      console.log("can not preview, ext: ", ext)
     }
   }
 }

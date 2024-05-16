@@ -1,10 +1,11 @@
 import * as vscode from 'vscode'
 
 import { FileUtil } from '../util/file.util'
-import { FXGCommandType } from '../manager/command.manager'
+import { FXGCommandType, getFXGCommandData } from '../manager/command.manager'
 
 import { IntlTreeNode, TreeNodeType } from './tree_node'
 import TreeViewUtil from './tree_view.util'
+import { InteractionEventType } from '../manager/interaction.manager'
 
 export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
   private _onDidChangeTreeData: vscode.EventEmitter<IntlTreeNode | undefined | null | void> = new vscode.EventEmitter<IntlTreeNode | undefined | null | void>()
@@ -211,7 +212,23 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
       projectName,
       [],
       "",
-      null,
+      Object.assign(
+        {},
+        getFXGCommandData(FXGCommandType.openFXGUIWeb),
+        {
+          arguments: [
+            {
+              timestamp: Date.now(),
+              eventType: InteractionEventType.extToWeb_preview_localization,
+              projectInfo: {
+                name: projectName,
+                dir: projectDir,
+              },
+              data: null
+            }
+          ]
+        }
+      ),
     )
 
     // assets node

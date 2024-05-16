@@ -83,7 +83,6 @@ export default class FXGProject {
         let fileTree = new FXGFileTree<AssetsFile>(fullPath, children)
         assetsFiles.push(fileTree)
       } else {
-        let fileName = FileUtil.getFileName(fullPath)
         let file = new AssetsFile(
           fullPath,
           true,
@@ -106,8 +105,6 @@ export default class FXGProject {
     let allFiles: string[] = await FileUtil.getDirAllFiles(dir)
     allFiles = FileUtil.sortFiles(allFiles)
     for (let tmpFilePath of allFiles) {
-      let fileName = FileUtil.getFileName(tmpFilePath)
-
       let children: AssetsFile[] = []
       let subIsDir = await FileUtil.pathIsDir(tmpFilePath)
       if (subIsDir) {

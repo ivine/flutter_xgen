@@ -39,6 +39,21 @@ export function activate(context: vscode.ExtensionContext) {
 	FileManager.getInstance().setup(wsDir)
 	WatcherManager.getInstance().setup(wsDir)
 	TreeViewManager.getInstance().setup(wsDir)
+
+	// debug webview
+	context.subscriptions.push(
+		vscode.debug.registerDebugConfigurationProvider('chrome', {
+			provideDebugConfigurations: (folder, token) => {
+				return [{
+					type: 'chrome',
+					request: 'attach',
+					name: 'Attach to Webview',
+					port: 9222,
+					webRoot: folder.uri.fsPath
+				}];
+			}
+		})
+	)
 }
 
 export function deactivate() {

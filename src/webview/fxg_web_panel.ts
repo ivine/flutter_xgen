@@ -5,6 +5,8 @@ import * as path from 'path'
 import { getUri, getNonce } from "../util/webview.util"
 import { WebViewType, WebViewTypeData, getWebViewTypeData } from "./const"
 import { InteractionEvent, InteractionEventType } from '../manager/interaction.manager'
+import WorkspaceManager from '../manager/workspace.manager'
+import { FileUtil } from '../util/file.util'
 
 export class FXGUIWebPanel {
   public static currentPanel: FXGUIWebPanel | undefined
@@ -22,12 +24,14 @@ export class FXGUIWebPanel {
     this._setWebviewMessageListener(this._panel.webview)
   }
 
-  public static render(extensionUri: vscode.Uri) {
+  public static async render(extensionUri: vscode.Uri, event: InteractionEvent) {
     // 获取配置的类型
-    let webViewTypeData: WebViewTypeData = getWebViewTypeData(WebViewType.fxg)
-    let viewType: string = webViewTypeData.viewType
-    let title: string = webViewTypeData.title
-    let viewColumn: vscode.ViewColumn = webViewTypeData.viewColumn
+    const webViewTypeData: WebViewTypeData = getWebViewTypeData(WebViewType.fxg)
+    const viewType: string = webViewTypeData.viewType
+    const title: string = webViewTypeData.title
+    const viewColumn: vscode.ViewColumn = webViewTypeData.viewColumn
+
+    let isWebNewCreate: boolean = false
 
     if (FXGUIWebPanel.currentPanel) {
       FXGUIWebPanel.currentPanel._panel.reveal(viewColumn)
@@ -54,41 +58,47 @@ export class FXGUIWebPanel {
         }
       )
       FXGUIWebPanel.currentPanel = new FXGUIWebPanel(panel, extensionUri)
+      isWebNewCreate = true
     }
+    FXGUIWebPanel.currentPanel.postMsg(event, isWebNewCreate)
+  }
 
-    let arbFileTreeJson = {}
-    let intlFileTreeJson = {}
-    let previewFileJson = {}
+  async postMsg(event: InteractionEvent, isWebNewCreate: boolean) {
+    let assets = {}
+    const arbs: any = {}
+    let preview = {}
+
+    // {
+    //   timestamp: Date.now(),
+    //   eventType: InteractionEventType.extToWeb_preview,
+    //   projectInfo: {
+    //     name: projectName,
+    //     dir: projectDir,
+    //   },
+    //   data: filePath
+    // }
 
     try {
-      // arbFileTreeJson = JSON
+      if (event.eventType === InteractionEventType.extToWeb_preview_localization) {
+        for (const file of WorkspaceManager.getInstance().mainProject.intlFiles) {
+          arbs[file.fileName] = file.json
+        }
+      }
     } catch (error) {
-
+      console.log('extToWeb_preview_localization, error: ', error)
     }
 
-    FXGUIWebPanel.currentPanel._panel.webview.postMessage(
-      {
-        type: InteractionEventType.sync,
-        content: {
-          arbFileTreeJson,
-          intlFileTreeJson,
-          previewFileJson,
-        },
-      }
-    )
-
-    // TODO: 优化一下
-    // let jsonMap = {}
-    // for (let tmpPath of arbFiles) {
-    //   const fileContent = fs.readFileSync(tmpPath, 'utf-8')
-    //   const fileName = path.basename(tmpPath)
-    //   jsonMap[fileName] = fileContent
-    // }
-    // if (jsonMap) {
-    //   setTimeout(() => {
-    //     FXGUIWebPanel.currentPanel._panel.webview.postMessage({ type: 'fileContent', content: jsonMap })
-    //   }, 500)
-    // }
+    const msg: any = {
+      event: event,
+      files: {
+        assets,
+        arbs,
+        preview,
+      },
+    }
+    setTimeout(() => {
+      FXGUIWebPanel.currentPanel._panel.webview.postMessage(msg)
+    }, isWebNewCreate ? 500 : 0);
   }
 
   public dispose() {

@@ -6,6 +6,7 @@ import { InteractionEvent, InteractionEventType, InteractionProjectInfo } from '
 
 import { TreeNodeType, AssetsTreeNode } from './tree_node'
 import TreeViewUtil from './tree_view.util'
+import { getExtensionContext } from '../extension'
 
 
 export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
@@ -17,32 +18,13 @@ export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
   public workspaceDirs: string[]
 
   public treeNodes: AssetsTreeNode[] = []
+
   constructor(id: string, rootPath: string, workspaceDirs: string[]) {
     this.id = id
     this.rootPath = rootPath
     this.workspaceDirs = workspaceDirs
 
     this.setup()
-  }
-
-  async setup() {
-    this.treeNodes = []
-
-    // 当前项目
-    let rootProjectItem: AssetsTreeNode = await this.assembleProjectTreeItem(this.rootPath)
-    this.treeNodes.push(rootProjectItem)
-
-    // 其他子项目
-    for (let proj of this.workspaceDirs) {
-      if (proj === this.rootPath) {
-        continue
-      }
-      let subProjectItems: AssetsTreeNode = await this.assembleProjectTreeItem(proj)
-      this.treeNodes.push(subProjectItems)
-    }
-
-    // refresh
-    this._onDidChangeTreeData.fire()
   }
 
   getTreeItem(element: AssetsTreeNode): vscode.TreeItem {
@@ -68,6 +50,27 @@ export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
 
   resolveTreeItem?(item: AssetsTreeNode, element: AssetsTreeNode, token: vscode.CancellationToken): vscode.ProviderResult<AssetsTreeNode> {
     return item
+  }
+
+  // MARK: - setup
+  async setup() {
+    this.treeNodes = []
+
+    // 当前项目
+    let rootProjectItem: AssetsTreeNode = await this.assembleProjectTreeItem(this.rootPath)
+    this.treeNodes.push(rootProjectItem)
+
+    // 其他子项目
+    for (let proj of this.workspaceDirs) {
+      if (proj === this.rootPath) {
+        continue
+      }
+      let subProjectItems: AssetsTreeNode = await this.assembleProjectTreeItem(proj)
+      this.treeNodes.push(subProjectItems)
+    }
+
+    // refresh
+    this._onDidChangeTreeData.fire()
   }
 
   // MARK: - assemble
@@ -153,7 +156,23 @@ export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
       projectName,
       [],
       "",
-      null,
+      Object.assign(
+        {},
+        getFXGCommandData(FXGCommandType.openFXGUIWeb),
+        {
+          arguments: [
+            {
+              timestamp: Date.now(),
+              eventType: InteractionEventType.extToWeb_preview_assets,
+              projectInfo: {
+                name: projectName,
+                dir: projectDir,
+              },
+              data: null
+            }
+          ]
+        }
+      ),
 
       true,
     )
@@ -264,22 +283,24 @@ export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
         arguments: [filePath]
       }
     } else {
-      let commandData: FXGCommandData = getFXGCommandData(FXGCommandType.openFXGUIWeb)
-      let projectInfo: InteractionProjectInfo = {
-        dir: projectDir,
-        name: projectName,
+      const event: InteractionEvent = {
+        timestamp: Date.now(),
+        eventType: InteractionEventType.extToWeb_preview_assets,
+        projectInfo: {
+          name: projectName,
+          dir: projectDir,
+        },
+        data: filePath
       }
-      // let interactionEvent: InteractionEvent = {
-      //   timestamp: new Date().getDate(),
-      //   eventType: InteractionEventType.extToWeb_assets_previewItem,
-      //   projectInfo: projectInfo,
-      //   data: filePath,
-      // }
-      resultCommand = {
-        title: commandData.title,
-        command: commandData.command,
-        arguments: [{}]
-      }
+      resultCommand = Object.assign(
+        {},
+        getFXGCommandData(FXGCommandType.openFXGUIWeb),
+        {
+          arguments: [
+            event,
+          ]
+        }
+      )
     }
     return Promise.resolve(resultCommand)
   }
