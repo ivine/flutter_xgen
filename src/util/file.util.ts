@@ -95,24 +95,10 @@ export class FileUtil {
     const fileExtension = extension === true ? ext : extension ? `.${extension}` : ''
     return `${name}${fileExtension}`
   }
-  public static getFileNameWithExtension(filePath: string, extension: string | boolean = true): string {
-    const { name, ext } = path.parse(filePath)
-    const fileExtension = extension === true ? ext : extension ? `.${extension}` : ''
-    return `${name}${fileExtension}`
-  }
 
   public static getFileExtension(filePath: string): string {
     const { ext } = path.parse(filePath)
     return ext
-  }
-
-  public static async checkIfPathIsDir(filePath: string): Promise<boolean> {
-    try {
-      const stats = await fs.promises.stat(filePath)
-      return stats.isDirectory()
-    } catch (error) {
-      return false // 如果路径不存在或发生其他错误
-    }
   }
 
   public static async isFileSuitableForTextDocument(filePath: string): Promise<boolean> {
@@ -134,8 +120,8 @@ export class FileUtil {
       let aIsFolder = FileUtil.pathIsDir(a)
       let bIsFolder = FileUtil.pathIsDir(b)
 
-      let aFileName = FileUtil.getFileNameWithExtension(a)
-      let bFileName = FileUtil.getFileNameWithExtension(b)
+      let aFileName = FileUtil.getFileName(a)
+      let bFileName = FileUtil.getFileName(b)
 
       if (aIsFolder && !bIsFolder) {
         return -1; // 文件夹排在前面

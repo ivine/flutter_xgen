@@ -189,12 +189,12 @@ export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
   ): Promise<AssetsTreeNode> {
     let rootNode: AssetsTreeNode | null = null
     try {
-      let itemName = FileUtil.getFileNameWithExtension(itemPath)
+      let itemName = FileUtil.getFileName(itemPath)
       let itemRelativePath: string = itemPath.replaceAll(`${projectDir}/`, "")
-      let isFolder: boolean = await FileUtil.checkIfPathIsDir(itemPath)
+      let isDir: boolean = await FileUtil.pathIsDir(itemPath)
       let validPath: boolean = true
       let subTreeNodes: AssetsTreeNode[] = []
-      if (isFolder) {
+      if (isDir) {
         // 1.检查目录是否有效
         validPath = true
         // TODO: 优化一下
@@ -222,16 +222,16 @@ export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
       }
 
       let command: vscode.Command | null = null
-      if (!isFolder) {
+      if (!isDir) {
         command = await this.getTreeNodeCommand(projectDir, projectName, itemPath)
       }
 
       subTreeNodes = TreeViewUtil.sortTreeNodeList<AssetsTreeNode>(subTreeNodes) // 排序
       rootNode = new AssetsTreeNode(
         itemName,
-        isFolder ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None,
+        isDir ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None,
 
-        isFolder ? TreeNodeType.folder : TreeNodeType.file,
+        isDir ? TreeNodeType.folder : TreeNodeType.file,
         projectDir,
         projectName,
         subTreeNodes,

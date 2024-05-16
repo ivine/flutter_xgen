@@ -8,7 +8,7 @@ export class FXGFile {
   }
 
   get fileName(): string {
-    return FileUtil.getFileNameWithExtension(this.path)
+    return FileUtil.getFileName(this.path)
   }
 }
 
@@ -25,6 +25,6 @@ export class FXGFileTree<T> {
   }
 
   get dirName(): string {
-    return FileUtil.getFileNameWithExtension(this.dir)
+    return FileUtil.getFileName(this.dir)
   }
 }

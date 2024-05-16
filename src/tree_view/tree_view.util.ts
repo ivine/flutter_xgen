@@ -11,8 +11,8 @@ export default class TreeViewUtil {
       let aIsFolder = a.nodeType === TreeNodeType.folder
       let bIsFolder = b.nodeType === TreeNodeType.folder
 
-      let aFileName = FileUtil.getFileNameWithExtension(a.nodeAbsolutePath)
-      let bFileName = FileUtil.getFileNameWithExtension(b.nodeAbsolutePath)
+      let aFileName = FileUtil.getFileName(a.nodeAbsolutePath)
+      let bFileName = FileUtil.getFileName(b.nodeAbsolutePath)
 
       if (aIsFolder && !bIsFolder) {
         return -1; // 文件夹排在前面
