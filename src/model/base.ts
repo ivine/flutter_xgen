@@ -2,29 +2,23 @@ import { FileUtil } from "../util/file.util"
 
 export class FXGFile {
   path: string
+  isDir: boolean = false
 
   constructor(path: string) {
     this.path = path
+    FileUtil.pathIsDir(path).then(res => {
+      this.isDir = res
+    })
   }
 
   get fileName(): string {
     return FileUtil.getFileName(this.path)
   }
-}
 
-export class FXGFileTree<T> {
-  dir: string // absolutePath
-  files: T[]
-
-  constructor(
-    dir: string,
-    files: T[],
-  ) {
-    this.dir = dir
-    this.files = files
-  }
-
-  get dirName(): string {
-    return FileUtil.getFileName(this.dir)
+  public toJSON(): any {
+    return {
+      "path": this.path,
+      "isDir": this.isDir,
+    }
   }
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { VSCodePanels, VSCodePanelTab, VSCodePanelView } from '@vscode/webview-ui-toolkit/react'
 
 import LocalizationPage from './localization/localization.page'
+import FlutterAssetsPage from './flutter_assets/flutter_assets.page'
 
 import TestData from './test/test_data.json';
 
@@ -9,6 +10,7 @@ import "./App.css"
 
 function App() {
   const [localizationJSON, setLocalizationJSON] = useState<any>(null)
+  const [assetsJSON, setAssetsJSON] = useState<any>(null)
 
   useEffect(() => {
     window.addEventListener('message', event => {
@@ -35,9 +37,12 @@ function App() {
   const onReceiveMsg = async (data: any) => {
     const event = data.event
     const files = data.files
-    const arbs = files.arbs
     if (event.eventType === 300102 && localizationJSON === null) {
+      const arbs = files.arbs
       setLocalizationJSON(arbs)
+    } else if (event.eventType === 300101) {
+      const assets = files.assets
+      setAssetsJSON(assets)
     }
   }
 
@@ -45,18 +50,18 @@ function App() {
     <main>
       <h1>FXG UI</h1>
       <VSCodePanels>
-        <VSCodePanelTab id="view-Localization">
+        {/* <VSCodePanelTab id="view-Localization">
           Localization
-        </VSCodePanelTab>
+        </VSCodePanelTab> */}
         <VSCodePanelTab id="view-Assets">
           Assets
         </VSCodePanelTab>
 
-        <VSCodePanelView id="view-Localization">
-          <LocalizationPage localizationJSON={localizationJSON} />
-        </VSCodePanelView>
+        {/* <VSCodePanelView id="view-Localization">
+          <LocalizationPage dataJSON={localizationJSON} />
+        </VSCodePanelView> */}
         <VSCodePanelView id="view-Assets">
-          <h2> Hello Assets </h2>
+          <FlutterAssetsPage dataJSON={assetsJSON} />
         </VSCodePanelView>
       </VSCodePanels>
     </main>

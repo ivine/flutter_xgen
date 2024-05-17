@@ -54,7 +54,12 @@ export class FileUtil {
 
   // 检查给定路径的文件或目录是否存在。
   public static pathExists(p: string): boolean {
-    return fs.existsSync(p)
+    try {
+      fs.accessSync(p)
+    } catch (err) {
+      return false
+    }
+    return true
   }
 
   public static async pathIsDir(filePath: string): Promise<boolean> {
@@ -100,7 +105,7 @@ export class FileUtil {
     return ext
   }
 
-  public static async isFileSuitableForTextDocument(filePath: string): Promise<boolean> {
+  public static isFileSuitableForTextDocument(filePath: string): boolean {
     const textFileExtensions: string[] = [
       "txt", "md", "html", "css", "scss", "less", "js", "jsx", "ts", "tsx",
       "json", "xml", "yaml", "yml", "csv", "log", "ini", "cfg", "conf",
@@ -108,7 +113,7 @@ export class FileUtil {
       "cs", "go", "php", "pl", "perl", "lua", "sql", "swift", "coffee", "dart",
       "r", "rs", "hs", "elm", "f", "fs", "fsharp", "fsx", "clj", "cljs", "cljc",
       "arb"
-    ] // TODO: 这样做好像不太合理
+    ]
     const fileExtension: string = FileUtil.getFileExtension(filePath).replaceAll('.', "")
     return textFileExtensions.includes(fileExtension)
   }

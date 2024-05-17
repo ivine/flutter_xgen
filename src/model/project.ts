@@ -1,8 +1,11 @@
-import { AssetsFile } from '../model/assets'
-import { FXGFileTree } from '../model/base'
+import * as vscode from 'vscode'
+
 import { IntlArbFile } from '../model/intl'
 import { PreviewItem } from '../model/preview'
+import { AssetsTreeNode, TreeNodeType } from '../tree_view/tree_node';
 import { FileUtil } from '../util/file.util'
+import TreeViewUtil from '../tree_view/tree_view.util';
+import { InteractionEventType } from '../manager/interaction.manager';
 
 const yaml = require('js-yaml');
 
@@ -16,7 +19,8 @@ export default class FXGProject {
   loading: boolean = false
   pubspecData: any = null
 
-  assetsFiles: (FXGFileTree<AssetsFile> | AssetsFile)[] = []
+  assetNodes: AssetsTreeNode[] = []
+  assetOneDimensionalPreviewNodes: AssetsTreeNode[] = []
   intlFiles: IntlArbFile[] = []
 
   previewItem: PreviewItem | null = null
@@ -35,7 +39,8 @@ export default class FXGProject {
   }
 
   public dispose() {
-    this.assetsFiles = []
+    this.assetNodes = []
+    this.assetOneDimensionalPreviewNodes = []
     this.intlFiles = []
 
     this.previewItem = null
@@ -73,52 +78,89 @@ export default class FXGProject {
       return;
     }
 
-    let assetsFiles: (FXGFileTree<AssetsFile> | AssetsFile)[] = []
+    let nodes: AssetsTreeNode[] = []
 
     for (let p of pathsSettings) {
       let fullPath = this.dir + "/" + p
       let isDir = await FileUtil.pathIsDir(fullPath)
+      let subNodes: AssetsTreeNode[] = []
+      let command: vscode.Command | null = null
       if (isDir) {
-        let children = await this.assembleAssetsFiles(fullPath)
-        let fileTree = new FXGFileTree<AssetsFile>(fullPath, children)
-        assetsFiles.push(fileTree)
+        subNodes = await this.assembleAssetsFiles(fullPath)
       } else {
-        let file = new AssetsFile(
-          fullPath,
-          true,
-          [],
-        )
-        assetsFiles.push(file)
+        command = await TreeViewUtil.getTreeNodeCommand(this.dir, this.projectName, fullPath, InteractionEventType.extToWeb_preview_assets)
       }
+      let node = new AssetsTreeNode(
+        FileUtil.getFileName(fullPath),
+        isDir ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None,
+
+        isDir ? TreeNodeType.folder : TreeNodeType.file,
+        this.dir,
+        this.projectName,
+        subNodes,
+        fullPath,
+        command,
+
+        true,
+      )
+      nodes.push(node)
     }
-    this.assetsFiles = assetsFiles
+    this.assetNodes = nodes
+    this.assetOneDimensionalPreviewNodes = this.getOneDimensionalPreviewNodes(nodes)
 
     // FlutterAssetsGenerator generate ruler: https://github.com/cr1992/FlutterAssetsGenerator
 
     // FlutterGen generate ruler: https://github.com/FlutterGen/flutter_gen
   }
 
-  private async assembleAssetsFiles(dir: string): Promise<AssetsFile[]> {
-    let files: AssetsFile[] = []
+  private async assembleAssetsFiles(dir: string): Promise<AssetsTreeNode[]> {
+    let nodes: AssetsTreeNode[] = []
     let isValid = true
 
     let allFiles: string[] = await FileUtil.getDirAllFiles(dir)
     allFiles = FileUtil.sortFiles(allFiles)
-    for (let tmpFilePath of allFiles) {
-      let children: AssetsFile[] = []
-      let subIsDir = await FileUtil.pathIsDir(tmpFilePath)
-      if (subIsDir) {
-        children = await this.assembleAssetsFiles(tmpFilePath)
+    for (let fullPath of allFiles) {
+      let subNodes: AssetsTreeNode[] = []
+      let command: vscode.Command | null = null
+      let isDir = await FileUtil.pathIsDir(fullPath)
+      if (isDir) {
+        subNodes = await this.assembleAssetsFiles(fullPath)
+      } else {
+        command = await TreeViewUtil.getTreeNodeCommand(this.dir, this.projectName, fullPath, InteractionEventType.extToWeb_preview_assets)
       }
+      let node = new AssetsTreeNode(
+        FileUtil.getFileName(fullPath),
+        isDir ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None,
 
-      let file: AssetsFile = new AssetsFile(
-        tmpFilePath,
-        isValid,
-        children,
+        isDir ? TreeNodeType.folder : TreeNodeType.file,
+        this.dir,
+        this.projectName,
+        subNodes,
+        fullPath,
+        command,
+
+        true,
       )
-      files.push(file)
+      nodes.push(node)
     }
-    return Promise.resolve(files)
+    return Promise.resolve(nodes)
+  }
+
+  private getOneDimensionalPreviewNodes(nodes: AssetsTreeNode[]): AssetsTreeNode[] {
+    let res: AssetsTreeNode[] = []
+    for (let item of nodes) {
+      if (item.nodeType === TreeNodeType.file) {
+        const path = item.nodeAbsolutePath
+        const vscodePreview = FileUtil.isFileSuitableForTextDocument(path)
+        if (vscodePreview) {
+          continue
+        }
+        res.push(item)
+      } else if (item.nodeType === TreeNodeType.folder) {
+        res = [...res, ...this.getOneDimensionalPreviewNodes(item.subTreeNodes)]
+      }
+    }
+    return res
   }
 
   private async getCurrentIntlFileTree() {
@@ -143,5 +185,25 @@ export default class FXGProject {
       tmpFiles.push(tmpFile)
     }
     this.intlFiles = tmpFiles
+  }
+
+  public getPreviewItem(selectedItem: string | null, previous: boolean, next: boolean): PreviewItem {
+    let path = selectedItem
+    if (!(typeof path === 'string' && path.length > 0)) {
+      path = this.assetOneDimensionalPreviewNodes[0].nodeAbsolutePath
+    }
+
+    if (previous) {
+      let index = this.assetOneDimensionalPreviewNodes.findIndex(e => e.nodeAbsolutePath === path)
+      index = Math.min(Math.max(0, index - 1), this.assetOneDimensionalPreviewNodes.length - 1)
+      path = this.assetOneDimensionalPreviewNodes[index].nodeAbsolutePath
+    } else if (next) {
+      let index = this.assetOneDimensionalPreviewNodes.findIndex(e => e.nodeAbsolutePath === path)
+      index = Math.min(Math.max(0, index + 1), this.assetOneDimensionalPreviewNodes.length - 1)
+      path = this.assetOneDimensionalPreviewNodes[index].nodeAbsolutePath
+    }
+
+    let result: PreviewItem = new PreviewItem(path)
+    return result
   }
 }

@@ -7,6 +7,8 @@ import { WebViewType, WebViewTypeData, getWebViewTypeData } from "./const"
 import { InteractionEvent, InteractionEventType } from '../manager/interaction.manager'
 import WorkspaceManager from '../manager/workspace.manager'
 import { FileUtil } from '../util/file.util'
+import StoreManager from '../manager/store.manager'
+import { getExtensionContext } from '../extension'
 
 export class FXGUIWebPanel {
   public static currentPanel: FXGUIWebPanel | undefined
@@ -36,16 +38,17 @@ export class FXGUIWebPanel {
     if (FXGUIWebPanel.currentPanel) {
       FXGUIWebPanel.currentPanel._panel.reveal(viewColumn)
     } else {
+      let localResRoots = [vscode.Uri.joinPath(extensionUri, "dist"), vscode.Uri.joinPath(extensionUri, "webview_ui")]
       var workspaceFolderUri: vscode.Uri | null = null
       const workspaceFolders = vscode.workspace.workspaceFolders
       if (workspaceFolders && workspaceFolders.length > 0) {
         const workspaceFolder = workspaceFolders[0]
         workspaceFolderUri = vscode.Uri.file(workspaceFolder.uri.fsPath)
       }
-      var localResRoots = [vscode.Uri.joinPath(extensionUri, "dist"), vscode.Uri.joinPath(extensionUri, "webview_ui")]
       if (workspaceFolderUri) {
         localResRoots.push(workspaceFolderUri)
       }
+      localResRoots.push(vscode.Uri.file(WorkspaceManager.getInstance().mainProject.dir))
 
       const panel = vscode.window.createWebviewPanel(
         viewType,
@@ -64,9 +67,8 @@ export class FXGUIWebPanel {
   }
 
   async postMsg(event: InteractionEvent, isWebNewCreate: boolean) {
-    let assets = {}
+    const assets = {}
     const arbs: any = {}
-    let preview = {}
 
     // {
     //   timestamp: Date.now(),
@@ -79,8 +81,15 @@ export class FXGUIWebPanel {
     // }
 
     try {
-      if (event.eventType === InteractionEventType.extToWeb_preview_localization) {
+      if (event.eventType === InteractionEventType.extToWeb_preview_assets) {
+        assets["watcherEnable"] = StoreManager.getInstance().getWatcherEnable(WorkspaceManager.getInstance().mainProject.dir);
+        const item = WorkspaceManager.getInstance().mainProject.getPreviewItem(event.data, false, false)
+        assets["item"] = Object.assign({}, item.toJSON(), {
+          path: this._panel.webview.asWebviewUri(vscode.Uri.file(item.path))
+        })
+      } else if (event.eventType === InteractionEventType.extToWeb_preview_localization) {
         for (const file of WorkspaceManager.getInstance().mainProject.intlFiles) {
+          arbs["watcherEnable"] = StoreManager.getInstance().getWatcherEnable(WorkspaceManager.getInstance().mainProject.dir);
           arbs[file.fileName] = file.json
         }
       }
@@ -93,7 +102,6 @@ export class FXGUIWebPanel {
       files: {
         assets,
         arbs,
-        preview,
       },
     }
     setTimeout(() => {
@@ -126,7 +134,7 @@ export class FXGUIWebPanel {
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
           <meta http-equiv="Content-Security-Policy" content="default-src 'none' img-src ${webview.cspSource} https: script-src ${webview.cspSource} style-src ${webview.cspSource} 'nonce-${nonce}'">
           <link rel="stylesheet" type="text/css" href="${stylesUri}">
-          <title>FXG UI</title>
+          <title>Flutter XGen</title>
         </head>
         <body>
           <div id="root"></div>

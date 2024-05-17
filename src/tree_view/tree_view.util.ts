@@ -3,6 +3,8 @@ import * as path from 'path';
 
 import { FileUtil } from "../util/file.util";
 import { TreeNode, TreeNodeType } from "./tree_node"
+import { FXGCommandData, FXGCommandType, getFXGCommandData } from '../manager/command.manager';
+import { InteractionEvent, InteractionEventType } from '../manager/interaction.manager';
 
 export default class TreeViewUtil {
 
@@ -27,5 +29,43 @@ export default class TreeViewUtil {
   static getIconPathForFilePath(filePath: string): string {
     let ext: string = FileUtil.getFileExtension(filePath)
     return "";
+  }
+
+  static async getTreeNodeCommand(
+    projectDir: string,
+    projectName: string,
+    filePath: string,
+    eventType: InteractionEventType,
+  ): Promise<vscode.Command> {
+    let resultCommand: vscode.Command | null = null
+    let canTextDocPreview = await FileUtil.isFileSuitableForTextDocument(filePath)
+    if (canTextDocPreview) {
+      let commandData: FXGCommandData = getFXGCommandData(FXGCommandType.openFile)
+      resultCommand = {
+        title: commandData.title,
+        command: commandData.command,
+        arguments: [filePath]
+      }
+    } else {
+      const event: InteractionEvent = {
+        timestamp: Date.now(),
+        eventType: eventType,
+        projectInfo: {
+          name: projectName,
+          dir: projectDir,
+        },
+        data: filePath
+      }
+      resultCommand = Object.assign(
+        {},
+        getFXGCommandData(FXGCommandType.openFXGUIWeb),
+        {
+          arguments: [
+            event,
+          ]
+        }
+      )
+    }
+    return Promise.resolve(resultCommand)
   }
 }

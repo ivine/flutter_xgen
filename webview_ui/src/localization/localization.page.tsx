@@ -7,13 +7,13 @@ import {
 } from "@vscode/webview-ui-toolkit/react"
 
 interface LocalizationPageInterface {
-  localizationJSON: any // {intl_en.arb: {account: "abc", ...}, ...}
+  dataJSON: any // {watcherEnable: false, intl_en.arb: {account: "abc", ...}, ...}
 }
 
 function LocalizationPage(props: LocalizationPageInterface) {
 
   const renderVSCodeGrid = () => {
-    const tmpLocalizationJSON = props.localizationJSON
+    const tmpLocalizationJSON = props.dataJSON
     if (typeof tmpLocalizationJSON !== 'object') {
       return <div>无效数据</div>
     } else if (tmpLocalizationJSON === null) {

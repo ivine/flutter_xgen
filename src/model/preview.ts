@@ -1,17 +1,18 @@
-import { FXGFile } from "./base"
+import { FileUtil } from "../util/file.util"
 
-export class PreviewItem extends FXGFile {
-  previousItem?: PreviewItem | null
-  nextItem?: PreviewItem | null
+export class PreviewItem {
+  path: string
 
   constructor(
     path: string,
-    previousItem: PreviewItem | null,
-    nextItem?: PreviewItem | null,
   ) {
-    super(path)
+    this.path = path
+  }
 
-    this.previousItem = previousItem
-    this.nextItem = nextItem
+  public toJSON(): any {
+    return {
+      path: this.path,
+      fileExt: FileUtil.getFileExtension(this.path)
+    }
   }
 }
