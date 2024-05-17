@@ -50,7 +50,7 @@ function FlutterAssetsPage(props: FlutterAssetsPageInterface) {
         </>
       )
     } else if (imgExts.includes(fileExt)) {
-      return <img src={src} style={{ maxWidth: '100%', maxHeight: '100%' }} />
+      return <img src={src} style={{ backgroundColor: 'transparent', maxWidth: '100%', maxHeight: '100%' }} />
     }
     return (
       <>
@@ -61,7 +61,7 @@ function FlutterAssetsPage(props: FlutterAssetsPageInterface) {
   }
 
   return (
-    <div>
+    <div style={{ display: 'flex', width: '100vw', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>
       {renderBody()}
     </div>
   )

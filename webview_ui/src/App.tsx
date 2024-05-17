@@ -48,7 +48,7 @@ function App() {
 
   return (
     <main>
-      <h1>FXG UI</h1>
+      <h1>Flutter XGen</h1>
       <VSCodePanels>
         {/* <VSCodePanelTab id="view-Localization">
           Localization
