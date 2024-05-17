@@ -1,21 +1,22 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
+import * as vscode from 'vscode'
 
-import CommandManager from './manager/command.manager';
-import AssetsGenerator from './assets_generator';
+import CommandManager from './manager/command.manager'
+import AssetsGenerator from './assets_generator'
 
-import FileManager from './manager/file.manager';
-import WatcherManager from './manager/watcher.manager';
-import TreeViewManager from './manager/tree_view.manager';
-import WorkspaceManager from './manager/workspace.manager';
+import FileManager from './manager/file.manager'
+import WatcherManager from './manager/watcher.manager'
+import TreeViewManager from './manager/tree_view.manager'
+import WorkspaceManager from './manager/workspace.manager'
+import StoreManager from './manager/store.manager'
 
-let globalContext: vscode.ExtensionContext;
+let globalContext: vscode.ExtensionContext
 function initializeExtension(context: vscode.ExtensionContext) {
-	globalContext = context;
+	globalContext = context
 }
 export function getExtensionContext(): vscode.ExtensionContext | null {
-	return globalContext;
+	return globalContext
 }
 
 function workspaceDir(): string | null {
@@ -39,6 +40,7 @@ export function activate(context: vscode.ExtensionContext) {
 	FileManager.getInstance().setup(wsDir)
 	WatcherManager.getInstance().setup(wsDir)
 	TreeViewManager.getInstance().setup(wsDir)
+	StoreManager.getInstance().setup(wsDir)
 
 	// debug webview
 	context.subscriptions.push(
@@ -50,7 +52,7 @@ export function activate(context: vscode.ExtensionContext) {
 					name: 'Attach to Webview',
 					port: 9222,
 					webRoot: folder.uri.fsPath
-				}];
+				}]
 			}
 		})
 	)
@@ -70,57 +72,57 @@ export function deactivate() {
 
 
 // TODO: auto_detection
-let assetsWatcher: vscode.FileSystemWatcher | null = null;
+let assetsWatcher: vscode.FileSystemWatcher | null = null
 
-// const assetsSideBar = new AssetsSideBar('FXG-Assets', workspaceDir() ?? "");
+// const assetsSideBar = new AssetsSideBar('FXG-Assets', workspaceDir() ?? "")
 // vscode.window.registerTreeDataProvider(
 // 	assetsSideBar.id,
 // 	assetsSideBar
-// );
+// )
 
-// const l10nSideBar = new L10nSideBar('FXG-Intl', workspaceDir() ?? "");
+// const l10nSideBar = new L10nSideBar('FXG-Intl', workspaceDir() ?? "")
 // vscode.window.registerTreeDataProvider(
 // 	l10nSideBar.id,
 // 	l10nSideBar
-// );
+// )
 
 
 async function assetsGenerate() {
 	try {
-		await new AssetsGenerator()?.generate();
-		vscode.window.showInformationMessage(`Flutter XGen: Assets.dart 生成成功`);
+		await new AssetsGenerator()?.generate()
+		vscode.window.showInformationMessage(`Flutter XGen: Assets.dart 生成成功`)
 	} catch (error) {
-		console.error(error);
-		vscode.window.showErrorMessage(`${error}`);
+		console.error(error)
+		vscode.window.showErrorMessage(`${error}`)
 	}
 }
 
 async function assetsWatch(context: vscode.ExtensionContext) {
-	assetsStopWatch();
+	assetsStopWatch()
 
-	assetsWatcher = vscode.workspace.createFileSystemWatcher('**/assets/**/*');
+	assetsWatcher = vscode.workspace.createFileSystemWatcher('**/assets/**/*')
 
 	const changeDisposable = assetsWatcher.onDidChange((uri) => {
-		assetsGenerate();
-	});
+		assetsGenerate()
+	})
 
 	const createDisposable = assetsWatcher.onDidCreate((uri) => {
-		assetsGenerate();
-	});
+		assetsGenerate()
+	})
 
 	const deleteDisposable = assetsWatcher.onDidDelete((uri) => {
-		assetsGenerate();
-	});
+		assetsGenerate()
+	})
 
-	context.subscriptions.push(assetsWatcher);
+	context.subscriptions.push(assetsWatcher)
 
-	vscode.window.setStatusBarMessage('Flutter XGen: Assets 文件夹监听已开启', 3000);
+	vscode.window.setStatusBarMessage('Flutter XGen: Assets 文件夹监听已开启', 3000)
 }
 
 async function assetsStopWatch() {
 	if (!assetsWatcher) {
-		return;
+		return
 	}
-	assetsWatcher.dispose();
-	vscode.window.setStatusBarMessage('Flutter XGen: Assets 文件夹监听已关闭', 3000);
+	assetsWatcher.dispose()
+	vscode.window.setStatusBarMessage('Flutter XGen: Assets 文件夹监听已关闭', 3000)
 }
