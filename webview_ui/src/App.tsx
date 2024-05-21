@@ -23,11 +23,14 @@ function App() {
         document.body.style.color = "#ffffff"
         document.body.style.backgroundColor = "#24262f"
         try {
-          const localizationStr = TestData["localization"]
-          const localizationJSON = JSON.parse(localizationStr)
-          setLocalizationJSON(localizationJSON.files.arbs)
+          // const localizationStr = TestData["localization"]
+          // const localizationJSON = JSON.parse(localizationStr)
+          // setLocalizationJSON(localizationJSON.files.arbs)
+          const jsonStr = TestData["assets"]
+          const json = JSON.parse(jsonStr)
+          setAssetsJSON(json)
         } catch (error) {
-          //
+          console.log("debug, parse JSON error: ", error)
         }
       }, 1000)
     } else {
@@ -49,21 +52,7 @@ function App() {
   return (
     <main>
       <h1>Flutter XGen</h1>
-      <VSCodePanels>
-        {/* <VSCodePanelTab id="view-Localization">
-          Localization
-        </VSCodePanelTab> */}
-        <VSCodePanelTab id="view-Assets">
-          Assets
-        </VSCodePanelTab>
-
-        {/* <VSCodePanelView id="view-Localization">
-          <LocalizationPage dataJSON={localizationJSON} />
-        </VSCodePanelView> */}
-        <VSCodePanelView id="view-Assets">
-          <FlutterAssetsPage dataJSON={assetsJSON} />
-        </VSCodePanelView>
-      </VSCodePanels>
+      <FlutterAssetsPage dataJSON={assetsJSON} />
     </main>
   )
 }

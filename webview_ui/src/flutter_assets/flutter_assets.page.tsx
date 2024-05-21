@@ -5,6 +5,12 @@ import {
   VSCodeDataGridRow,
   VSCodeDataGridCell,
 } from "@vscode/webview-ui-toolkit/react"
+import { useEffect, useRef } from "react";
+
+import { default as _ReactPlayer } from 'react-player';
+import { ReactPlayerProps } from "react-player/types/lib";
+import ImageView from "./image.view";
+const ReactPlayer = _ReactPlayer as unknown as React.FC<ReactPlayerProps>;
 
 interface FlutterAssetItemJSON {
   fileExt: string
@@ -22,6 +28,21 @@ interface FlutterAssetsPageInterface {
 
 function FlutterAssetsPage(props: FlutterAssetsPageInterface) {
 
+  function isMediaFile(url: string, fileExt: string): boolean {
+    const mediaExtensions = [
+      '.mp3', '.wav', '.flac', '.aac', '.ogg', '.m4a', '.wma', // 音频格式
+      '.mp4', '.mkv', '.avi', '.mov', '.wmv', '.flv', '.webm'  // 视频格式
+    ];
+    return mediaExtensions.includes(fileExt);
+  }
+
+  function isImageFile(url: string, fileExt: string): boolean {
+    const imageExtensions = [
+      '.jpg', '.jpeg', '.png', '.bmp', '.webp', '.svg', '.tiff', '.ico'
+    ];
+    return imageExtensions.includes(fileExt);
+  }
+
   const renderBody = () => {
     const tmpDataJSON = props.dataJSON
     if (typeof tmpDataJSON !== 'object') {
@@ -31,7 +52,6 @@ function FlutterAssetsPage(props: FlutterAssetsPageInterface) {
     }
 
     const fileExt = props.dataJSON.item.fileExt.toLowerCase()
-    const imgExts = ['.png', ".jpg", ".jpeg", ".webp", ".svg"]
     const srcData = props.dataJSON.item.path
     const src = `${srcData.scheme}://${srcData.authority}${srcData.path}` // 不在 VSCode 的项目内，需要这样拼接的
 
@@ -49,8 +69,40 @@ function FlutterAssetsPage(props: FlutterAssetsPageInterface) {
           <div>加载gif</div>
         </>
       )
-    } else if (imgExts.includes(fileExt)) {
-      return <img src={src} style={{ backgroundColor: 'transparent', maxWidth: '100%', maxHeight: '100%' }} />
+    } else if (isImageFile(src, fileExt)) {
+      return (
+        // <div>
+        //   {/* <div
+        //     id={'previewImage'}
+        //     style={{ backgroundColor: 'transparent', maxWidth: '100%', minHeight: '100%' }}
+        //   /> */}
+        //   {/* <img
+        //     id={'previewImage'}
+        //     src={src}
+        //     style={{ backgroundColor: 'transparent', maxWidth: '100%', minHeight: '100%' }}
+        //     data-high-res-src="hi-res-image.png"
+        //   /> */}
+
+        //   {/* <Zmage src={src} preset={"desktop"} /> */}
+        // </div>
+        // <img
+        //   id={'previewImage'}
+        //   src={src}
+        //   style={{ backgroundColor: 'transparent', maxWidth: '100%', minHeight: '100%' }}
+        //   data-high-res-src="null"
+        // />
+        // <div
+        //   id={'previewImage'}
+        //   style={{ backgroundColor: 'transparent', width: '100vw', height: '100vh' }}
+        // />
+        <ImageView uri={src} />
+      )
+    } else if (isMediaFile(src, fileExt)) {
+      return (
+        <div>
+          <ReactPlayer url={src} />
+        </div>
+      )
     }
     return (
       <>
@@ -61,7 +113,14 @@ function FlutterAssetsPage(props: FlutterAssetsPageInterface) {
   }
 
   return (
-    <div style={{ display: 'flex', width: '100vw', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>
+    <div
+      style={{
+        display: 'flex',
+        width: '100vw',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+    >
       {renderBody()}
     </div>
   )
