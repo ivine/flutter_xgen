@@ -124,6 +124,11 @@ export class FXGUIWebPanel {
     const stylesUri = getUri(webview, extensionUri, ["dist", "webview_ui", "assets", "index.css"])
     const scriptUri = getUri(webview, extensionUri, ["dist", "webview_ui", "assets", "index.js"])
 
+    const scriptUri_jquery = getUri(webview, extensionUri, ["dist", "webview_ui", "image", "jquery.min.js"])
+
+    const stylesUri_image = getUri(webview, extensionUri, ["dist", "webview_ui", "image", "zoom.css"])
+    const scriptUri_image = getUri(webview, extensionUri, ["dist", "webview_ui", "image", "vanilla-js-wheel-zoom.min.js"])
+
     const nonce = getNonce()
 
     return /*html*/ `
@@ -138,6 +143,7 @@ export class FXGUIWebPanel {
         </head>
         <body>
           <div id="root"></div>
+          <script type="module" nonce="${nonce}" src="${scriptUri_image}"></script>
           <script type="module" nonce="${nonce}" src="${scriptUri}"></script>
         </body>
       </html>
