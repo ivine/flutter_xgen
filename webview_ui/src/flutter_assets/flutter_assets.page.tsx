@@ -38,7 +38,7 @@ function FlutterAssetsPage(props: FlutterAssetsPageInterface) {
 
   function isImageFile(url: string, fileExt: string): boolean {
     const imageExtensions = [
-      '.jpg', '.jpeg', '.png', '.bmp', '.webp', '.svg', '.tiff', '.ico'
+      '.jpg', '.jpeg', '.png', '.bmp', '.webp', '.svg', '.tiff', '.ico', '.gif'
     ];
     return imageExtensions.includes(fileExt);
   }
@@ -60,13 +60,6 @@ function FlutterAssetsPage(props: FlutterAssetsPageInterface) {
         <>
           <div>{`src: ${src}`}</div>
           <div>加载svga</div>
-        </>
-      )
-    } else if (fileExt === '.gif') {
-      return (
-        <>
-          <div>{`src: ${src}`}</div>
-          <div>加载gif</div>
         </>
       )
     } else if (isImageFile(src, fileExt)) {
