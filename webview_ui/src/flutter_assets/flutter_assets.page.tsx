@@ -1,18 +1,6 @@
-import {
-  VSCodeButton,
-  VSCodeCheckbox,
-  VSCodeDataGrid,
-  VSCodeDataGridRow,
-  VSCodeDataGridCell,
-} from "@vscode/webview-ui-toolkit/react"
-import { useEffect, useRef } from "react";
-
-import { default as _ReactPlayer } from 'react-player';
-import { ReactPlayerProps } from "react-player/types/lib";
-const ReactPlayer = _ReactPlayer as unknown as React.FC<ReactPlayerProps>;
-
-import ImageView from "./image.view";
-import SVGAView from "./svga.view";
+import ImageView from "./image.view"
+import MediaView from "./media.view"
+import SVGAView from "./svga.view"
 
 interface FlutterAssetItemJSON {
   fileExt: string
@@ -34,15 +22,15 @@ function FlutterAssetsPage(props: FlutterAssetsPageInterface) {
     const mediaExtensions = [
       '.mp3', '.wav', '.flac', '.aac', '.ogg', '.m4a', '.wma', // 音频格式
       '.mp4', '.mkv', '.avi', '.mov', '.wmv', '.flv', '.webm'  // 视频格式
-    ];
-    return mediaExtensions.includes(fileExt);
+    ]
+    return mediaExtensions.includes(fileExt)
   }
 
   function isImageFile(url: string, fileExt: string): boolean {
     const imageExtensions = [
       '.jpg', '.jpeg', '.png', '.bmp', '.webp', '.svg', '.tiff', '.ico', '.gif'
-    ];
-    return imageExtensions.includes(fileExt);
+    ]
+    return imageExtensions.includes(fileExt)
   }
 
   const renderBody = () => {
@@ -67,9 +55,7 @@ function FlutterAssetsPage(props: FlutterAssetsPageInterface) {
       )
     } else if (isMediaFile(src, fileExt)) {
       return (
-        <div>
-          <ReactPlayer url={src} />
-        </div>
+        <MediaView uri={src} />
       )
     }
     return (
