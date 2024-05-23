@@ -9,8 +9,10 @@ import { useEffect, useRef } from "react";
 
 import { default as _ReactPlayer } from 'react-player';
 import { ReactPlayerProps } from "react-player/types/lib";
-import ImageView from "./image.view";
 const ReactPlayer = _ReactPlayer as unknown as React.FC<ReactPlayerProps>;
+
+import ImageView from "./image.view";
+import SVGAView from "./svga.view";
 
 interface FlutterAssetItemJSON {
   fileExt: string
@@ -57,37 +59,10 @@ function FlutterAssetsPage(props: FlutterAssetsPageInterface) {
 
     if (fileExt === '.svga') {
       return (
-        <>
-          <div>{`src: ${src}`}</div>
-          <div>加载svga</div>
-        </>
+        <SVGAView uri={src} />
       )
     } else if (isImageFile(src, fileExt)) {
       return (
-        // <div>
-        //   {/* <div
-        //     id={'previewImage'}
-        //     style={{ backgroundColor: 'transparent', maxWidth: '100%', minHeight: '100%' }}
-        //   /> */}
-        //   {/* <img
-        //     id={'previewImage'}
-        //     src={src}
-        //     style={{ backgroundColor: 'transparent', maxWidth: '100%', minHeight: '100%' }}
-        //     data-high-res-src="hi-res-image.png"
-        //   /> */}
-
-        //   {/* <Zmage src={src} preset={"desktop"} /> */}
-        // </div>
-        // <img
-        //   id={'previewImage'}
-        //   src={src}
-        //   style={{ backgroundColor: 'transparent', maxWidth: '100%', minHeight: '100%' }}
-        //   data-high-res-src="null"
-        // />
-        // <div
-        //   id={'previewImage'}
-        //   style={{ backgroundColor: 'transparent', width: '100vw', height: '100vh' }}
-        // />
         <ImageView uri={src} />
       )
     } else if (isMediaFile(src, fileExt)) {

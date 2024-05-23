@@ -7,8 +7,11 @@ function ImageView(props: any) {
 
   useEffect(() => {
     return () => {
-      wzoomRef.current.destroy()
-      console.log("ImageView dispose")
+      try {
+        wzoomRef.current?.destroy()
+      } catch (error) {
+        console.log("ImageView dispose, error: ", error)
+      }
     }
   }, [])
 

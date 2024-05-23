@@ -124,26 +124,26 @@ export class FXGUIWebPanel {
     const stylesUri = getUri(webview, extensionUri, ["dist", "webview_ui", "assets", "index.css"])
     const scriptUri = getUri(webview, extensionUri, ["dist", "webview_ui", "assets", "index.js"])
 
-    const scriptUri_jquery = getUri(webview, extensionUri, ["dist", "webview_ui", "image", "jquery.min.js"])
-
-    const stylesUri_image = getUri(webview, extensionUri, ["dist", "webview_ui", "image", "zoom.css"])
-    const scriptUri_image = getUri(webview, extensionUri, ["dist", "webview_ui", "image", "vanilla-js-wheel-zoom.min.js"])
+    const scriptUri_svga = getUri(webview, extensionUri, ["dist", "webview_ui", "libs", "svga.lite.min.js"])
+    const scriptUri_wheel_zoom = getUri(webview, extensionUri, ["dist", "webview_ui", "libs", "vanilla-js-wheel-zoom.min.js"])
 
     const nonce = getNonce()
 
+    // script-src 'self' 'unsafe-eval' 降低页面的安全性, 允许页面执行来自同一来源的脚本，并允许使用 eval 和类似的功能。
     return /*html*/ `
       <!DOCTYPE html>
       <html lang="en">
         <head>
           <meta charset="UTF-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-          <meta http-equiv="Content-Security-Policy" content="default-src 'none' img-src ${webview.cspSource} https: script-src ${webview.cspSource} style-src ${webview.cspSource} 'nonce-${nonce}'">
+          <meta http-equiv="Content-Security-Policy" content="default-src 'none' img-src ${webview.cspSource} https: script-src 'self' 'unsafe-eval' style-src ${webview.cspSource} 'nonce-${nonce}'">
           <link rel="stylesheet" type="text/css" href="${stylesUri}">
           <title>Flutter XGen</title>
         </head>
         <body>
           <div id="root"></div>
-          <script type="module" nonce="${nonce}" src="${scriptUri_image}"></script>
+          <script type="module" nonce="${nonce}" src="${scriptUri_svga}"></script>
+          <script type="module" nonce="${nonce}" src="${scriptUri_wheel_zoom}"></script>
           <script type="module" nonce="${nonce}" src="${scriptUri}"></script>
         </body>
       </html>
