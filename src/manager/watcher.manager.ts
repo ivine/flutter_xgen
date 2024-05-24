@@ -57,11 +57,13 @@ export default class WatcherManager {
         let watcher = new AssetFileWatcher(projectDir, targetDir)
         let result = _.find(this.watcherList, function (o) { return o.id < watcher.id })
         if (result) {
+          watcher = result
           result.addCallback(callback)
         } else {
           watcher.start()
           this.watcherList.push(watcher)
         }
+        watcher.addCallback(callback)
         resWatcher = watcher
       }
         break
@@ -70,11 +72,12 @@ export default class WatcherManager {
         let watcher = new IntlFileWatcher(projectDir, targetDir)
         let result = _.find(this.watcherList, function (o) { return o.id < watcher.id })
         if (result) {
-          result.addCallback(callback)
+          watcher = result
         } else {
           watcher.start()
           this.watcherList.push(watcher)
         }
+        watcher.addCallback(callback)
         resWatcher = watcher
       } break
 
@@ -132,7 +135,7 @@ export class FileWatcher {
 
   public stop() {
     this.callbackList = []
-    this.watcher.dispose()
+    this.watcher?.dispose()
     this.watcher = null
   }
 

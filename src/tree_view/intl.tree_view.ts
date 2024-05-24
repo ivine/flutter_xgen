@@ -1,11 +1,15 @@
 import * as vscode from 'vscode'
 
+import FXGProject from '../model/project'
 import { FileUtil } from '../util/file.util'
-import { FXGCommandType, getFXGCommandData } from '../manager/command.manager'
 
-import { IntlTreeNode, TreeNodeType } from './tree_node'
+import WorkspaceManager from '../manager/workspace.manager'
+import { TreeViewType } from '../manager/tree_view.manager'
+import { InteractionEvent, InteractionEventType } from '../manager/interaction.manager'
+import { FXGCommandData, FXGCommandType, getFXGCommandData } from '../manager/command.manager'
+
 import TreeViewUtil from './tree_view.util'
-import { InteractionEventType } from '../manager/interaction.manager'
+import { IntlTreeNode, TreeNodeType } from './tree_node'
 
 export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
   private _onDidChangeTreeData: vscode.EventEmitter<IntlTreeNode | undefined | null | void> = new vscode.EventEmitter<IntlTreeNode | undefined | null | void>()
@@ -16,11 +20,11 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
   public workspaceDirs: string[]
 
   public treeNodes: IntlTreeNode[] = []
+
   constructor(id: string, rootPath: string, workspaceDirs: string[]) {
     this.id = id
     this.rootPath = rootPath
     this.workspaceDirs = workspaceDirs
-
     this.setup()
   }
 
@@ -28,19 +32,23 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
     this.treeNodes = []
 
     // 当前项目
-    let rootProjectNode: IntlTreeNode = await this.assembleProjectTreeItem(this.rootPath)
-    this.treeNodes.push(rootProjectNode)
-
-    // 其他子项目
-    for (let p of this.workspaceDirs) {
-      if (p === this.rootPath) {
+    const projectList: FXGProject[] = [
+      WorkspaceManager.getInstance().mainProject,
+      ...WorkspaceManager.getInstance().subProjectList,
+    ]
+    for (const proj of projectList) {
+      proj.refreshTreeViewCallback = (treeViewType: TreeViewType) => {
+        if (treeViewType !== TreeViewType.assets) {
+          return
+        }
+        this.setup()
+      }
+      if (proj.assetNodes.length === 0) {
         continue
       }
-      let subProjectNodes: IntlTreeNode = await this.assembleProjectTreeItem(this.rootPath)
-      this.treeNodes.push(subProjectNodes)
+      const node = await this.assembleProjectTreeNode(proj)
+      this.treeNodes.push(node)
     }
-
-    // refresh
     this._onDidChangeTreeData.fire()
   }
 
@@ -66,56 +74,66 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
   }
 
   // MARK: - assemble
+  private async assembleProjectTreeNode(project: FXGProject): Promise<IntlTreeNode | null> {
+    // preview node
+    const previewNode: IntlTreeNode = this.assembleDirTreeNode_Configs(project)
 
-  private async assembleFileDirTreeNode(projectDir: string, projectName: string): Promise<IntlTreeNode | null> {
-    // let validAssetsRelativePaths: string[] = pubspecData["flutter"]["assets"] // TODO: 待开发
-    const assetsDir = `${projectDir}/lib/l10n` // TODO: 路径应该也要读取
+    // assets node
+    const assetsNode = this.assembleDirTreeNode_l10n(project)
 
-    let subNodes: IntlTreeNode[] = []
-    if (FileUtil.pathExists(assetsDir)) {
-      const filePaths: string[] = FileUtil.getDirAllFiles(assetsDir) // 全部文件
-      for (const path of filePaths) {
-        if (!path.endsWith(".arb")) {
-          continue
-        }
-        const node: IntlTreeNode | null = new IntlTreeNode(
-          FileUtil.getFileName(path),
-          vscode.TreeItemCollapsibleState.None,
+    // 生成文件 node
+    const generatedNode = this.assembleDirTreeNode_Generated(project)
 
-          TreeNodeType.file,
-          projectDir,
-          projectName,
-          [],
-          "",
-          {
-            title: FXGCommandType.openFile,
-            command: FXGCommandType.openFile,
-            arguments: [path],
-          },
-        )
-        subNodes.push(node)
-      }
-      subNodes = TreeViewUtil.sortTreeNodeList<IntlTreeNode>(subNodes) // 排序
-    } else {
-      console.log(`assembleProjectTreeItem, rootAssetsPath: ${assetsDir} is not exist`)
-    }
-
-    const node: IntlTreeNode = new IntlTreeNode(
-      "l10n",
-      vscode.TreeItemCollapsibleState.Collapsed,
+    // 最后的树
+    let treeNode: IntlTreeNode = new IntlTreeNode(
+      project.projectName,
+      vscode.TreeItemCollapsibleState.Expanded,
 
       TreeNodeType.folder,
-      projectDir,
-      projectName,
-      subNodes,
+      project.dir,
+      project.projectName,
+      [previewNode, generatedNode, assetsNode],
       "",
       null,
+    )
+    return Promise.resolve(treeNode)
+  }
+
+  private assembleDirTreeNode_Configs(project: FXGProject): IntlTreeNode {
+    const node = new IntlTreeNode(
+      "生成器配置",
+      vscode.TreeItemCollapsibleState.None,
+
+      TreeNodeType.preview,
+      project.dir,
+      project.projectName,
+      [],
+      "",
+      Object.assign(
+        {},
+        getFXGCommandData(FXGCommandType.openFXGUIWeb),
+        {
+          arguments: [
+            {
+              timestamp: Date.now(),
+              eventType: InteractionEventType.extToWeb_preview_localization,
+              projectInfo: {
+                dir: project.dir,
+                name: project.projectName,
+              },
+              data: null
+            }
+          ]
+        }
+      ),
     )
     return node
   }
 
-  // TODO: 看一下要不要做成动态的
-  private async assembleGeneratedDirTreeNode(projectDir: string, projectName: string,): Promise<IntlTreeNode | null> {
+  private assembleDirTreeNode_Generated(project: FXGProject): IntlTreeNode {
+    const projectDir = project.dir
+    const projectName = project.projectName
+
     let l10nNode: IntlTreeNode = new IntlTreeNode(
       "l10n.dart",
       vscode.TreeItemCollapsibleState.None,
@@ -189,66 +207,52 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
     return node
   }
 
-  private async assembleProjectTreeItem(projectDir: string): Promise<IntlTreeNode | null> {
-    const pubspecPath: string = `${projectDir}/pubspec.yaml`
-    if (!FileUtil.pathExists(pubspecPath)) {
-      console.log(`assembleProjectTreeItem, pubspecPath: ${pubspecPath} is not exist`)
-      return Promise.resolve(null)
-    }
-    const pubspecData: any | null = await FileUtil.readYamlFile(pubspecPath)
-    if (pubspecData === null) {
-      return Promise.resolve(null)
-    }
+  private assembleDirTreeNode_l10n(project: FXGProject): IntlTreeNode {
+    const projectDir = project.dir
+    const projectName = project.projectName
 
-    const projectName: string = pubspecData["name"]
+    const assetsDir = `${projectDir}/lib/l10n` // TODO: 路径应该也要读取
 
-    // preview node
-    const previewNode: IntlTreeNode = new IntlTreeNode(
-      "预览",
-      vscode.TreeItemCollapsibleState.None,
-
-      TreeNodeType.preview,
-      projectDir,
-      projectName,
-      [],
-      "",
-      Object.assign(
-        {},
-        getFXGCommandData(FXGCommandType.openFXGUIWeb),
-        {
-          arguments: [
-            {
-              timestamp: Date.now(),
-              eventType: InteractionEventType.extToWeb_preview_localization,
-              projectInfo: {
-                name: projectName,
-                dir: projectDir,
-              },
-              data: null
-            }
-          ]
+    let subNodes: IntlTreeNode[] = []
+    if (FileUtil.pathExists(assetsDir)) {
+      const filePaths: string[] = FileUtil.getDirAllFiles(assetsDir) // 全部文件
+      for (const path of filePaths) {
+        if (!path.endsWith(".arb")) {
+          continue
         }
-      ),
-    )
+        const node: IntlTreeNode | null = new IntlTreeNode(
+          FileUtil.getFileName(path),
+          vscode.TreeItemCollapsibleState.None,
 
-    // assets node
-    const assetsNode = await this.assembleFileDirTreeNode(projectDir, projectName)
+          TreeNodeType.file,
+          projectDir,
+          projectName,
+          [],
+          "",
+          {
+            title: FXGCommandType.openFile,
+            command: FXGCommandType.openFile,
+            arguments: [path],
+          },
+        )
+        subNodes.push(node)
+      }
+      subNodes = TreeViewUtil.sortTreeNodeList<IntlTreeNode>(subNodes) // 排序
+    } else {
+      console.log(`assembleProjectTreeItem, rootAssetsPath: ${assetsDir} is not exist`)
+    }
 
-    // 生成文件 node
-    const generatedNode = await this.assembleGeneratedDirTreeNode(projectDir, projectName)
-
-    // 最后的树
-    let treeNode: IntlTreeNode = new IntlTreeNode(
-      projectName,
-      vscode.TreeItemCollapsibleState.Expanded,
+    const node: IntlTreeNode = new IntlTreeNode(
+      "l10n",
+      vscode.TreeItemCollapsibleState.Collapsed,
 
       TreeNodeType.folder,
       projectDir,
       projectName,
-      [previewNode, generatedNode, assetsNode],
+      subNodes,
       "",
       null,
     )
-    return Promise.resolve(treeNode)
+    return node
   }
 }

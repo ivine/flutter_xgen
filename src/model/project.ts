@@ -1,53 +1,85 @@
 import * as vscode from 'vscode'
+const yaml = require('js-yaml');
 
 import { IntlArbFile } from '../model/intl'
-import { PreviewItem } from '../model/preview'
-import { AssetsTreeNode, TreeNodeType } from '../tree_view/tree_node';
 import { FileUtil } from '../util/file.util'
 import TreeViewUtil from '../tree_view/tree_view.util';
-import { InteractionEventType } from '../manager/interaction.manager';
+import { AssetsTreeNode, IntlTreeNode, TreeNodeType } from '../tree_view/tree_node';
 
-const yaml = require('js-yaml');
+import { TreeViewType } from '../manager/tree_view.manager';
+import { InteractionEventType } from '../manager/interaction.manager';
+import WatcherManager, { FileWatcher, WatcherEventType, WatcherType } from '../manager/watcher.manager';
+
+import { PreviewItem } from './preview';
 
 export default class FXGProject {
   dir: string
-  constructor(dir: string) {
+  isMain: boolean
+  constructor(dir: string, isMain: boolean) {
     this.dir = dir
+    this.isMain = isMain
     this.setup()
   }
 
   loading: boolean = false
   pubspecData: any = null
 
+  assetsDirPath: string = ""
+  l10nsDirPath: string = ""
+
+  assetsDirWatcher: FileWatcher | null = null
+  l10nsDirWatcher: FileWatcher | null = null
+
+  refreshTreeViewCallback: (treeViewType: TreeViewType) => void | null = null
+
   assetNodes: AssetsTreeNode[] = []
-  assetOneDimensionalPreviewNodes: AssetsTreeNode[] = []
+  l10nNodes: IntlTreeNode[] = []
   intlFiles: IntlArbFile[] = []
 
-  previewItem: PreviewItem | null = null
+  assetOneDimensionalPreviewNodes: AssetsTreeNode[] = [] // TODO: 预览全部
 
   public async setup() {
     // 获取当前 pubspec data
     this.loading = true
     try {
       await this.getCurrentPubspecData()
+      this.addWatchers()
       this.getCurrentAssetsFileTree()
-      this.getCurrentIntlFileTree()
+      this.getCurrentLocalizationFileTree()
     } catch (error) {
       console.log("FXGProject - setup, error:", error)
     }
     this.loading = false
   }
 
+  public addWatchers() {
+    // assets watcher
+    this.assetsDirWatcher = WatcherManager.getInstance().createWatch(WatcherType.assets, this.dir, this.assetsDirPath, (eventType, uri) => {
+      if (eventType === WatcherEventType.onChanged) {
+        return
+      }
+      this.getCurrentAssetsFileTree()
+    })
+    this.l10nsDirWatcher = WatcherManager.getInstance().createWatch(WatcherType.intl, this.dir, this.l10nsDirPath, (eventType, uri) => {
+      if (eventType === WatcherEventType.onChanged) {
+        return
+      }
+      this.getCurrentLocalizationFileTree()
+    })
+  }
+
   public dispose() {
     this.assetNodes = []
     this.assetOneDimensionalPreviewNodes = []
+    this.l10nNodes = []
     this.intlFiles = []
+    this.refreshTreeViewCallback = null
 
-    this.previewItem = null
+    WatcherManager.getInstance().stopWatch(this.assetsDirWatcher)
+    WatcherManager.getInstance().stopWatch(this.l10nsDirWatcher)
   }
 
   public refresh() { }
-
 
   // MARK: - Getter & Setter
   get projectName(): string {
@@ -69,6 +101,10 @@ export default class FXGProject {
     }
     let result: string = await FileUtil.readFile(pubspecPath)
     this.pubspecData = yaml.load(result)
+
+    // 根据项目配置来确定路径
+    this.assetsDirPath = `${this.dir}/assets`
+    this.l10nsDirPath = `${this.dir}/lib/l10n`
   }
 
   private async getCurrentAssetsFileTree() {
@@ -106,6 +142,13 @@ export default class FXGProject {
       nodes.push(node)
     }
     this.assetNodes = nodes
+
+    // 通知
+    if (typeof this.refreshTreeViewCallback === 'function') {
+      this.refreshTreeViewCallback(TreeViewType.assets)
+    }
+
+    // 生成一维数组
     this.assetOneDimensionalPreviewNodes = this.getOneDimensionalPreviewNodes(nodes)
 
     // FlutterAssetsGenerator generate ruler: https://github.com/cr1992/FlutterAssetsGenerator
@@ -117,7 +160,7 @@ export default class FXGProject {
     let nodes: AssetsTreeNode[] = []
     let isValid = true
 
-    let allFiles: string[] = await FileUtil.getDirAllFiles(dir)
+    let allFiles: string[] = FileUtil.getDirAllFiles(dir)
     allFiles = FileUtil.sortFiles(allFiles)
     for (let fullPath of allFiles) {
       let subNodes: AssetsTreeNode[] = []
@@ -163,12 +206,11 @@ export default class FXGProject {
     return res
   }
 
-  private async getCurrentIntlFileTree() {
+  private async getCurrentLocalizationFileTree() {
     // flutter_intl
-
     let pathsSettings = this.pubspecData["flutter_intl"]
     if (!pathsSettings) {
-      console.log('getCurrentAssetsFileTree, assetsSettings is not array')
+      console.log('getCurrentLocalizationFileTree, assetsSettings is not array')
       return;
     }
 
@@ -178,13 +220,40 @@ export default class FXGProject {
       l10nFilesDir = `${this.dir}/${configL10nFilesDir}`
     }
 
-    let allFiles: string[] = await FileUtil.getDirAllFiles(l10nFilesDir)
-    let tmpFiles: IntlArbFile[] = []
-    for (let p of allFiles) {
-      let tmpFile = new IntlArbFile(p)
-      tmpFiles.push(tmpFile)
+    let nodes: AssetsTreeNode[] = []
+    let allFiles: string[] = FileUtil.getDirAllFiles(l10nFilesDir)
+    allFiles = FileUtil.sortFiles(allFiles)
+    for (let fullPath of allFiles) {
+      let subNodes: IntlTreeNode[] = []
+      let command: vscode.Command | null = null
+      let isDir = await FileUtil.pathIsDir(fullPath)
+      if (isDir) {
+        subNodes = await this.assembleAssetsFiles(fullPath)
+      } else {
+        command = await TreeViewUtil.getTreeNodeCommand(this.dir, this.projectName, fullPath, InteractionEventType.extToWeb_preview_assets)
+      }
+      let node = new AssetsTreeNode(
+        FileUtil.getFileName(fullPath),
+        isDir ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None,
+
+        isDir ? TreeNodeType.folder : TreeNodeType.file,
+        this.dir,
+        this.projectName,
+        [],
+        fullPath,
+        command,
+
+        true,
+      )
+      nodes.push(node)
     }
-    this.intlFiles = tmpFiles
+
+    this.l10nNodes = nodes
+
+    // 通知
+    if (typeof this.refreshTreeViewCallback === 'function') {
+      this.refreshTreeViewCallback(TreeViewType.localizations)
+    }
   }
 
   public getPreviewItem(selectedItem: string | null, previous: boolean, next: boolean): PreviewItem {

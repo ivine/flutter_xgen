@@ -20,7 +20,7 @@ export default class WorkspaceManager {
   public setup(dir: string) {
     this.dir = dir
 
-    this.mainProject = new FXGProject(dir)
+    this.mainProject = new FXGProject(dir, true)
   }
 
   public dispose() {
@@ -37,6 +37,6 @@ export default class WorkspaceManager {
       return;
     }
 
-    this.subProjectList.push(new FXGProject(subProjectDir))
+    this.subProjectList.push(new FXGProject(subProjectDir, false))
   }
 }

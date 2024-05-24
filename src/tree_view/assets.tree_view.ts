@@ -1,13 +1,15 @@
 import * as vscode from 'vscode'
 
+import FXGProject from '../model/project'
 import { FileUtil } from '../util/file.util'
+
+import WorkspaceManager from '../manager/workspace.manager'
+import { TreeViewType } from '../manager/tree_view.manager'
+import { InteractionEvent, InteractionEventType } from '../manager/interaction.manager'
 import { FXGCommandData, FXGCommandType, getFXGCommandData } from '../manager/command.manager'
-import { InteractionEvent, InteractionEventType, InteractionProjectInfo } from '../manager/interaction.manager'
 
-import { TreeNodeType, AssetsTreeNode } from './tree_node'
 import TreeViewUtil from './tree_view.util'
-import { getExtensionContext } from '../extension'
-
+import { TreeNodeType, AssetsTreeNode } from './tree_node'
 
 export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
   private _onDidChangeTreeData: vscode.EventEmitter<AssetsTreeNode | undefined | null | void> = new vscode.EventEmitter<AssetsTreeNode | undefined | null | void>()
@@ -23,7 +25,6 @@ export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
     this.id = id
     this.rootPath = rootPath
     this.workspaceDirs = workspaceDirs
-
     this.setup()
   }
 
@@ -57,98 +58,60 @@ export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
     this.treeNodes = []
 
     // 当前项目
-    let rootProjectItem: AssetsTreeNode = await this.assembleProjectTreeItem(this.rootPath)
-    this.treeNodes.push(rootProjectItem)
-
-    // 其他子项目
-    for (let proj of this.workspaceDirs) {
-      if (proj === this.rootPath) {
+    const projectList: FXGProject[] = [
+      WorkspaceManager.getInstance().mainProject,
+      ...WorkspaceManager.getInstance().subProjectList,
+    ]
+    for (const proj of projectList) {
+      proj.refreshTreeViewCallback = (treeViewType: TreeViewType) => {
+        if (treeViewType !== TreeViewType.assets) {
+          return
+        }
+        this.setup()
+      }
+      if (proj.assetNodes.length === 0) {
         continue
       }
-      let subProjectItems: AssetsTreeNode = await this.assembleProjectTreeItem(proj)
-      this.treeNodes.push(subProjectItems)
+      const node = await this.assembleProjectTreeNode(proj)
+      this.treeNodes.push(node)
     }
-
-    // refresh
     this._onDidChangeTreeData.fire()
   }
 
   // MARK: - assemble
+  private async assembleProjectTreeNode(project: FXGProject): Promise<AssetsTreeNode | null> {
+    const projectDir: string = project.dir
+    const projectName: string = project.projectName
 
-  private async assembleFileDirTreeNode(projectDir: string, projectName: string): Promise<AssetsTreeNode | null> {
-    // let validAssetsRelativePaths: string[] = pubspecData["flutter"]["assets"] // TODO: 待开发
-    const assetsDir = `${projectDir}/assets` // TODO: 路径应该也要读取
+    // 配置
+    const previewNode: AssetsTreeNode = this.assembleDirTreeNode_Configs(projectDir, projectName)
 
-    let subNodes: AssetsTreeNode[] = []
-    if (FileUtil.pathExists(assetsDir)) {
-      const filePaths: string[] = FileUtil.getDirAllFiles(assetsDir) // 全部文件
-      for (const path of filePaths) {
-        let node: AssetsTreeNode | null = await this.assembleAssetsTreeNode(projectDir, projectName, path, [])
-        if (node == null) {
-          continue
-        }
-        subNodes.push(node)
-      }
-      subNodes = TreeViewUtil.sortTreeNodeList<AssetsTreeNode>(subNodes) // 排序
-    } else {
-      console.log(`assembleProjectTreeItem, rootAssetsPath: ${assetsDir} is not exist`)
-    }
+    // assets node
+    const assetsNode: AssetsTreeNode = this.assembleDirTreeNode_Assets(project)
 
+    // 生成文件 node
+    const generatedNode: AssetsTreeNode = await this.assembleDirTreeNode_Generated(projectDir, projectName)
+
+    // 最后的树
+    const rootNode: AssetsTreeNode = new AssetsTreeNode(
+      projectName,
+      vscode.TreeItemCollapsibleState.Expanded,
+
+      TreeNodeType.folder,
+      projectDir,
+      projectName,
+      [previewNode, generatedNode, assetsNode],
+      "",
+      null,
+
+      true,
+    )
+    return Promise.resolve(rootNode)
+  }
+
+  private assembleDirTreeNode_Configs(projectDir: string, projectName: string): AssetsTreeNode {
     const node: AssetsTreeNode = new AssetsTreeNode(
-      "assets",
-      vscode.TreeItemCollapsibleState.Collapsed,
-
-      TreeNodeType.folder,
-      projectDir,
-      projectName,
-      subNodes,
-      "",
-      null,
-
-      true,
-    )
-    return node
-  }
-
-  private async assembleGeneratedDirTreeNode(projectDir: string, projectName: string,): Promise<AssetsTreeNode | null> {
-    let fileNode: AssetsTreeNode = await this.assembleAssetsTreeNode(
-      projectDir,
-      projectName,
-      `${projectDir}/lib/generated/assets.dart`,
-      [],
-    )
-    let node: AssetsTreeNode = new AssetsTreeNode(
-      "generated",
-      vscode.TreeItemCollapsibleState.Collapsed,
-
-      TreeNodeType.folder,
-      projectDir,
-      projectName,
-      [fileNode],
-      "",
-      null,
-
-      true,
-    )
-    return node
-  }
-
-  private async assembleProjectTreeItem(projectDir: string): Promise<AssetsTreeNode | null> {
-    const pubspecPath: string = `${projectDir}/pubspec.yaml`
-    if (!FileUtil.pathExists(pubspecPath)) {
-      console.log(`assembleProjectTreeItem, pubspecPath: ${pubspecPath} is not exist`)
-      return Promise.resolve(null)
-    }
-    const pubspecData: any | null = await FileUtil.readYamlFile(pubspecPath)
-    if (pubspecData === null) {
-      return Promise.resolve(null)
-    }
-
-    const projectName: string = pubspecData["name"]
-
-    // preview node
-    const previewNode: AssetsTreeNode = new AssetsTreeNode(
-      "预览",
+      "生成器配置",
       vscode.TreeItemCollapsibleState.None,
 
       TreeNodeType.preview,
@@ -176,28 +139,51 @@ export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
 
       true,
     )
+    return node
+  }
 
-    // assets node
-    const assetsNode = await this.assembleFileDirTreeNode(projectDir, projectName)
+  private assembleDirTreeNode_Assets(project: FXGProject): AssetsTreeNode {
+    const relativePath = `assets` // TODO: 根据配置读取
+    const dir = `${project.dir}/${relativePath}`
 
-    // 生成文件 node
-    const generatedNode = await this.assembleGeneratedDirTreeNode(projectDir, projectName)
-
-    // 最后的树
-    const rootNode: AssetsTreeNode = new AssetsTreeNode(
-      projectName,
-      vscode.TreeItemCollapsibleState.Expanded,
+    const node: AssetsTreeNode = new AssetsTreeNode(
+      "assets",
+      vscode.TreeItemCollapsibleState.Collapsed,
 
       TreeNodeType.folder,
-      projectDir,
-      projectName,
-      [previewNode, generatedNode, assetsNode],
+      dir,
+      project.projectName,
+      project.assetNodes,
       "",
       null,
 
       true,
     )
-    return Promise.resolve(rootNode)
+    return node
+  }
+
+  private async assembleDirTreeNode_Generated(projectDir: string, projectName: string,): Promise<AssetsTreeNode | null> {
+    const fileRelativePath = `lib/generated/assets.dart` // TODO: 根据配置读取
+    let fileNode: AssetsTreeNode = await this.assembleAssetsTreeNode(
+      projectDir,
+      projectName,
+      `${projectDir}/${fileRelativePath}`,
+      [],
+    )
+    let node: AssetsTreeNode = new AssetsTreeNode(
+      "generated",
+      vscode.TreeItemCollapsibleState.Collapsed,
+
+      TreeNodeType.folder,
+      projectDir,
+      projectName,
+      [fileNode],
+      "",
+      null,
+
+      true,
+    )
+    return node
   }
 
   private async assembleAssetsTreeNode(
@@ -267,7 +253,6 @@ export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
   }
 
   // MARK: - Command
-
   async getTreeNodeCommand(
     projectDir: string,
     projectName: string,

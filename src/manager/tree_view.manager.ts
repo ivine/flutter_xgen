@@ -1,10 +1,11 @@
 import * as vscode from 'vscode'
 import { IntlTreeView } from '../tree_view/intl.tree_view';
 import { AssetsTreeView } from '../tree_view/assets.tree_view';
+import { TreeNode } from '../tree_view/tree_node';
 
-enum TreeViewType {
+export enum TreeViewType {
   assets,
-  intl,
+  localizations,
 }
 
 class TreeViewUtil {
@@ -15,7 +16,7 @@ class TreeViewUtil {
         result = "Assets"
         break;
 
-      case TreeViewType.intl:
+      case TreeViewType.localizations:
         result = "Localizations"
         break;
 
@@ -32,7 +33,7 @@ class TreeViewUtil {
         result = "FXG_Assets"
         break;
 
-      case TreeViewType.intl:
+      case TreeViewType.localizations:
         result = "FXG_Intl"
         break;
 
@@ -46,9 +47,8 @@ class TreeViewUtil {
 export default class TreeViewManager {
   private static instance: TreeViewManager | null = null
   private rootPath: string = ""
-  private l10nFilePaths: string[] = []
-  private assetsDirs: string[] = []
-  private treeViewTypes: TreeViewType[] = [TreeViewType.assets, TreeViewType.intl]
+  private treeViewTypes: TreeViewType[] = [TreeViewType.assets, TreeViewType.localizations]
+  public treeViews: vscode.TreeDataProvider<TreeNode>[] = []
   private constructor() { }
   static getInstance(): TreeViewManager {
     if (!TreeViewManager.instance) {
@@ -65,10 +65,14 @@ export default class TreeViewManager {
   private registerTreeDataProvider() {
     for (let t of this.treeViewTypes) {
       let id: string = TreeViewUtil.getTreeViewId(t)
-      if (t == TreeViewType.intl) {
-        vscode.window.registerTreeDataProvider(id, new IntlTreeView(id, this.rootPath, []))
+      if (t == TreeViewType.localizations) {
+        const treeView = new IntlTreeView(id, this.rootPath, [])
+        vscode.window.registerTreeDataProvider(id, treeView)
+        this.treeViews.push(treeView)
       } else if (t == TreeViewType.assets) {
-        vscode.window.registerTreeDataProvider(id, new AssetsTreeView(id, this.rootPath, []))
+        const treeView = new AssetsTreeView(id, this.rootPath, [])
+        vscode.window.registerTreeDataProvider(id, treeView)
+        this.treeViews.push(treeView)
       }
     }
   }
