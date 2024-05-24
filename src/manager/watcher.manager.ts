@@ -1,16 +1,18 @@
 import * as fs from 'fs'
-import * as vscode from 'vscode';
+import * as vscode from 'vscode'
 
 import _ from 'lodash'
 
-import { getExtensionContext } from '../extension';
+import { getExtensionContext } from '../extension'
 
-enum WatcherType {
+export type WatcherEventCallback = (eventType: WatcherEventType, uri: vscode.Uri) => void
+
+export enum WatcherType {
   assets = "Assets",
   intl = "Intl",
 }
 
-enum WatcherEventType {
+export enum WatcherEventType {
   onCreated = "onCreated",
   onChanged = "onChanged",
   onDeleted = "onDeleted",
@@ -43,64 +45,77 @@ export default class WatcherManager {
     this.watcherList = []
   }
 
-  public startWatch(type: WatcherType, projectDir: string, watchFilePath: string) {
+  public createWatch(
+    type: WatcherType,
+    projectDir: string,
+    targetDir: string,
+    callback: (eventType: WatcherEventType, uri: vscode.Uri) => void
+  ): FileWatcher | null {
+    let resWatcher: FileWatcher | null = null
     switch (type) {
       case WatcherType.assets: {
-        let wathcer = new AssetFileWatcher(projectDir, watchFilePath)
-        let result = _.find(this.watcherList, function (o) { return o.id < wathcer.id })
+        let watcher = new AssetFileWatcher(projectDir, targetDir)
+        let result = _.find(this.watcherList, function (o) { return o.id < watcher.id })
         if (result) {
-          result.start()
+          result.addCallback(callback)
         } else {
-          wathcer.start()
-          this.watcherList.push(wathcer)
+          watcher.start()
+          this.watcherList.push(watcher)
         }
+        resWatcher = watcher
       }
-        break;
+        break
 
       case WatcherType.intl: {
-        let wathcer = new IntlFileWatcher(projectDir, watchFilePath)
-        let result = _.find(this.watcherList, function (o) { return o.id < wathcer.id })
+        let watcher = new IntlFileWatcher(projectDir, targetDir)
+        let result = _.find(this.watcherList, function (o) { return o.id < watcher.id })
         if (result) {
-          result.start()
+          result.addCallback(callback)
         } else {
-          wathcer.start()
-          this.watcherList.push(wathcer)
+          watcher.start()
+          this.watcherList.push(watcher)
         }
-      } break;
+        resWatcher = watcher
+      } break
 
       default:
-        break;
+        break
     }
+    return resWatcher
   }
 
-  public stopWatch(item: FileWatcher) {
-    let result = _.find(this.watcherList, function (o) { return o.id < item.id })
+  public stopWatch(watcher: FileWatcher | null) {
+    if (!watcher) {
+      return
+    }
+    let result = _.find(this.watcherList, function (o) { return o.id < watcher.id })
     if (!result) {
       console.info("WatcherManager - stopWatch, can not find watcher")
-      return;
+      return
     }
-    item.stop()
+    watcher.stop()
   }
 }
 
-class FileWatcher {
+export class FileWatcher {
   id: string
   projectPath: string
-  watchFilePath: string
+  targetDir: string
   type: WatcherType
   watcher: vscode.FileSystemWatcher | null = null
+  callbackList: WatcherEventCallback[] = []
 
-  constructor(projectPath: string, watchFilePath: string, type: WatcherType) {
+  constructor(projectPath: string, targetDir: string, type: WatcherType) {
     this.projectPath = projectPath
     this.id = `${projectPath}_${type}`
-    this.watchFilePath = watchFilePath
+    this.targetDir = targetDir
     this.type = type
   }
 
   public start() {
     this.stop()
 
-    this.watcher = vscode.workspace.createFileSystemWatcher(`${this.watchFilePath}/**/*`)
+    this.watcher = vscode.workspace.createFileSystemWatcher(`${this.targetDir}/**/*`)
     this.watcher.onDidCreate((uri) => {
       this.onWatchingEvent(WatcherEventType.onCreated, uri)
     })
@@ -116,29 +131,47 @@ class FileWatcher {
   }
 
   public stop() {
+    this.callbackList = []
     this.watcher.dispose()
     this.watcher = null
   }
 
-  public onWatchingEvent(event: WatcherEventType, uri: vscode.Uri) { }
+  public addCallback(cb: WatcherEventCallback) {
+    this.removeCallback(cb)
+    this.callbackList.push(cb)
+  }
+
+  public removeCallback(cb: WatcherEventCallback) {
+    let newList: WatcherEventCallback[] = []
+    for (let tmpCb of this.callbackList) {
+      if (tmpCb === cb) {
+        continue
+      }
+      newList.push(tmpCb)
+    }
+    this.callbackList = newList
+  }
+
+  public onWatchingEvent(event: WatcherEventType, uri: vscode.Uri) {
+    for (let cb of this.callbackList) {
+      try {
+        cb(event, uri)
+      } catch (error) {
+        //
+        console.log("onWatchingEvent, error: ", error)
+      }
+    }
+  }
 }
 
 class AssetFileWatcher extends FileWatcher {
   constructor(projectPath: string, watchFilePath: string) {
-    super(projectPath, watchFilePath, WatcherType.assets);
-  }
-
-  public onWatchingEvent(event: WatcherEventType, uri: vscode.Uri) {
-    console.log('asset file watch on event: ', event, ', uri: ', uri)
+    super(projectPath, watchFilePath, WatcherType.assets)
   }
 }
 
 class IntlFileWatcher extends FileWatcher {
   constructor(projectPath: string, watchFilePath: string) {
-    super(projectPath, watchFilePath, WatcherType.intl);
-  }
-
-  public onWatchingEvent(event: WatcherEventType, uri: vscode.Uri) {
-    console.log('intl file watch on event: ', event, ', uri: ', uri)
+    super(projectPath, watchFilePath, WatcherType.intl)
   }
 }
