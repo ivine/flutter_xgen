@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 
-import FXGProject from '../model/project'
+import FXGProject, { TreeViewRefreshCallback } from '../model/project'
 import { FileUtil } from '../util/file.util'
 
 import WorkspaceManager from '../manager/workspace.manager'
@@ -25,25 +25,39 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
     this.id = id
     this.rootPath = rootPath
     this.workspaceDirs = workspaceDirs
+
+    this.setupRefreshCallback()
     this.setup()
+  }
+
+  refreshCallback: TreeViewRefreshCallback = (treeViewType: TreeViewType) => {
+    if (treeViewType !== TreeViewType.localizations) {
+      return
+    }
+    this.setup()
+  }
+
+  get allProjects(): FXGProject[] {
+    const projectList: FXGProject[] = [
+      WorkspaceManager.getInstance().mainProject,
+      ...WorkspaceManager.getInstance().subProjectList,
+    ]
+    return projectList
+  }
+
+  // MARK: - setup
+  setupRefreshCallback() {
+    for (const proj of this.allProjects) {
+      proj.addTreeViewRefreshCallback(this.refreshCallback)
+    }
   }
 
   async setup() {
     this.treeNodes = []
 
     // 当前项目
-    const projectList: FXGProject[] = [
-      WorkspaceManager.getInstance().mainProject,
-      ...WorkspaceManager.getInstance().subProjectList,
-    ]
-    for (const proj of projectList) {
-      proj.refreshTreeViewCallback = (treeViewType: TreeViewType) => {
-        if (treeViewType !== TreeViewType.assets) {
-          return
-        }
-        this.setup()
-      }
-      if (proj.assetNodes.length === 0) {
+    for (const proj of this.allProjects) {
+      if (proj.l10nNodes.length === 0) {
         continue
       }
       const node = await this.assembleProjectTreeNode(proj)

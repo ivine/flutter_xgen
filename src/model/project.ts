@@ -12,6 +12,8 @@ import WatcherManager, { FileWatcher, WatcherEventType, WatcherType } from '../m
 
 import { PreviewItem } from './preview';
 
+export type TreeViewRefreshCallback = (treeViewType: TreeViewType) => void
+
 export default class FXGProject {
   dir: string
   isMain: boolean
@@ -30,7 +32,7 @@ export default class FXGProject {
   assetsDirWatcher: FileWatcher | null = null
   l10nsDirWatcher: FileWatcher | null = null
 
-  refreshTreeViewCallback: (treeViewType: TreeViewType) => void | null = null
+  refreshTreeViewCallbackList: TreeViewRefreshCallback[] = []
 
   assetNodes: AssetsTreeNode[] = []
   l10nNodes: IntlTreeNode[] = []
@@ -73,7 +75,7 @@ export default class FXGProject {
     this.assetOneDimensionalPreviewNodes = []
     this.l10nNodes = []
     this.intlFiles = []
-    this.refreshTreeViewCallback = null
+    this.refreshTreeViewCallbackList = []
 
     WatcherManager.getInstance().stopWatch(this.assetsDirWatcher)
     WatcherManager.getInstance().stopWatch(this.l10nsDirWatcher)
@@ -144,8 +146,8 @@ export default class FXGProject {
     this.assetNodes = nodes
 
     // 通知
-    if (typeof this.refreshTreeViewCallback === 'function') {
-      this.refreshTreeViewCallback(TreeViewType.assets)
+    for (let cb of this.refreshTreeViewCallbackList) {
+      cb(TreeViewType.assets)
     }
 
     // 生成一维数组
@@ -251,9 +253,25 @@ export default class FXGProject {
     this.l10nNodes = nodes
 
     // 通知
-    if (typeof this.refreshTreeViewCallback === 'function') {
-      this.refreshTreeViewCallback(TreeViewType.localizations)
+    for (let cb of this.refreshTreeViewCallbackList) {
+      cb(TreeViewType.localizations)
     }
+  }
+
+  public addTreeViewRefreshCallback(callback: TreeViewRefreshCallback) {
+    this.removeTreeViewRefreshCallback(callback)
+    this.refreshTreeViewCallbackList.push(callback)
+  }
+
+  public removeTreeViewRefreshCallback(callback: TreeViewRefreshCallback) {
+    const list: TreeViewRefreshCallback[] = []
+    for (let cb of this.refreshTreeViewCallbackList) {
+      if (cb === callback) {
+        continue
+      }
+      list.push(cb)
+    }
+    this.refreshTreeViewCallbackList = list
   }
 
   public getPreviewItem(selectedItem: string | null, previous: boolean, next: boolean): PreviewItem {
