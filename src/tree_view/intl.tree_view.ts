@@ -90,7 +90,10 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
   // MARK: - assemble
   private async assembleProjectTreeNode(project: FXGProject): Promise<IntlTreeNode | null> {
     // preview node
-    const previewNode: IntlTreeNode = this.assembleDirTreeNode_Configs(project)
+    const previewNode: IntlTreeNode = this.assembleDirTreeNode_Preview(project)
+
+    // configs node
+    const configsNode: IntlTreeNode = this.assembleDirTreeNode_Configs(project)
 
     // assets node
     const assetsNode = this.assembleDirTreeNode_l10n(project)
@@ -106,16 +109,16 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
       TreeNodeType.folder,
       project.dir,
       project.projectName,
-      [previewNode, generatedNode, assetsNode],
+      [previewNode, configsNode, generatedNode, assetsNode],
       "",
       null,
     )
     return Promise.resolve(treeNode)
   }
 
-  private assembleDirTreeNode_Configs(project: FXGProject): IntlTreeNode {
+  private assembleDirTreeNode_Preview(project: FXGProject): IntlTreeNode {
     const node = new IntlTreeNode(
-      "生成器配置",
+      "预览",
       vscode.TreeItemCollapsibleState.None,
 
       TreeNodeType.preview,
@@ -131,6 +134,37 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
             {
               timestamp: Date.now(),
               eventType: InteractionEventType.extToWeb_preview_localization,
+              projectInfo: {
+                dir: project.dir,
+                name: project.projectName,
+              },
+              data: null
+            }
+          ]
+        }
+      ),
+    )
+    return node
+  }
+
+  private assembleDirTreeNode_Configs(project: FXGProject): IntlTreeNode {
+    const node = new IntlTreeNode(
+      "生成器配置",
+      vscode.TreeItemCollapsibleState.None,
+
+      TreeNodeType.configs,
+      project.dir,
+      project.projectName,
+      [],
+      "",
+      Object.assign(
+        {},
+        getFXGCommandData(FXGCommandType.openFXGUIWeb),
+        {
+          arguments: [
+            {
+              timestamp: Date.now(),
+              eventType: InteractionEventType.extToWeb_configs_localization,
               projectInfo: {
                 dir: project.dir,
                 name: project.projectName,

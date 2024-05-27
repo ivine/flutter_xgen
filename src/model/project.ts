@@ -14,6 +14,16 @@ import { PreviewItem } from './preview';
 
 export type TreeViewRefreshCallback = (treeViewType: TreeViewType) => void
 
+export interface FlutterIntlConfigs {
+  enabled: boolean
+  class_name: string
+  main_locale: string
+  arb_dir: string
+  output_dir: string
+  use_deferred_loading: boolean
+  localizely: any // TODO: 后续支持
+}
+
 export default class FXGProject {
   dir: string
   isMain: boolean
@@ -36,7 +46,8 @@ export default class FXGProject {
 
   assetNodes: AssetsTreeNode[] = []
   l10nNodes: IntlTreeNode[] = []
-  intlFiles: IntlArbFile[] = []
+
+  flutterIntlConfig: FlutterIntlConfigs | null = null
 
   assetOneDimensionalPreviewNodes: AssetsTreeNode[] = [] // TODO: 预览全部
 
@@ -74,7 +85,6 @@ export default class FXGProject {
     this.assetNodes = []
     this.assetOneDimensionalPreviewNodes = []
     this.l10nNodes = []
-    this.intlFiles = []
     this.refreshTreeViewCallbackList = []
 
     WatcherManager.getInstance().stopWatch(this.assetsDirWatcher)
@@ -107,6 +117,17 @@ export default class FXGProject {
     // 根据项目配置来确定路径
     this.assetsDirPath = `${this.dir}/assets`
     this.l10nsDirPath = `${this.dir}/lib/l10n`
+
+    // flutter intl
+    try {
+      this.flutterIntlConfig = this.pubspecData["flutter_intl"]
+      const mainLocale = this.flutterIntlConfig.main_locale
+      if (!(typeof mainLocale === 'string' && mainLocale.length > 0)) {
+        this.flutterIntlConfig.main_locale = "en" // 默认是英文
+      }
+    } catch (error) {
+      //
+    }
   }
 
   private async getCurrentAssetsFileTree() {

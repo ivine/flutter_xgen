@@ -3,7 +3,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 import { getUri, getNonce } from "../util/webview.util"
-import { WebViewType, WebViewTypeData, getWebViewTypeData } from "./const"
+import { AssetsMsgInterface, L10nMsgInterface, MsgInterface, WebViewType, WebViewTypeData, getWebViewTypeData } from "./const"
 import { InteractionEvent, InteractionEventType } from '../manager/interaction.manager'
 import WorkspaceManager from '../manager/workspace.manager'
 import { FileUtil } from '../util/file.util'
@@ -67,8 +67,16 @@ export class FXGUIWebPanel {
   }
 
   async postMsg(event: InteractionEvent, isWebNewCreate: boolean) {
-    const assets = {}
-    const arbs: any = {}
+    const assets: AssetsMsgInterface = {
+      watcherEnable: false,
+      previewItem: null,
+      fileExt: "",
+    }
+    const l0n: L10nMsgInterface = {
+      watcherEnable: false,
+      flutterIntlConfigs: {},
+      arbs: {}
+    }
 
     // {
     //   timestamp: Date.now(),
@@ -82,31 +90,46 @@ export class FXGUIWebPanel {
 
     try {
       if (event.eventType === InteractionEventType.extToWeb_preview_assets) {
-        assets["watcherEnable"] = StoreManager.getInstance().getWatcherEnable(WorkspaceManager.getInstance().mainProject.dir);
+        assets.watcherEnable = StoreManager.getInstance().getWatcherEnable(WorkspaceManager.getInstance().mainProject.dir)
         const item = WorkspaceManager.getInstance().mainProject.getPreviewItem(event.data, false, false)
-        assets["item"] = Object.assign({}, item.toJSON(), {
-          path: this._panel.webview.asWebviewUri(vscode.Uri.file(item.path))
-        })
+        assets.previewItem = this._panel.webview.asWebviewUri(vscode.Uri.file(item.path))
+        assets.fileExt = FileUtil.getFileExtension(item.path)
+      } else if (event.eventType === InteractionEventType.extToWeb_configs_assets) {
+
       } else if (event.eventType === InteractionEventType.extToWeb_preview_localization) {
-        for (const file of WorkspaceManager.getInstance().mainProject.intlFiles) {
-          arbs["watcherEnable"] = StoreManager.getInstance().getWatcherEnable(WorkspaceManager.getInstance().mainProject.dir);
-          arbs[file.fileName] = file.json
+        const project = WorkspaceManager.getInstance().mainProject // TODO: sub project
+        l0n.watcherEnable = StoreManager.getInstance().getWatcherEnable(WorkspaceManager.getInstance().mainProject.dir)
+        l0n.flutterIntlConfigs = project.flutterIntlConfig
+        const l10nNodes = project.l10nNodes
+        for (const node of l10nNodes) {
+          const name = FileUtil.getFileName(node.nodeAbsolutePath)
+          const path = node.nodeAbsolutePath
+          let json = {}
+          try {
+            const fileData = await FileUtil.readFile(path)
+            json = JSON.parse(fileData)
+          } catch (error) {
+            //
+          }
+          l0n.arbs[name] = json
         }
+      } else if (event.eventType === InteractionEventType.extToWeb_configs_localization) {
+
       }
     } catch (error) {
       console.log('extToWeb_preview_localization, error: ', error)
     }
 
-    const msg: any = {
-      event: event,
-      files: {
-        assets,
-        arbs,
-      },
+    const msg: MsgInterface = {
+      type: event.eventType,
+      data: {
+        assets: assets,
+        l10n: l0n,
+      }
     }
     setTimeout(() => {
       FXGUIWebPanel.currentPanel._panel.webview.postMessage(msg)
-    }, isWebNewCreate ? 500 : 0);
+    }, isWebNewCreate ? 500 : 0)
   }
 
   public dispose() {

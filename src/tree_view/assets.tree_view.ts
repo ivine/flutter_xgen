@@ -97,7 +97,7 @@ export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
     const projectName: string = project.projectName
 
     // 配置
-    const previewNode: AssetsTreeNode = this.assembleDirTreeNode_Configs(projectDir, projectName)
+    const configsNode: AssetsTreeNode = this.assembleDirTreeNode_Configs(projectDir, projectName)
 
     // assets node
     const assetsNode: AssetsTreeNode = this.assembleDirTreeNode_Assets(project)
@@ -113,7 +113,7 @@ export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
       TreeNodeType.folder,
       projectDir,
       projectName,
-      [previewNode, generatedNode, assetsNode],
+      [configsNode, generatedNode, assetsNode],
       "",
       null,
 
@@ -127,7 +127,7 @@ export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
       "生成器配置",
       vscode.TreeItemCollapsibleState.None,
 
-      TreeNodeType.preview,
+      TreeNodeType.configs,
       projectDir,
       projectName,
       [],
@@ -139,7 +139,7 @@ export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
           arguments: [
             {
               timestamp: Date.now(),
-              eventType: InteractionEventType.extToWeb_preview_assets,
+              eventType: InteractionEventType.extToWeb_configs_assets,
               projectInfo: {
                 name: projectName,
                 dir: projectDir,

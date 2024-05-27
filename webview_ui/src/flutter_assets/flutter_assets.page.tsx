@@ -1,22 +1,11 @@
+import { AssetsMsgInterface } from "../enum/extension.type"
 import ImageView from "./image.view"
 import MediaView from "./media.view"
 import SVGAView from "./svga.view"
 
-interface FlutterAssetItemJSON {
-  fileExt: string
-  path: any
-}
-
-interface FlutterAssetJSON {
-  watcherEnable: boolean
-  item: FlutterAssetItemJSON
-}
-
-interface FlutterAssetsPageInterface {
-  dataJSON: FlutterAssetJSON // {watcherEnable: false, item: {path: xxx, fileExt: yyy}}
-}
-
-function FlutterAssetsPage(props: FlutterAssetsPageInterface) {
+function FlutterAssetsPage(props: AssetsMsgInterface) {
+  const previewItem = props.previewItem
+  const fileExt = props.fileExt.toLowerCase()
 
   function isMediaFile(url: string, fileExt: string): boolean {
     const mediaExtensions = [
@@ -34,16 +23,13 @@ function FlutterAssetsPage(props: FlutterAssetsPageInterface) {
   }
 
   const renderBody = () => {
-    const tmpDataJSON = props.dataJSON
-    if (typeof tmpDataJSON !== 'object') {
+    if (typeof previewItem !== 'object') {
       return <div>无效数据</div>
-    } else if (tmpDataJSON === null) {
+    } else if (previewItem === null) {
       return <div>正在加载中...</div>
     }
 
-    const fileExt = props.dataJSON.item.fileExt.toLowerCase()
-    const srcData = props.dataJSON.item.path
-    const src = `${srcData.scheme}://${srcData.authority}${srcData.path}` // 不在 VSCode 的项目内，需要这样拼接的
+    const src = `${previewItem.scheme}://${previewItem.authority}${previewItem.path}` // 不在 VSCode 的项目内，需要这样拼接的
 
     if (fileExt === '.svga') {
       return (
@@ -60,7 +46,7 @@ function FlutterAssetsPage(props: FlutterAssetsPageInterface) {
     }
     return (
       <>
-        <div>{`path: ${props.dataJSON.item.path.path}`}</div>
+        <div>{`path: ${src}`}</div>
         <div>资源无法显示</div>
       </>
     )

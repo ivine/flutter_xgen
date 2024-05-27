@@ -5,6 +5,7 @@ export enum TreeNodeType {
   file,
   folder,
   preview,
+  configs,
 }
 
 export class TreeNode extends vscode.TreeItem {

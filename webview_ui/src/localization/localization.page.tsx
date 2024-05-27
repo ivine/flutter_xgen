@@ -5,33 +5,34 @@ import {
   VSCodeDataGridRow,
   VSCodeDataGridCell,
 } from "@vscode/webview-ui-toolkit/react"
+import { L10nMsgInterface, FlutterIntlConfigs } from "../enum/extension.type"
 
-interface LocalizationPageInterface {
-  dataJSON: any // {watcherEnable: false, intl_en.arb: {account: "abc", ...}, ...}
-}
-
-function LocalizationPage(props: LocalizationPageInterface) {
+function LocalizationPage(props: L10nMsgInterface) {
+  const watcherEnable = props.watcherEnable
+  const flutterIntlConfigs = props.flutterIntlConfigs
+  const arbs = props.arbs
 
   const renderVSCodeGrid = () => {
-    const tmpLocalizationJSON = props.dataJSON
-    if (typeof tmpLocalizationJSON !== 'object') {
+    if (typeof arbs !== 'object') {
       return <div>无效数据</div>
-    } else if (tmpLocalizationJSON === null) {
+    } else if (arbs === null) {
       return <div>正在加载中...</div>
     }
 
     let mainLocaleKeys: string[] = [] // 国际化主键 keys
 
     const fileNames: string[] = []
-    for (let fileName of Object.keys(tmpLocalizationJSON)) {
-      fileNames.push(fileName)
-      if (fileName.includes('en')) {
-        // TODO: 优化一下
-        mainLocaleKeys = []
-        const valueJson = tmpLocalizationJSON[fileName]
-        mainLocaleKeys = Object.keys(valueJson)
+    const mainLocale = flutterIntlConfigs.main_locale
+    for (const key of Object.keys(arbs)) {
+      fileNames.push(key)
+      if (!key.endsWith(`_${mainLocale}.arb`)) {
+        continue
       }
+      mainLocaleKeys = []
+      const valueJson = arbs[key]
+      mainLocaleKeys = Object.keys(valueJson)
     }
+    console.log("dw test, mainLocaleKeys: ", mainLocaleKeys)
     return (
       <div
         style={{
@@ -91,7 +92,7 @@ function LocalizationPage(props: LocalizationPageInterface) {
               return (
                 <VSCodeDataGridRow key={`${key}_${index}`}>
                   {fileNames.map(function (fileName: string, index: number) {
-                    const json = tmpLocalizationJSON[fileName]
+                    const json = arbs[fileName]
                     const value = json[key]
                     return (
                       <VSCodeDataGridCell

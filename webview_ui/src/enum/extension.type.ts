@@ -1,29 +1,5 @@
-// 用于 VSCode Extension <---> WebViewUI 的交互
-export default class InteractionManager {
-  private static instance: InteractionManager | null = null
-  private constructor() { }
-  static getInstance(): InteractionManager {
-    if (!InteractionManager.instance) {
-      InteractionManager.instance = new InteractionManager()
-    }
-    return InteractionManager.instance
-  }
-}
 
-// 事件
-export interface InteractionEvent {
-  timestamp: number
-  eventType: InteractionEventType
-  projectInfo: InteractionProjectInfo
-  data: any
-}
-
-export interface InteractionProjectInfo {
-  name: string
-  dir: string
-}
-
-// 事件类型
+// 只从 interaction.manager.ts 中复制
 export enum InteractionEventType {
 
   // sync
@@ -55,4 +31,34 @@ export enum InteractionEventType {
   webToExt_preview = 600900,
   webToExt_preview_previousItem = 600910,
   webToExt_preview_nextItem = 600911,
+}
+
+export interface AssetsMsgInterface {
+  watcherEnable: boolean
+  previewItem: any
+  fileExt: string
+}
+
+export interface L10nMsgInterface {
+  watcherEnable: boolean
+  flutterIntlConfigs: FlutterIntlConfigs
+  arbs: any | null
+}
+
+export interface MsgInterface {
+  type: InteractionEventType
+  data: {
+    assets: AssetsMsgInterface | null
+    l10n: L10nMsgInterface | null
+  }
+}
+
+export interface FlutterIntlConfigs {
+  enabled: boolean
+  class_name: string
+  main_locale: string
+  arb_dir: string
+  output_dir: string
+  use_deferred_loading: boolean
+  localizely: any // TODO: 后续支持
 }
