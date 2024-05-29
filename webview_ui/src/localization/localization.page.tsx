@@ -14,7 +14,9 @@ import './localization.page.css'
 
 import { L10nMsgInterface } from "../enum/extension.type"
 import { getRandomString } from "../util/string.util"
-import LocalizationConfigsView from "./localization.configs.view"
+import LocalizationConfigsView, {
+  LocalizationConfigsViewCollapsedHeight,
+} from "./localization.configs.view"
 
 function LocalizationPage(props: L10nMsgInterface) {
   const watcherEnable = props.watcherEnable
@@ -22,7 +24,7 @@ function LocalizationPage(props: L10nMsgInterface) {
   const arbs = props.arbs
 
   const [height, setHeight] = useState(0)
-  const [configsBarHeight, setConfigsBarHeight] = useState(160)
+  const [configsBarHeight, setConfigsBarHeight] = useState(LocalizationConfigsViewCollapsedHeight)
   const containerRef = useRef(null)
 
   const [columns, setColumns] = useState<Column[]>([])
@@ -101,7 +103,12 @@ function LocalizationPage(props: L10nMsgInterface) {
           height: configsBarHeight
         }}
       >
-        <LocalizationConfigsView {...props} />
+        <LocalizationConfigsView
+          msg={props}
+          onUpdateHeight={(height: number) => {
+            setConfigsBarHeight(height)
+          }}
+        />
       </div>
     )
   }
