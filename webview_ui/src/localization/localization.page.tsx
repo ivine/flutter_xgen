@@ -1,26 +1,62 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+
 import {
-  VSCodeButton,
-  VSCodeCheckbox,
-  VSCodeDataGrid,
-  VSCodeDataGridRow,
-  VSCodeDataGridCell,
-} from "@vscode/webview-ui-toolkit/react"
+  Column,
+  DataSheetGrid,
+  checkboxColumn,
+  DynamicDataSheetGrid,
+  textColumn,
+  keyColumn,
+} from 'react-datasheet-grid'
+
+import 'react-datasheet-grid/dist/style.css'
+import './localization.page.css'
+
 import { L10nMsgInterface, FlutterIntlConfigs } from "../enum/extension.type"
+
+function getRandomString(length: number): string {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  const charactersLength = characters.length;
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+}
 
 function LocalizationPage(props: L10nMsgInterface) {
   const watcherEnable = props.watcherEnable
   const flutterIntlConfigs = props.flutterIntlConfigs
   const arbs = props.arbs
 
-  const renderVSCodeGrid = () => {
-    if (typeof arbs !== 'object') {
-      return <div>无效数据</div>
-    } else if (arbs === null) {
-      return <div>正在加载中...</div>
+  const [height, setHeight] = useState(0)
+  const gridContainerRef = useRef(null)
+
+  const [columns, setColumns] = useState<Column[]>([])
+  const [rows, setRows] = useState<any[]>([])
+  const createRow = useCallback(() => {
+    return { id: getRandomString(20) }
+  }, [])
+
+  function vscodeRightClickEvent(e) {
+    e.stopImmediatePropagation()
+  }
+
+  useEffect(() => {
+    // 高度
+    setHeight(gridContainerRef.current.clientHeight)
+
+    // 默认的右键事件
+    window.addEventListener('contextmenu', vscodeRightClickEvent, true)
+
+    return () => {
+      window.removeEventListener('contextmenu', vscodeRightClickEvent)
     }
+  }, [])
 
-    let mainLocaleKeys: string[] = [] // 国际化主键 keys
-
+  useEffect(() => {
+    // 国际化主键 keys
+    let mainLocaleKeys: string[] = []
     const fileNames: string[] = []
     const mainLocale = flutterIntlConfigs.main_locale
     for (const key of Object.keys(arbs)) {
@@ -32,89 +68,76 @@ function LocalizationPage(props: L10nMsgInterface) {
       const valueJson = arbs[key]
       mainLocaleKeys = Object.keys(valueJson)
     }
-    console.log("dw test, mainLocaleKeys: ", mainLocaleKeys)
+
+    // 初始化数据
+
+    // columns
+    const keysString = 'key'
+    const arbNames: string[] = Object.keys(arbs)
+    const tmpColumns: Column[] = [{ ...keyColumn('key', textColumn), title: "Key" }]
+    for (const arbName of arbNames) {
+      tmpColumns.push({ ...keyColumn(arbName, textColumn), title: arbName })
+    }
+
+    // rows
+    const tmpRows: any[] = []
+    for (const key of mainLocaleKeys) {
+      const tmpItem = {}
+      for (const c of tmpColumns) {
+        let value = ""
+        if (c.id === keysString) {
+          value = key
+        } else {
+          value = arbs[c.id][key]
+        }
+        tmpItem[c.id] = value
+      }
+      tmpRows.push(tmpItem)
+    }
+    setColumns(tmpColumns)
+    setRows(tmpRows)
+  }, [arbs])
+
+  const renderGrid = () => {
+    if (typeof arbs !== 'object') {
+      return <div>无效数据</div>
+    } else if (arbs === null) {
+      return <div>正在加载中...</div>
+    }
     return (
-      <div
+      <DynamicDataSheetGrid
         style={{
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: "clip",
           width: '100%',
           height: '100%',
-        }}>
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            position: 'sticky',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '100%',
-            height: 30,
-          }}
-        >
-          <div style={{ width: 16 }} />
-          <VSCodeButton>
-            立即更新
-          </VSCodeButton>
-          <div style={{ width: 16 }} />
-          <VSCodeButton>
-            从文件同步
-          </VSCodeButton>
-          <div style={{ width: 16 }} />
-          <VSCodeCheckbox
-            value="true"
-          >
-            自动更新
-          </VSCodeCheckbox>
-        </div>
-        <div style={{ height: 16 }} />
-        <VSCodeDataGrid generateHeader='sticky'>
-          <VSCodeDataGridRow row-type="sticky-header">
-            {fileNames.map((name, index) => {
-              return (
-                <VSCodeDataGridCell key={name} cell-type="columnheader" grid-column={`${index + 1}`}>
-                  {name}
-                </VSCodeDataGridCell>
-              )
-            })}
-          </VSCodeDataGridRow>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              overflow: "scroll",
-              width: '100%',
-              height: 300,
-            }}
-          >
-            {mainLocaleKeys.map(function (key: string, index: number) {
-              return (
-                <VSCodeDataGridRow key={`${key}_${index}`}>
-                  {fileNames.map(function (fileName: string, index: number) {
-                    const json = arbs[fileName]
-                    const value = json[key]
-                    return (
-                      <VSCodeDataGridCell
-                        key={`${fileName}_${index}`}
-                        grid-column={`${index + 1}`}
-                      // contentEditable="true"
-                      >
-                        {value}
-                      </VSCodeDataGridCell>
-                    )
-                  })}
-                </VSCodeDataGridRow>
-              )
-            })}
-          </div>
-        </VSCodeDataGrid>
-      </div>
+        }}
+        className='grid_root'
+        rowClassName={'grid_row'}
+        cellClassName={'grid_cell'}
+        height={height}
+        headerRowHeight={50}
+        rowHeight={40}
+        columns={columns}
+        value={rows}
+        createRow={createRow}
+        onChange={(e) => {
+          setRows(e)
+        }}
+      />
     )
   }
 
   return (
-    renderVSCodeGrid()
+    <div>
+      <div
+        ref={gridContainerRef}
+        style={{
+          display: 'flex',
+          flex: 1,
+        }}
+      >
+        {renderGrid()}
+      </div>
+    </div>
   )
 }
 

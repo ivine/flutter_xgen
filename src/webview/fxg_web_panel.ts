@@ -96,7 +96,7 @@ export class FXGUIWebPanel {
         assets.fileExt = FileUtil.getFileExtension(item.path)
       } else if (event.eventType === InteractionEventType.extToWeb_configs_assets) {
 
-      } else if (event.eventType === InteractionEventType.extToWeb_preview_localization) {
+      } else if (event.eventType === InteractionEventType.extToWeb_preview_localization || event.eventType === InteractionEventType.extToWeb_configs_localization) {
         const project = WorkspaceManager.getInstance().mainProject // TODO: sub project
         l0n.watcherEnable = StoreManager.getInstance().getWatcherEnable(WorkspaceManager.getInstance().mainProject.dir)
         l0n.flutterIntlConfigs = project.flutterIntlConfig
@@ -113,7 +113,7 @@ export class FXGUIWebPanel {
           }
           l0n.arbs[name] = json
         }
-      } else if (event.eventType === InteractionEventType.extToWeb_configs_localization) {
+      } else {
 
       }
     } catch (error) {

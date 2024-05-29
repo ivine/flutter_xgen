@@ -1,0 +1,12 @@
+.grid_root {
+  background-color: transparent;
+  /* --dsg-selection-border-color: #32c47c; */
+}
+
+.grid_row {
+  background-color: transparent;
+}
+
+.grid_cell {
+  background-color: transparent;
+}
