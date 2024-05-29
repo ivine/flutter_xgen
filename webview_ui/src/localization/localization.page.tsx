@@ -12,17 +12,9 @@ import {
 import 'react-datasheet-grid/dist/style.css'
 import './localization.page.css'
 
-import { L10nMsgInterface, FlutterIntlConfigs } from "../enum/extension.type"
-
-function getRandomString(length: number): string {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
-  const charactersLength = characters.length;
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-}
+import { L10nMsgInterface } from "../enum/extension.type"
+import { getRandomString } from "../util/string.util"
+import LocalizationConfigsView from "./localization.configs.view"
 
 function LocalizationPage(props: L10nMsgInterface) {
   const watcherEnable = props.watcherEnable
@@ -30,7 +22,8 @@ function LocalizationPage(props: L10nMsgInterface) {
   const arbs = props.arbs
 
   const [height, setHeight] = useState(0)
-  const gridContainerRef = useRef(null)
+  const [configsBarHeight, setConfigsBarHeight] = useState(160)
+  const containerRef = useRef(null)
 
   const [columns, setColumns] = useState<Column[]>([])
   const [rows, setRows] = useState<any[]>([])
@@ -44,7 +37,7 @@ function LocalizationPage(props: L10nMsgInterface) {
 
   useEffect(() => {
     // 高度
-    setHeight(gridContainerRef.current.clientHeight)
+    setHeight(containerRef.current.clientHeight - (configsBarHeight + 60))
 
     // 默认的右键事件
     window.addEventListener('contextmenu', vscodeRightClickEvent, true)
@@ -98,6 +91,21 @@ function LocalizationPage(props: L10nMsgInterface) {
     setRows(tmpRows)
   }, [arbs])
 
+  const renderL10nConfigsBar = () => {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          width: '100%',
+          height: configsBarHeight
+        }}
+      >
+        <LocalizationConfigsView {...props} />
+      </div>
+    )
+  }
+
   const renderGrid = () => {
     if (typeof arbs !== 'object') {
       return <div>无效数据</div>
@@ -127,12 +135,19 @@ function LocalizationPage(props: L10nMsgInterface) {
   }
 
   return (
-    <div>
+    <div
+      ref={containerRef}
+      style={{
+        display: 'flex',
+        flex: 1,
+        flexDirection: 'column',
+      }}
+    >
+      {renderL10nConfigsBar()}
       <div
-        ref={gridContainerRef}
         style={{
           display: 'flex',
-          flex: 1,
+          width: '100%',
         }}
       >
         {renderGrid()}
