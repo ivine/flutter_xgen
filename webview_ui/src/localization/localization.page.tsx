@@ -12,19 +12,19 @@ import {
 import 'react-datasheet-grid/dist/style.css'
 import './localization.page.css'
 
-import { L10nMsgInterface } from "../enum/extension.type"
+import { L10nMsgInterface } from "../enum/vscode_extension.type"
 import { getRandomString, isEmptyString } from "../util/string.util"
-import LocalizationConfigsView, {
-  LocalizationConfigsViewCollapsedHeight,
-} from "./localization.configs.view"
+import LocalizationConfigView, {
+  LocalizationConfigViewCollapsedHeight,
+} from "./localization.config.view"
 
 function LocalizationPage(props: L10nMsgInterface) {
   const watcherEnable = props.watcherEnable
-  const flutterIntlConfigs = props.flutterIntlConfigs
+  const flutterIntlConfig = props.flutterIntlConfig
   const arbs = props.arbs
 
   const [height, setHeight] = useState(0)
-  const [configsBarHeight, setConfigsBarHeight] = useState(LocalizationConfigsViewCollapsedHeight)
+  const [configsBarHeight, setConfigsBarHeight] = useState(LocalizationConfigViewCollapsedHeight)
   const containerRef = useRef(null)
 
   const [columns, setColumns] = useState<Column[]>([])
@@ -50,10 +50,15 @@ function LocalizationPage(props: L10nMsgInterface) {
   }, [])
 
   useEffect(() => {
+    console.log('dw test, flutterIntlConfig: ', flutterIntlConfig)
+    if (!flutterIntlConfig) {
+      return;
+    }
+
     // 国际化主键 keys
     let mainLocaleKeys: string[] = []
     const fileNames: string[] = []
-    const mainLocale = isEmptyString(flutterIntlConfigs.main_locale) ? 'en' : flutterIntlConfigs.main_locale
+    const mainLocale = isEmptyString(flutterIntlConfig.main_locale) ? 'en' : flutterIntlConfig.main_locale
     for (const key of Object.keys(arbs)) {
       fileNames.push(key)
       if (!key.endsWith(`_${mainLocale}.arb`)) {
@@ -103,7 +108,7 @@ function LocalizationPage(props: L10nMsgInterface) {
           height: configsBarHeight
         }}
       >
-        <LocalizationConfigsView
+        <LocalizationConfigView
           msg={props}
           onUpdateHeight={(height: number) => {
             setConfigsBarHeight(height)

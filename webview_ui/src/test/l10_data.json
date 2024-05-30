@@ -8,7 +8,7 @@
     },
     "l10n": {
       "watcherEnable": false,
-      "flutterIntlConfigs": {
+      "flutterIntlConfig": {
         "enabled": true,
         "main_locale": ""
       },

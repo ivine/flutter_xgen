@@ -1,4 +1,4 @@
-import { AssetsMsgInterface } from "../enum/extension.type"
+import { AssetsMsgInterface } from "../enum/vscode_extension.type"
 import ImageView from "./image.view"
 import MediaView from "./media.view"
 import SVGAView from "./svga.view"

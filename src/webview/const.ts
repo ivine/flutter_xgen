@@ -1,5 +1,6 @@
 import * as vscode from 'vscode'
 import { InteractionEventType } from '../manager/interaction.manager'
+import { FlutterAssetsGeneratorConfigByCr1992, FlutterGenConfig, FlutterIntlConfig } from '../model/project.enum'
 
 export enum WebViewType {
   fxg
@@ -16,11 +17,13 @@ export interface AssetsMsgInterface {
   watcherEnable: boolean
   previewItem: any
   fileExt: string
+  flutterGenConfig: FlutterGenConfig | null
+  flutterAssetsGeneratorConfigByCr1992: FlutterAssetsGeneratorConfigByCr1992 | null
 }
 
 export interface L10nMsgInterface {
   watcherEnable: boolean
-  flutterIntlConfigs: any | null
+  flutterIntlConfig: FlutterIntlConfig | null
   arbs: any | null
 }
 

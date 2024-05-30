@@ -11,18 +11,9 @@ import { InteractionEventType } from '../manager/interaction.manager';
 import WatcherManager, { FileWatcher, WatcherEventType, WatcherType } from '../manager/watcher.manager';
 
 import { PreviewItem } from './preview';
+import { FlutterAssetsGeneratorConfigByCr1992, FlutterGenConfig, FlutterIntlConfig } from './project.enum';
 
 export type TreeViewRefreshCallback = (treeViewType: TreeViewType) => void
-
-export interface FlutterIntlConfigs {
-  enabled: boolean
-  class_name: string
-  main_locale: string
-  arb_dir: string
-  output_dir: string
-  use_deferred_loading: boolean | null
-  localizely: any // TODO: 后续支持
-}
 
 export default class FXGProject {
   dir: string
@@ -47,7 +38,9 @@ export default class FXGProject {
   assetNodes: AssetsTreeNode[] = []
   l10nNodes: IntlTreeNode[] = []
 
-  flutterIntlConfig: FlutterIntlConfigs | null = null
+  flutterIntlConfig: FlutterIntlConfig | null = null
+  flutterGenConfig: FlutterGenConfig | null = null
+  flutterAssetsGeneratorConfigByCr1992: FlutterAssetsGeneratorConfigByCr1992 | null = null
 
   assetOneDimensionalPreviewNodes: AssetsTreeNode[] = [] // TODO: 预览全部
 
@@ -120,14 +113,33 @@ export default class FXGProject {
 
     // flutter intl
     try {
-      this.flutterIntlConfig = this.pubspecData["flutter_intl"]
-      let mainLocale = this.flutterIntlConfig.main_locale
-      if (!(typeof mainLocale === 'string' && mainLocale.length > 0)) {
-        mainLocale = "en" // 默认是英文
-      }
+      const tmpData = this.pubspecData["flutter_intl"]
+      this.flutterIntlConfig = tmpData
+      // let mainLocale = this.flutterIntlConfig.main_locale
+      // if (!(typeof mainLocale === 'string' && mainLocale.length > 0)) {
+      //   mainLocale = "en" // 默认是英文
+      // }
     } catch (error) {
-      //
+      console.log('getCurrentPubspecData - flutter_intl, error: ', error)
     }
+
+    // flutter gen
+    try {
+      const tmpData = this.pubspecData["flutter_gen"]
+      this.flutterGenConfig = tmpData
+    } catch (error) {
+      console.log('getCurrentPubspecData - flutter_gen, error: ', error)
+    }
+
+    // flutter assets generator by Cr1992
+    try {
+      const tmpData = this.pubspecData["flutter_gen"]
+      this.flutterAssetsGeneratorConfigByCr1992 = tmpData
+    } catch (error) {
+      console.log('getCurrentPubspecData - flutter_assets_generator, error: ', error)
+    }
+
+    console.log('getCurrentPubspecData end')
   }
 
   private async getCurrentAssetsFileTree() {

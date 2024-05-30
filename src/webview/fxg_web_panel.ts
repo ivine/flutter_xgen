@@ -69,12 +69,14 @@ export class FXGUIWebPanel {
   async postMsg(event: InteractionEvent, isWebNewCreate: boolean) {
     const assets: AssetsMsgInterface = {
       watcherEnable: false,
+      flutterGenConfig: null,
+      flutterAssetsGeneratorConfigByCr1992: null,
       previewItem: null,
       fileExt: "",
     }
     const l0n: L10nMsgInterface = {
       watcherEnable: false,
-      flutterIntlConfigs: {},
+      flutterIntlConfig: null,
       arbs: {}
     }
 
@@ -95,11 +97,13 @@ export class FXGUIWebPanel {
         assets.previewItem = this._panel.webview.asWebviewUri(vscode.Uri.file(item.path))
         assets.fileExt = FileUtil.getFileExtension(item.path)
       } else if (event.eventType === InteractionEventType.extToWeb_configs_assets) {
-
+        assets.watcherEnable = StoreManager.getInstance().getWatcherEnable(WorkspaceManager.getInstance().mainProject.dir)
+        assets.flutterGenConfig = WorkspaceManager.getInstance().mainProject.flutterGenConfig
+        assets.flutterAssetsGeneratorConfigByCr1992 = WorkspaceManager.getInstance().mainProject.flutterAssetsGeneratorConfigByCr1992
       } else if (event.eventType === InteractionEventType.extToWeb_preview_localization || event.eventType === InteractionEventType.extToWeb_configs_localization) {
         const project = WorkspaceManager.getInstance().mainProject // TODO: sub project
         l0n.watcherEnable = StoreManager.getInstance().getWatcherEnable(WorkspaceManager.getInstance().mainProject.dir)
-        l0n.flutterIntlConfigs = project.flutterIntlConfig
+        l0n.flutterIntlConfig = project.flutterIntlConfig
         const l10nNodes = project.l10nNodes
         for (const node of l10nNodes) {
           const name = FileUtil.getFileName(node.nodeAbsolutePath)

@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react"
 import { VSCodeButton, VSCodeCheckbox, VSCodeTextField } from '@vscode/webview-ui-toolkit/react'
 
-import { L10nMsgInterface, FlutterIntlConfigs } from "../enum/extension.type";
+import { L10nMsgInterface, FlutterIntlConfig } from "../enum/vscode_extension.type";
 import { isObjectEqual } from "../util/object.util";
 import { getStringOrEmpty } from "../util/string.util";
 
-export const LocalizationConfigsViewCollapsedHeight = 60
-export const LocalizationConfigsViewExpandedHeight = 280
+export const LocalizationConfigViewCollapsedHeight = 60
+export const LocalizationConfigViewExpandedHeight = 280
 
-const defaultFlutterIntlConfigs: any = {
+const defaultFlutterIntlConfig: any = {
   enabled: true,
 }
 
-const checkedFlutterIntlConfigs: FlutterIntlConfigs = {
+const checkedFlutterIntlConfig: FlutterIntlConfig = {
   enabled: true,
   class_name: "",
   main_locale: "",
@@ -22,26 +22,26 @@ const checkedFlutterIntlConfigs: FlutterIntlConfigs = {
   localizely: undefined
 }
 
-export interface LocalizationConfigsViewInterface {
+export interface LocalizationConfigViewInterface {
   msg: L10nMsgInterface
   onUpdateHeight: (height: number) => void
 }
 
-function LocalizationConfigsView(props: LocalizationConfigsViewInterface) {
+function LocalizationConfigView(props: LocalizationConfigViewInterface) {
   const [expand, setExpand] = useState(false)
   const [watcherEnable, setWatcherEnable] = useState(false)
-  const [flutterIntlConfigs, setFlutterIntlConfigs] = useState<FlutterIntlConfigs | null>(defaultFlutterIntlConfigs)
-  const [modifiedSaveFlutterIntlConfigs, setModifiedSaveFlutterIntlConfigs] = useState<boolean>(false)
+  const [flutterIntlConfig, setFlutterIntlConfig] = useState<FlutterIntlConfig | null>(defaultFlutterIntlConfig)
+  const [modifiedSaveFlutterIntlConfig, setModifiedSaveFlutterIntlConfig] = useState<boolean>(false)
 
   useEffect(() => {
     setWatcherEnable(props.msg.watcherEnable)
-    setFlutterIntlConfigs(Object.assign({}, defaultFlutterIntlConfigs, props.msg.flutterIntlConfigs))
-  }, [props.msg.flutterIntlConfigs])
+    setFlutterIntlConfig(Object.assign({}, defaultFlutterIntlConfig, props.msg.flutterIntlConfig))
+  }, [props.msg.flutterIntlConfig])
 
-  const checkIfFlutterIntlConfigsModified = (configs: any) => {
+  const checkIfFlutterIntlConfigModified = (configs: any) => {
     let result = false
     try {
-      result = !isObjectEqual(props.msg.flutterIntlConfigs, configs)
+      result = !isObjectEqual(props.msg.flutterIntlConfig, configs)
     } catch (error) {
       // console.log('checkIfFlutterIntlConfigsModified, error: ', error)
     }
@@ -52,17 +52,17 @@ function LocalizationConfigsView(props: LocalizationConfigsViewInterface) {
     setWatcherEnable(value)
   }
 
-  const updateFlutterIntlConfigs = (key: string, value: any) => {
-    if (!Object.keys(checkedFlutterIntlConfigs).includes(key)) {
+  const updateFlutterIntlConfig = (key: string, value: any) => {
+    if (!Object.keys(checkedFlutterIntlConfig).includes(key)) {
       return
     }
-    const tmpConfig = Object.assign({}, flutterIntlConfigs)
+    const tmpConfig = Object.assign({}, flutterIntlConfig)
     tmpConfig[key] = value
-    const modified = checkIfFlutterIntlConfigsModified(tmpConfig)
-    if (modified !== modifiedSaveFlutterIntlConfigs) {
-      setModifiedSaveFlutterIntlConfigs(modified)
+    const modified = checkIfFlutterIntlConfigModified(tmpConfig)
+    if (modified !== modifiedSaveFlutterIntlConfig) {
+      setModifiedSaveFlutterIntlConfig(modified)
     }
-    setFlutterIntlConfigs(tmpConfig)
+    setFlutterIntlConfig(tmpConfig)
   }
 
   const renderButton = (title: string, onClick: () => void, leftPadding: boolean, rightPadding: boolean) => {
@@ -126,11 +126,11 @@ function LocalizationConfigsView(props: LocalizationConfigsViewInterface) {
           )
         }
         {
-          modifiedSaveFlutterIntlConfigs ? renderButton(
+          modifiedSaveFlutterIntlConfig ? renderButton(
             "保存配置",
             () => {
               console.log('保存配置')
-              setModifiedSaveFlutterIntlConfigs(false)
+              setModifiedSaveFlutterIntlConfig(false)
             },
             true,
             false,
@@ -141,7 +141,7 @@ function LocalizationConfigsView(props: LocalizationConfigsViewInterface) {
             expand ? '隐藏' : '查看配置',
             () => {
               let value = !expand
-              props.onUpdateHeight(value ? LocalizationConfigsViewExpandedHeight : LocalizationConfigsViewCollapsedHeight)
+              props.onUpdateHeight(value ? LocalizationConfigViewExpandedHeight : LocalizationConfigViewCollapsedHeight)
               setExpand(value)
             },
             true,
@@ -152,12 +152,12 @@ function LocalizationConfigsView(props: LocalizationConfigsViewInterface) {
     )
   }
 
-  const renderFlutterIntlConfigs = () => {
+  const renderFlutterIntlConfig = () => {
     if (!expand) {
       return <></>
     }
-    const configs = flutterIntlConfigs
-    const containerH = LocalizationConfigsViewExpandedHeight - LocalizationConfigsViewCollapsedHeight
+    const configs = flutterIntlConfig
+    const containerH = LocalizationConfigViewExpandedHeight - LocalizationConfigViewCollapsedHeight
     const checkBoxH = 40
     const textFieldH = 60
     return (
@@ -182,7 +182,7 @@ function LocalizationConfigsView(props: LocalizationConfigsViewInterface) {
             style={{ height: checkBoxH }}
             checked={configs.enabled}
             onChange={(e) => {
-              updateFlutterIntlConfigs('enable', !configs.enabled)
+              updateFlutterIntlConfig('enable', !configs.enabled)
             }}
           >
             enable
@@ -195,7 +195,7 @@ function LocalizationConfigsView(props: LocalizationConfigsViewInterface) {
             value={getStringOrEmpty(configs.class_name)}
             onChange={(e) => {
               const value = e.target._value
-              updateFlutterIntlConfigs('class_name', value)
+              updateFlutterIntlConfig('class_name', value)
             }}
           >
             class_name
@@ -208,7 +208,7 @@ function LocalizationConfigsView(props: LocalizationConfigsViewInterface) {
             value={getStringOrEmpty(configs.main_locale)}
             onChange={(e) => {
               const value = e.target._value
-              updateFlutterIntlConfigs('main_locale', value)
+              updateFlutterIntlConfig('main_locale', value)
             }}
           >
             main_locale
@@ -228,7 +228,7 @@ function LocalizationConfigsView(props: LocalizationConfigsViewInterface) {
             style={{ height: checkBoxH }}
             checked={configs.use_deferred_loading}
             onChange={(e) => {
-              updateFlutterIntlConfigs('use_deferred_loading', !configs.use_deferred_loading)
+              updateFlutterIntlConfig('use_deferred_loading', !configs.use_deferred_loading)
             }}
           >
             use_deferred_loading
@@ -241,7 +241,7 @@ function LocalizationConfigsView(props: LocalizationConfigsViewInterface) {
             value={getStringOrEmpty(configs.arb_dir)}
             onChange={(e) => {
               const value = e.target._value
-              updateFlutterIntlConfigs('arb_dir', value)
+              updateFlutterIntlConfig('arb_dir', value)
             }}
           >
             arb_dir
@@ -254,7 +254,7 @@ function LocalizationConfigsView(props: LocalizationConfigsViewInterface) {
             value={getStringOrEmpty(configs.output_dir)}
             onChange={(e) => {
               const value = e.target._value
-              updateFlutterIntlConfigs('output_dir', value)
+              updateFlutterIntlConfig('output_dir', value)
             }}
           >
             output_dir
@@ -276,9 +276,9 @@ function LocalizationConfigsView(props: LocalizationConfigsViewInterface) {
       }}
     >
       {renderFunctionButton()}
-      {renderFlutterIntlConfigs()}
+      {renderFlutterIntlConfig()}
     </div>
   )
 }
 
-export default LocalizationConfigsView
+export default LocalizationConfigView

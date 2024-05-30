@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 
 import LocalizationPage from './localization/localization.page'
 import FlutterAssetsPage from './flutter_assets/flutter_assets.page'
+import FlutterAssetsConfigView from './flutter_assets/flutter_assets.config.view'
 
-import { AssetsMsgInterface, InteractionEventType, L10nMsgInterface, MsgInterface } from './enum/extension.type'
+import { AssetsMsgInterface, InteractionEventType, L10nMsgInterface, MsgInterface } from './enum/vscode_extension.type'
 import { ScreenType } from './enum/screent.type'
 
 import L10nTestData from './test/l10_data.json'
@@ -53,12 +54,15 @@ function App() {
 
   const onReceiveMsg = async (msg: MsgInterface) => {
     if (
-      msg.type === InteractionEventType.extToWeb_preview_assets ||
-      msg.type === InteractionEventType.extToWeb_configs_assets
+      msg.type === InteractionEventType.extToWeb_preview_assets
     ) {
       const assets = msg.data.assets
       setAssetsMsg(assets)
       setScreenType(ScreenType.assets)
+    } else if (msg.type === InteractionEventType.extToWeb_configs_assets) {
+      const assets = msg.data.assets
+      setAssetsMsg(assets)
+      setScreenType(ScreenType.assetsConfigs)
     } else if (
       msg.type === InteractionEventType.extToWeb_preview_localization ||
       msg.type === InteractionEventType.extToWeb_configs_localization
@@ -78,13 +82,18 @@ function App() {
       {/* <h1>Flutter XGen</h1> */}
       {screenType === ScreenType.none ? <div>正在加载中</div> : <></>}
       {
+        screenType === ScreenType.localizations ?
+          <LocalizationPage {...l10nMsg} /> :
+          <></>
+      }
+      {
         screenType === ScreenType.assets ?
           <FlutterAssetsPage {...assetsMsg} /> :
           <></>
       }
       {
-        screenType === ScreenType.localizations ?
-          <LocalizationPage {...l10nMsg} /> :
+        screenType === ScreenType.assetsConfigs ?
+          <FlutterAssetsConfigView {...assetsMsg} /> :
           <></>
       }
     </main>
