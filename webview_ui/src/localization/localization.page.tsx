@@ -13,7 +13,7 @@ import 'react-datasheet-grid/dist/style.css'
 import './localization.page.css'
 
 import { L10nMsgInterface } from "../enum/extension.type"
-import { getRandomString } from "../util/string.util"
+import { getRandomString, isEmptyString } from "../util/string.util"
 import LocalizationConfigsView, {
   LocalizationConfigsViewCollapsedHeight,
 } from "./localization.configs.view"
@@ -53,7 +53,7 @@ function LocalizationPage(props: L10nMsgInterface) {
     // 国际化主键 keys
     let mainLocaleKeys: string[] = []
     const fileNames: string[] = []
-    const mainLocale = flutterIntlConfigs.main_locale
+    const mainLocale = isEmptyString(flutterIntlConfigs.main_locale) ? 'en' : flutterIntlConfigs.main_locale
     for (const key of Object.keys(arbs)) {
       fileNames.push(key)
       if (!key.endsWith(`_${mainLocale}.arb`)) {

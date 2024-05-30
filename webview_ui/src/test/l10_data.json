@@ -10,7 +10,7 @@
       "watcherEnable": false,
       "flutterIntlConfigs": {
         "enabled": true,
-        "main_locale": "en"
+        "main_locale": ""
       },
       "arbs": {
         "intl_en.arb": {

@@ -20,7 +20,7 @@ export interface FlutterIntlConfigs {
   main_locale: string
   arb_dir: string
   output_dir: string
-  use_deferred_loading: boolean
+  use_deferred_loading: boolean | null
   localizely: any // TODO: 后续支持
 }
 
@@ -121,9 +121,9 @@ export default class FXGProject {
     // flutter intl
     try {
       this.flutterIntlConfig = this.pubspecData["flutter_intl"]
-      const mainLocale = this.flutterIntlConfig.main_locale
+      let mainLocale = this.flutterIntlConfig.main_locale
       if (!(typeof mainLocale === 'string' && mainLocale.length > 0)) {
-        this.flutterIntlConfig.main_locale = "en" // 默认是英文
+        mainLocale = "en" // 默认是英文
       }
     } catch (error) {
       //
