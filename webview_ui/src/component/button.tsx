@@ -2,6 +2,7 @@ import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 
 interface FXGButtonInterface {
   title: string
+  disabled?: boolean
   topSpacing?: number
   leftSpacing?: number
   bottomSpacing?: number
@@ -27,7 +28,7 @@ function FXGButton(props: FXGButtonInterface) {
         }}
       >
         <div style={{ width: props.leftSpacing ?? 0 }} />
-        <VSCodeButton onClick={props.onClick}>{props.title}</VSCodeButton>
+        <VSCodeButton disabled={props.disabled ?? false} onClick={props.onClick}>{props.title}</VSCodeButton>
         <div style={{ width: props.rightSpacing ?? 0 }} />
       </div>
       <div style={{ height: props.bottomSpacing ?? 0 }} />
