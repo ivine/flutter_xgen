@@ -133,8 +133,15 @@ export default class FXGProject {
 
     // flutter assets generator by Cr1992
     try {
-      const tmpData = this.pubspecData["flutter_gen"]
-      this.flutterAssetsGeneratorConfigByCr1992 = tmpData
+      const tmpData = this.pubspecData["flutter_assets_generator"]
+      if (tmpData) {
+        this.flutterAssetsGeneratorConfigByCr1992 = tmpData
+      } else {
+        this.flutterAssetsGeneratorConfigByCr1992 = {
+          auto_detection: true,
+          named_with_parent: true,
+        }
+      }
     } catch (error) {
       console.log('getCurrentPubspecData - flutter_assets_generator, error: ', error)
     }

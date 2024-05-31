@@ -1,13 +1,13 @@
 // MARK: - FlutterAssetsGenerator - Cr1992
 export interface FlutterAssetsGeneratorConfigByCr1992 {
   // https://github.com/cr1992/FlutterAssetsGenerator
-  output_dir: string // default: generated, e.g.: lib/generated
+  output_dir?: string // default: generated, e.g.: lib/generated
   auto_detection: boolean
   named_with_parent: boolean
-  output_filename: string
-  class_name: string
-  filename_split_pattern: string
-  path_ignore: string[]
+  output_filename?: string
+  class_name?: string
+  filename_split_pattern?: string
+  path_ignore?: string[]
 }
 
 

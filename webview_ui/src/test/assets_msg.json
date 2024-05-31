@@ -3,6 +3,10 @@
   "data": {
     "assets": {
       "watcherEnable": false,
+      "flutterAssetsGeneratorConfigByCr1992": {
+        "auto_detection": true,
+        "named_with_parent": true
+      },
       "previewItem": null,
       "fileExt": ""
     },
