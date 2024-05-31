@@ -109,7 +109,7 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
       TreeNodeType.folder,
       project.dir,
       project.projectName,
-      [previewNode, configsNode, generatedNode, assetsNode],
+      [configsNode, generatedNode, assetsNode],
       "",
       null,
     )

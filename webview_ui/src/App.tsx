@@ -7,7 +7,8 @@ import FlutterAssetsConfigView from './flutter_assets/flutter_assets.config.view
 import { AssetsMsgInterface, InteractionEventType, L10nMsgInterface, MsgInterface } from './enum/vscode_extension.type'
 import { ScreenType } from './enum/screent.type'
 
-import L10nTestData from './test/l10_data.json'
+import L10nTestMsg from './test/l10_msg.json'
+import AssetsTestMsg from './test/assets_msg.json'
 
 import "./App.css"
 
@@ -25,7 +26,7 @@ function App() {
         document.body.style.color = "#ffffff"
         document.body.style.backgroundColor = "#24262f"
         try {
-          onReceiveMsg(L10nTestData as MsgInterface)
+          onReceiveMsg(AssetsTestMsg as MsgInterface)
         } catch (error) {
           console.log("debug, parse JSON error: ", error)
         }
