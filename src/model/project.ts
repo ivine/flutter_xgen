@@ -139,7 +139,7 @@ export default class FXGProject {
       } else {
         this.flutterAssetsGeneratorConfigByCr1992 = {
           auto_detection: true,
-          named_with_parent: true,
+          named_with_parent: false,
         }
       }
     } catch (error) {

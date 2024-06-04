@@ -126,6 +126,7 @@ export class FXGUIWebPanel {
 
     const msg: MsgInterface = {
       type: event.eventType,
+      projectInfo: event.projectInfo,
       data: {
         assets: assets,
         l10n: l0n,

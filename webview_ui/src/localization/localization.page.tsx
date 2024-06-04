@@ -12,16 +12,19 @@ import {
 import 'react-datasheet-grid/dist/style.css'
 import './localization.page.css'
 
-import { L10nMsgInterface } from "../enum/vscode_extension.type"
+import { MsgInterface } from "../enum/vscode_extension.type"
 import { getRandomString, isEmptyString } from "../util/string.util"
 import LocalizationConfigView, {
   LocalizationConfigViewCollapsedHeight,
 } from "./localization.config.view"
 
-function LocalizationPage(props: L10nMsgInterface) {
-  const watcherEnable = props.watcherEnable
-  const flutterIntlConfig = props.flutterIntlConfig
-  const arbs = props.arbs
+import FXGProjectInfoPanel from '../component/project_info_panel'
+
+function LocalizationPage(props: MsgInterface) {
+  const msg = props.data.l10n;
+  const watcherEnable = msg.watcherEnable
+  const flutterIntlConfig = msg.flutterIntlConfig
+  const arbs = msg.arbs
 
   const [height, setHeight] = useState(0)
   const [configsBarHeight, setConfigsBarHeight] = useState(LocalizationConfigViewCollapsedHeight)
@@ -105,11 +108,11 @@ function LocalizationPage(props: L10nMsgInterface) {
           display: 'flex',
           flexDirection: 'column',
           width: '100%',
-          height: configsBarHeight
+          height: configsBarHeight,
         }}
       >
         <LocalizationConfigView
-          msg={props}
+          msg={msg}
           onUpdateHeight={(height: number) => {
             setConfigsBarHeight(height)
           }}
@@ -155,7 +158,16 @@ function LocalizationPage(props: L10nMsgInterface) {
         flexDirection: 'column',
       }}
     >
-      {renderL10nConfigsBar()}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          padding: 20,
+        }}
+      >
+        <FXGProjectInfoPanel {...props.projectInfo} />
+        {renderL10nConfigsBar()}
+      </div>
       <div
         style={{
           display: 'flex',

@@ -5,8 +5,8 @@ import { L10nMsgInterface, FlutterIntlConfig } from "../enum/vscode_extension.ty
 import { isObjectEqual } from "../util/object.util";
 import { getStringOrEmpty } from "../util/string.util";
 
-export const LocalizationConfigViewCollapsedHeight = 60
-export const LocalizationConfigViewExpandedHeight = 280
+export const LocalizationConfigViewCollapsedHeight = 40
+export const LocalizationConfigViewExpandedHeight = 220
 
 const defaultFlutterIntlConfig: any = {
   enabled: true,
@@ -80,19 +80,16 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
     )
   }
 
-  const renderFunctionButton = () => {
+  const renderFunctionButtons = () => {
     return (
       <div
         style={{
           display: 'flex',
           flexDirection: 'row',
-          paddingTop: 10,
-          paddingBottom: 10,
           width: '100%',
           height: 40,
         }}
       >
-        <div style={{ width: 20 }} />
         <VSCodeCheckbox
           checked={watcherEnable}
           clickHandler={(e) => {
@@ -169,7 +166,6 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
           height: containerH,
         }}
       >
-        <div style={{ width: 20 }} />
         <div
           style={{
             display: 'flex',
@@ -275,7 +271,7 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
         height: '100%',
       }}
     >
-      {renderFunctionButton()}
+      {renderFunctionButtons()}
       {renderFlutterIntlConfig()}
     </div>
   )

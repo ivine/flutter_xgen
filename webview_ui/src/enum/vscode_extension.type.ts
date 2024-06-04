@@ -47,8 +47,14 @@ export interface L10nMsgInterface {
   arbs: any | null
 }
 
+export interface ProjectInfoMsgInterface {
+  name: string
+  dir: string
+}
+
 export interface MsgInterface {
   type: InteractionEventType
+  projectInfo: ProjectInfoMsgInterface
   data: {
     assets: AssetsMsgInterface | null
     l10n: L10nMsgInterface | null

@@ -1,11 +1,12 @@
-import { AssetsMsgInterface } from "../enum/vscode_extension.type"
+import { AssetsMsgInterface, MsgInterface } from "../enum/vscode_extension.type"
 import ImageView from "./image.view"
 import MediaView from "./media.view"
 import SVGAView from "./svga.view"
 
-function FlutterAssetsPage(props: AssetsMsgInterface) {
-  const previewItem = props.previewItem
-  const fileExt = props.fileExt.toLowerCase()
+function FlutterAssetsPage(props: MsgInterface) {
+  const assetsMsg = props.data.assets
+  const previewItem = assetsMsg.previewItem
+  const fileExt = assetsMsg.fileExt.toLowerCase()
 
   function isMediaFile(url: string, fileExt: string): boolean {
     const mediaExtensions = [

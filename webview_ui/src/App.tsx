@@ -13,8 +13,7 @@ import AssetsTestMsg from './test/assets_msg.json'
 import "./App.css"
 
 function App() {
-  const [assetsMsg, setAssetsMsg] = useState<AssetsMsgInterface | null>(null)
-  const [l10nMsg, setL10nMsg] = useState<L10nMsgInterface | null>(null)
+  const [msg, setMsg] = useState<MsgInterface | null>(null)
   const [interactionEventType, setInteractionEventType] = useState<InteractionEventType | null>(null)
   const [screenType, setScreenType] = useState<ScreenType>(ScreenType.none)
 
@@ -26,7 +25,7 @@ function App() {
         document.body.style.color = "#ffffff"
         document.body.style.backgroundColor = "#24262f"
         try {
-          onReceiveMsg(AssetsTestMsg as MsgInterface)
+          onReceiveMsg(L10nTestMsg as MsgInterface)
         } catch (error) {
           console.log("debug, parse JSON error: ", error)
         }
@@ -54,22 +53,17 @@ function App() {
   }
 
   const onReceiveMsg = async (msg: MsgInterface) => {
+    setMsg(msg)
     if (
       msg.type === InteractionEventType.extToWeb_preview_assets
     ) {
-      const assets = msg.data.assets
-      setAssetsMsg(assets)
       setScreenType(ScreenType.assets)
     } else if (msg.type === InteractionEventType.extToWeb_configs_assets) {
-      const assets = msg.data.assets
-      setAssetsMsg(assets)
       setScreenType(ScreenType.assetsConfigs)
     } else if (
       msg.type === InteractionEventType.extToWeb_preview_localization ||
       msg.type === InteractionEventType.extToWeb_configs_localization
     ) {
-      const l10n = msg.data.l10n
-      setL10nMsg(l10n)
       setScreenType(ScreenType.localizations)
     } else {
 
@@ -84,17 +78,17 @@ function App() {
       {screenType === ScreenType.none ? <div>正在加载中</div> : <></>}
       {
         screenType === ScreenType.localizations ?
-          <LocalizationPage {...l10nMsg} /> :
+          <LocalizationPage {...msg} /> :
           <></>
       }
       {
         screenType === ScreenType.assets ?
-          <FlutterAssetsPage {...assetsMsg} /> :
+          <FlutterAssetsPage {...msg} /> :
           <></>
       }
       {
         screenType === ScreenType.assetsConfigs ?
-          <FlutterAssetsConfigView {...assetsMsg} /> :
+          <FlutterAssetsConfigView {...msg} /> :
           <></>
       }
     </main>

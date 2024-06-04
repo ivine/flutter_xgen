@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react"
 import { VSCodeButton, VSCodeCheckbox, VSCodeTextField, VSCodeDropdown, VSCodeOption } from '@vscode/webview-ui-toolkit/react'
-import { AssetsMsgInterface, FlutterAssetsGeneratorConfigByCr1992 } from "../enum/vscode_extension.type"
+import { AssetsMsgInterface, FlutterAssetsGeneratorConfigByCr1992, MsgInterface } from "../enum/vscode_extension.type"
 import FXGTextField from "../component/text_field"
 import FXGCheckBox from "../component/check_box"
 import FXGButton from "../component/button"
 import { isObjectEqual } from "../util/object.util"
+import FXGProjectInfoPanel from "../component/project_info_panel"
 
 enum FlutterAssetsConfigType {
   Cr1992,
@@ -53,7 +54,8 @@ const flutterAssetsConfigStringToType = (type: string): FlutterAssetsConfigType 
   return result
 }
 
-function FlutterAssetsConfigView(props: AssetsMsgInterface) {
+function FlutterAssetsConfigView(props: MsgInterface) {
+  const assetsMsg = props.data.assets
   const [currentConfigType, setCurrentConfigType] = useState<FlutterAssetsConfigType>(FlutterAssetsConfigType.Cr1992)
   const watcherEnable = useRef<boolean>(false)
   const flutterAssetsGeneratorConfigByCr1992 = useRef<FlutterAssetsGeneratorConfigByCr1992 | null>(null)
@@ -61,8 +63,8 @@ function FlutterAssetsConfigView(props: AssetsMsgInterface) {
   const [updateCounter, setUpdateCounter] = useState<number>(0)
 
   useEffect(() => {
-    watcherEnable.current = props.watcherEnable
-    flutterAssetsGeneratorConfigByCr1992.current = Object.assign({}, defaultFlutterAssetsGeneratorConfigByCr1992, props.flutterAssetsGeneratorConfigByCr1992 ?? {})
+    watcherEnable.current = assetsMsg.watcherEnable
+    flutterAssetsGeneratorConfigByCr1992.current = Object.assign({}, defaultFlutterAssetsGeneratorConfigByCr1992, assetsMsg.flutterAssetsGeneratorConfigByCr1992 ?? {})
     const tmpConfigsModified = {}
     tmpConfigsModified[flutterAssetsConfigTypeToString(FlutterAssetsConfigType.Cr1992)] = false
     tmpConfigsModified[flutterAssetsConfigTypeToString(FlutterAssetsConfigType.FlutterGen)] = false
@@ -124,7 +126,7 @@ function FlutterAssetsConfigView(props: AssetsMsgInterface) {
     const tmpConfigsModified = Object.assign({}, configsModified)
     let modified = false
     if (currentConfigType === FlutterAssetsConfigType.Cr1992) {
-      modified = checkIfConfigModified(props.flutterAssetsGeneratorConfigByCr1992, flutterAssetsGeneratorConfigByCr1992.current)
+      modified = checkIfConfigModified(assetsMsg.flutterAssetsGeneratorConfigByCr1992, flutterAssetsGeneratorConfigByCr1992.current)
       tmpConfigsModified[flutterAssetsConfigTypeToString(FlutterAssetsConfigType.Cr1992)] = modified
     } else if (currentConfigType === FlutterAssetsConfigType.FlutterGen) {
 
@@ -331,6 +333,7 @@ function FlutterAssetsConfigView(props: AssetsMsgInterface) {
         height: '100%',
       }}
     >
+      <FXGProjectInfoPanel {...props.projectInfo} />
       {renderTopBar()}
       {currentConfigType === FlutterAssetsConfigType.Cr1992 ? renderCr1992ConfigView() : <></>}
       {currentConfigType === FlutterAssetsConfigType.FlutterGen ? renderFlutterGenConfigView() : <></>}

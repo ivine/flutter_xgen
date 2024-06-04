@@ -1,5 +1,9 @@
 {
   "type": 300102,
+  "projectInfo": {
+    "dir": "~/Downloads/pokaliveapp_flutter_download_test",
+    "name": "pokaliveapp_flutter_download_test"
+  },
   "data": {
     "assets": {
       "watcherEnable": false,
