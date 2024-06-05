@@ -31,8 +31,8 @@ export enum InteractionEventType {
   // assets
   webToExt_assets = 600100,
   webToExt_assets_run = 600101,
-  webToExt_assets_read_configs = 600102,
-  webToExt_assets_save_configs = 600103,
+  webToExt_assets_read_config = 600102,
+  webToExt_assets_save_config = 600103,
 
   // intl
   webToExt_intl = 600200,
@@ -78,15 +78,15 @@ export interface MsgInterface {
 // MARK: - FlutterAssetsGenerator - Cr1992
 export interface FlutterAssetsGeneratorConfigByCr1992 {
   // https://github.com/cr1992/FlutterAssetsGenerator
-  output_dir: string // default: generated, e.g.: lib/generated
+  output_dir?: string // default: generated, e.g.: lib/generated
   auto_detection: boolean
   named_with_parent: boolean
-  output_filename: string
-  class_name: string
-  filename_split_pattern: string
-  path_ignore: string[]
+  output_filename?: string
+  class_name?: string
+  filename_split_pattern?: string
+  path_ignore?: string[]
+  leading_with_package_name?: boolean
 }
-
 
 // MARK: - Flutter Gen
 export interface FlutterGenConfig {

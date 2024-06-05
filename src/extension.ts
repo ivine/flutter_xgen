@@ -3,7 +3,6 @@
 import * as vscode from 'vscode'
 
 import CommandManager from './manager/command.manager'
-import AssetsGenerator from './assets_generator'
 
 import FileManager from './manager/file.manager'
 import WatcherManager from './manager/watcher.manager'
@@ -88,13 +87,13 @@ let assetsWatcher: vscode.FileSystemWatcher | null = null
 
 
 async function assetsGenerate() {
-	try {
-		await new AssetsGenerator()?.generate()
-		vscode.window.showInformationMessage(`Flutter XGen: Assets.dart 生成成功`)
-	} catch (error) {
-		console.error(error)
-		vscode.window.showErrorMessage(`${error}`)
-	}
+	// try {
+	// 	await new AssetsGenerator()?.generate()
+	// 	vscode.window.showInformationMessage(`Flutter XGen: Assets.dart 生成成功`)
+	// } catch (error) {
+	// 	console.error(error)
+	// 	vscode.window.showErrorMessage(`${error}`)
+	// }
 }
 
 async function assetsWatch(context: vscode.ExtensionContext) {

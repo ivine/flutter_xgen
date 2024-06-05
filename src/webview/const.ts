@@ -30,6 +30,17 @@ export enum FlutterAssetsConfigType {
   Cr1992 = 2,
 }
 
+export const FlutterAssetsConfigCr1992Constants = {
+  output_dir: "generated",
+  auto_detection: false,
+  named_with_parent: true,
+  output_filename: "assets",
+  class_name: "Assets",
+  filename_split_pattern: "[-_]",
+  path_ignore: [],
+  leading_with_package_name: false
+}
+
 // MARK: - Msg
 export interface AssetsMsgInterface {
   watcherEnable: boolean
@@ -88,8 +99,8 @@ export enum InteractionEventType {
   // assets
   webToExt_assets = 600100,
   webToExt_assets_run = 600101,
-  webToExt_assets_read_configs = 600102,
-  webToExt_assets_save_configs = 600103,
+  webToExt_assets_read_config = 600102,
+  webToExt_assets_save_config = 600103,
 
   // intl
   webToExt_intl = 600200,

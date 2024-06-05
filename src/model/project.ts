@@ -1,5 +1,7 @@
 import * as vscode from 'vscode'
-const yaml = require('js-yaml')
+const fs = require('fs')
+const p = require('path')
+import YAML, { Document, Scalar, YAMLMap, YAMLSeq } from 'yaml'
 
 import { FileUtil } from '../util/file.util'
 import TreeViewUtil from '../tree_view/tree_view.util'
@@ -10,7 +12,9 @@ import WatcherManager, { FileWatcher, WatcherEventType, WatcherType } from '../m
 
 import { PreviewItem } from './preview'
 import { FlutterAssetsGeneratorConfigByCr1992, FlutterGenConfig, FlutterIntlConfig } from './project.enum'
-import { FlutterAssetsConfigType, InteractionEventType } from '../webview/const'
+import { FlutterAssetsConfigType, InteractionEvent, InteractionEventType, ProjectInfoMsgInterface } from '../webview/const'
+import AssetsGenerator from '../generator/assets/assets.generator'
+import { FXGUIWebPanel } from '../webview/fxg_web_panel'
 
 export type TreeViewRefreshCallback = (treeViewType: TreeViewType) => void
 
@@ -24,7 +28,7 @@ export default class FXGProject {
   }
 
   loading: boolean = false
-  pubspecData: any = null
+  pubspecDoc: Document = null
 
   assetsDirPath: string = ""
   l10nsDirPath: string = ""
@@ -47,7 +51,7 @@ export default class FXGProject {
     // 获取当前 pubspec data
     this.loading = true
     try {
-      await this.getCurrentPubspecData()
+      await this.getCurrentPubspecDoc()
       this.addWatchers()
       this.getCurrentAssetsFileTree()
       this.getCurrentLocalizationFileTree()
@@ -83,13 +87,37 @@ export default class FXGProject {
     WatcherManager.getInstance().stopWatch(this.l10nsDirWatcher)
   }
 
-  public refresh() { }
+  public async refresh() {
+    await this.getCurrentPubspecDoc()
+    const event: InteractionEvent = {
+      timestamp: Date.now(),
+      eventType: InteractionEventType.extToWeb_configs_assets,
+      projectInfo: {
+        name: this.projectName,
+        dir: this.dir,
+      },
+      data: null
+    }
+    FXGUIWebPanel.currentPanel.postMsg(event, true)
+  }
+
+  public saveCurrentPubspec() {
+    const pubspecPath: string = `${this.dir}/pubspec.yaml`
+    if (fs.existsSync(pubspecPath)) {
+      fs.writeFileSync(pubspecPath, '')
+    } else {
+      // 确保目录存在，如果不存在则递归创建
+      fs.mkdirSync(p.dirname(pubspecPath), { recursive: true })
+    }
+    const content = YAML.stringify(this.pubspecDoc)
+    fs.writeFileSync(pubspecPath, content)
+  }
 
   // MARK: - Getter & Setter
   get projectName(): string {
     let result: string = ""
     try {
-      result = this.pubspecData["name"]
+      result = this.pubspecDoc.get('name') as string
     } catch (error) {
 
     }
@@ -97,14 +125,13 @@ export default class FXGProject {
   }
 
   // MARK: - Private
-  private async getCurrentPubspecData() {
+  private async getCurrentPubspecDoc() {
     let pubspecPath = `${this.dir}/pubspec.yaml`
     if (!FileUtil.pathExists(pubspecPath)) {
       console.log("pubspec no exist, TODO: add alert")
       return
     }
-    let result: string = await FileUtil.readFile(pubspecPath)
-    this.pubspecData = yaml.load(result)
+    this.pubspecDoc = await FileUtil.readYamlFile(pubspecPath)
 
     // 根据项目配置来确定路径
     this.assetsDirPath = `${this.dir}/assets`
@@ -112,53 +139,59 @@ export default class FXGProject {
 
     // flutter intl
     try {
-      const tmpData = this.pubspecData["flutter_intl"]
-      this.flutterIntlConfig = tmpData
+      const tmpData = this.pubspecDoc.get('flutter_intl') as YAMLMap
+      if (YAML.isMap(tmpData)) {
+        this.flutterIntlConfig = tmpData.toJSON()
+      }
       // let mainLocale = this.flutterIntlConfig.main_locale
       // if (!(typeof mainLocale === 'string' && mainLocale.length > 0)) {
       //   mainLocale = "en" // 默认是英文
       // }
     } catch (error) {
-      console.log('getCurrentPubspecData - flutter_intl, error: ', error)
+      console.log('getCurrentPubspecDoc - flutter_intl, error: ', error)
     }
 
     // flutter gen
     try {
-      const tmpData = this.pubspecData["flutter_gen"]
-      this.flutterGenConfig = tmpData
+      const tmpData = this.pubspecDoc.get('flutter_gen') as YAMLMap
+      if (YAML.isMap(tmpData)) {
+        this.flutterGenConfig = tmpData.toJSON()
+      }
     } catch (error) {
-      console.log('getCurrentPubspecData - flutter_gen, error: ', error)
+      console.log('getCurrentPubspecDoc - flutter_gen, error: ', error)
     }
 
     // flutter assets generator by Cr1992
     try {
-      const tmpData = this.pubspecData["flutter_assets_generator"]
-      if (tmpData) {
-        this.flutterAssetsGeneratorConfigByCr1992 = tmpData
+      const tmpData = this.pubspecDoc.get('flutter_assets_generator') as YAMLMap
+      if (YAML.isMap(tmpData)) {
+        this.flutterAssetsGeneratorConfigByCr1992 = tmpData.toJSON()
       } else {
         this.flutterAssetsGeneratorConfigByCr1992 = {
           auto_detection: true,
-          named_with_parent: false,
+          named_with_parent: true,
         }
       }
     } catch (error) {
-      console.log('getCurrentPubspecData - flutter_assets_generator, error: ', error)
+      console.log('getCurrentPubspecDoc - flutter_assets_generator, error: ', error)
     }
 
-    console.log('getCurrentPubspecData end')
+    console.log('getCurrentPubspecDoc end')
   }
 
   private async getCurrentAssetsFileTree() {
-    let pathsSettings = this.pubspecData["flutter"]["assets"]
-    if (!Array.isArray(pathsSettings)) {
+    let flutterMap = this.pubspecDoc.get('flutter') as YAMLMap
+    let pathsSettings = flutterMap.get('assets') as YAMLSeq
+
+    if (!YAML.isSeq(pathsSettings)) {
       console.log('getCurrentAssetsFileTree, assetsSettings is not array')
       return
     }
-
+    const paths: any[] = pathsSettings.items
     let nodes: AssetsTreeNode[] = []
 
-    for (let p of pathsSettings) {
-      let fullPath = this.dir + "/" + p
+    for (const tmpPath of paths) {
+      let fullPath = this.dir + "/" + tmpPath.value
       let isDir = await FileUtil.pathIsDir(fullPath)
       let subNodes: AssetsTreeNode[] = []
       let command: vscode.Command | null = null
@@ -249,14 +282,14 @@ export default class FXGProject {
 
   private async getCurrentLocalizationFileTree() {
     // flutter_intl
-    let pathsSettings = this.pubspecData["flutter_intl"]
-    if (!pathsSettings) {
+    const pathsSettings = this.pubspecDoc.get('flutter_intl') as YAMLMap
+    if (!YAML.isMap(pathsSettings)) {
       console.log('getCurrentLocalizationFileTree, assetsSettings is not array')
       return
     }
 
     let l10nFilesDir: string = `${this.dir}/lib/l10n`
-    let configL10nFilesDir: any = pathsSettings["arb-dir"]
+    let configL10nFilesDir: any = pathsSettings.get('arb-dir')
     if (typeof configL10nFilesDir === "string" && configL10nFilesDir.length > 0) {
       l10nFilesDir = `${this.dir}/${configL10nFilesDir}`
     }
@@ -334,7 +367,59 @@ export default class FXGProject {
   }
 
   // MARK: - generator
-  public runAssetsGenerator() { }
-  public readAssetsGeneratorConfig(type: FlutterAssetsConfigType): any | null { }
-  public saveAssetsGeneratorConfig(type: FlutterAssetsConfigType, config: any) { }
+  public async runAssetsGenerator(type: FlutterAssetsConfigType, config: any) {
+    switch (type) {
+      case FlutterAssetsConfigType.Cr1992:
+        const projectInfo: ProjectInfoMsgInterface = {
+          dir: this.dir,
+          name: this.projectName,
+        }
+        try {
+          await AssetsGenerator.getInstance().runCr1992Generator(projectInfo, config)
+          vscode.window.setStatusBarMessage("FXG: Assets.dart 生成成功", 3000)
+        } catch (error) {
+          console.log('runAssetsGenerator - error: ', error)
+        }
+        break;
+
+      case FlutterAssetsConfigType.FlutterGen:
+
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  public async readAssetsGeneratorConfig(type: FlutterAssetsConfigType) {
+    await this.refresh()
+    vscode.window.setStatusBarMessage("FXG: assets 生成器配置读取完成", 3000)
+  }
+
+  public async saveAssetsGeneratorConfig(type: FlutterAssetsConfigType, config: any) {
+    switch (type) {
+      case FlutterAssetsConfigType.Cr1992: {
+        if (config === null) {
+          return
+        }
+        const key: string = 'flutter_assets_generator'
+        if (this.pubspecDoc.has(key)) {
+          this.pubspecDoc.delete(key)
+        }
+        const pair = this.pubspecDoc.createPair(key, config)
+        this.pubspecDoc.add(pair)
+        // TODO: 加入换行符
+        this.saveCurrentPubspec()
+        await this.refresh()
+        vscode.window.setStatusBarMessage("FXG: pubspec.yaml 保存成功", 3000)
+      }
+        break;
+
+      case FlutterAssetsConfigType.FlutterGen:
+
+        break;
+      default:
+        break;
+    }
+  }
 }

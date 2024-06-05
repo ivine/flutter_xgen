@@ -4,7 +4,7 @@ import LocalizationPage from './localization/localization.page'
 import FlutterAssetsPage from './flutter_assets/flutter_assets.page'
 import FlutterAssetsConfigView from './flutter_assets/flutter_assets.config.view'
 
-import { AssetsMsgInterface, InteractionEventType, L10nMsgInterface, MsgInterface } from './enum/vscode_extension.type'
+import { InteractionEventType, MsgInterface } from './enum/vscode_extension.type'
 import { ScreenType } from './enum/screent.type'
 
 import L10nTestMsg from './test/l10_msg.json'
@@ -13,9 +13,8 @@ import AssetsTestMsg from './test/assets_msg.json'
 import "./App.css"
 
 function App() {
+  const screenTypeRef = useRef<ScreenType>(ScreenType.none)
   const [msg, setMsg] = useState<MsgInterface | null>(null)
-  const [interactionEventType, setInteractionEventType] = useState<InteractionEventType | null>(null)
-  const [screenType, setScreenType] = useState<ScreenType>(ScreenType.none)
 
   useEffect(() => {
     window.addEventListener('message', onMsg)
@@ -52,42 +51,40 @@ function App() {
     onReceiveMsg(data)
   }
 
-  const onReceiveMsg = async (msg: MsgInterface) => {
-    setMsg(msg)
+  const onReceiveMsg = async (receiveMsg: MsgInterface) => {
+    let tmpScreentType: ScreenType = ScreenType.none
     if (
-      msg.type === InteractionEventType.extToWeb_preview_assets
+      receiveMsg.type === InteractionEventType.extToWeb_preview_assets
     ) {
-      setScreenType(ScreenType.assets)
-    } else if (msg.type === InteractionEventType.extToWeb_configs_assets) {
-      setScreenType(ScreenType.assetsConfigs)
+      tmpScreentType = ScreenType.assets
+    } else if (receiveMsg.type === InteractionEventType.extToWeb_configs_assets) {
+      tmpScreentType = ScreenType.assetsConfigs
     } else if (
-      msg.type === InteractionEventType.extToWeb_preview_localization ||
-      msg.type === InteractionEventType.extToWeb_configs_localization
+      receiveMsg.type === InteractionEventType.extToWeb_preview_localization ||
+      receiveMsg.type === InteractionEventType.extToWeb_configs_localization
     ) {
-      setScreenType(ScreenType.localizations)
-    } else {
-
+      tmpScreentType = ScreenType.localizations
     }
 
-    setInteractionEventType(msg.type)
+    screenTypeRef.current = tmpScreentType
+    setMsg(receiveMsg)
   }
 
   return (
     <main>
-      {/* <h1>Flutter XGen</h1> */}
-      {screenType === ScreenType.none ? <div>正在加载中</div> : <></>}
+      {screenTypeRef.current === ScreenType.none ? <div>正在加载中</div> : <></>}
       {
-        screenType === ScreenType.localizations ?
+        screenTypeRef.current === ScreenType.localizations ?
           <LocalizationPage {...msg} /> :
           <></>
       }
       {
-        screenType === ScreenType.assets ?
+        screenTypeRef.current === ScreenType.assets ?
           <FlutterAssetsPage {...msg} /> :
           <></>
       }
       {
-        screenType === ScreenType.assetsConfigs ?
+        screenTypeRef.current === ScreenType.assetsConfigs ?
           <FlutterAssetsConfigView {...msg} /> :
           <></>
       }

@@ -71,8 +71,6 @@ export class FXGUIWebPanel {
       isWebNewCreate = true
     }
     FXGUIWebPanel.currentPanel.postMsg(event, isWebNewCreate)
-
-
   }
 
   async postMsg(event: InteractionEvent, isWebNewCreate: boolean) {
@@ -200,13 +198,27 @@ export class FXGUIWebPanel {
   private _setWebviewMessageListener(webview: vscode.Webview) {
     webview.onDidReceiveMessage(
       (message: InteractionEvent) => {
+        const data = message.data
         const eventType: InteractionEventType = message.eventType
         const projectInfo: ProjectInfoMsgInterface = message.projectInfo
 
         switch (eventType) {
-          case InteractionEventType.webToExt_assets_run:
+          case InteractionEventType.webToExt_assets_run: {
             const project: FXGProject | null = WorkspaceManager.getInstance().getProjectByDir(projectInfo.dir)
-            project.runAssetsGenerator()
+            project.runAssetsGenerator(data.type, data.config)
+          }
+            return
+
+          case InteractionEventType.webToExt_assets_read_config: {
+            const project: FXGProject | null = WorkspaceManager.getInstance().getProjectByDir(projectInfo.dir)
+            project.readAssetsGeneratorConfig(data.type)
+          }
+            return
+
+          case InteractionEventType.webToExt_assets_save_config: {
+            const project: FXGProject | null = WorkspaceManager.getInstance().getProjectByDir(projectInfo.dir)
+            project.saveAssetsGeneratorConfig(data.type, data.config)
+          }
             return
         }
       },

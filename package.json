@@ -44,7 +44,8 @@
   "dependencies": {
     "lodash": "^4.17.21",
     "react-player": "^2.16.0",
-    "svga": "^2.1.1"
+    "svga": "^2.1.1",
+    "yaml": "^2.4.3"
   },
   "devDependencies": {
     "@types/glob": "^8.1.0",

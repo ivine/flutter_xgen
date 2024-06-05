@@ -7,7 +7,10 @@ import {
 // 用于 VSCode Extension <---> WebViewUI 的交互
 export default class InteractionManager {
   private static instance: InteractionManager | null = null
-  private constructor() { }
+  private vscode: any | null = null
+  private constructor() {
+    this.vscode = acquireVsCodeApi()
+  }
   static getInstance(): InteractionManager {
     if (!InteractionManager.instance) {
       InteractionManager.instance = new InteractionManager()
@@ -22,7 +25,6 @@ export default class InteractionManager {
       projectInfo: projectInfo,
       data: data
     }
-    const vscode = acquireVsCodeApi()
-    vscode.postMessage(msg)
+    this.vscode?.postMessage(msg)
   }
 }

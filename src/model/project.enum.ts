@@ -8,6 +8,7 @@ export interface FlutterAssetsGeneratorConfigByCr1992 {
   class_name?: string
   filename_split_pattern?: string
   path_ignore?: string[]
+  leading_with_package_name?: boolean
 }
 
 

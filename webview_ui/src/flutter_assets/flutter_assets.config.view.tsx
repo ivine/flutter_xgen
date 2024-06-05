@@ -18,11 +18,12 @@ const defaultFlutterAssetsGeneratorConfigByCr1992: any = {}
 const checkedFlutterAssetsGeneratorConfigByCr1992: FlutterAssetsGeneratorConfigByCr1992 = {
   output_dir: "",
   auto_detection: false,
-  named_with_parent: false,
+  named_with_parent: true,
   output_filename: "",
   class_name: "",
   filename_split_pattern: "",
-  path_ignore: []
+  path_ignore: [],
+  leading_with_package_name: false,
 }
 
 const flutterAssetsConfigTypeToString = (type: FlutterAssetsConfigType): string => {
@@ -71,7 +72,7 @@ function FlutterAssetsConfigView(props: MsgInterface) {
     tmpConfigsModified[flutterAssetsConfigTypeToString(FlutterAssetsConfigType.FlutterGen)] = false
     configsModified.current = tmpConfigsModified
     updateUI()
-  }, [])
+  }, [assetsMsg])
 
   const updateUI = () => {
     let value = updateCounter + 1
@@ -209,7 +210,10 @@ function FlutterAssetsConfigView(props: MsgInterface) {
                 InteractionManager.getInstance().postMsg(
                   InteractionEventType.webToExt_assets_run,
                   props.projectInfo,
-                  null,
+                  {
+                    type: currentConfigType,
+                    config: flutterAssetsGeneratorConfigByCr1992.current,
+                  },
                 );
               }}
             />
@@ -219,9 +223,12 @@ function FlutterAssetsConfigView(props: MsgInterface) {
               rightSpacing={10}
               onClick={() => {
                 InteractionManager.getInstance().postMsg(
-                  InteractionEventType.webToExt_assets_read_configs,
+                  InteractionEventType.webToExt_assets_read_config,
                   props.projectInfo,
-                  null,
+                  {
+                    type: currentConfigType,
+                    config: flutterAssetsGeneratorConfigByCr1992.current,
+                  },
                 );
               }}
             />
@@ -232,11 +239,11 @@ function FlutterAssetsConfigView(props: MsgInterface) {
               rightSpacing={10}
               onClick={() => {
                 InteractionManager.getInstance().postMsg(
-                  InteractionEventType.webToExt_assets_save_configs,
+                  InteractionEventType.webToExt_assets_save_config,
                   props.projectInfo,
                   {
-                    generatorType: currentConfigType,
-                    flutterAssetsGeneratorConfigByCr1992: flutterAssetsGeneratorConfigByCr1992.current,
+                    type: currentConfigType,
+                    config: flutterAssetsGeneratorConfigByCr1992.current,
                   },
                 );
               }}
@@ -300,6 +307,15 @@ function FlutterAssetsConfigView(props: MsgInterface) {
           bottomSpacing={6}
           onChange={(value) => {
             updateFlutterAssetsGeneratorByCr1992ConfigValue('named_with_parent', value)
+          }}
+        />
+        <FXGCheckBox
+          title="leading_with_package_name"
+          checked={flutterAssetsGeneratorConfigByCr1992.current.leading_with_package_name}
+          topSpacing={10}
+          bottomSpacing={6}
+          onChange={(value) => {
+            updateFlutterAssetsGeneratorByCr1992ConfigValue('leading_with_package_name', value)
           }}
         />
         <FXGTextField title="output_dir"
