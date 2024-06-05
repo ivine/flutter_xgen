@@ -1,5 +1,15 @@
+export enum FlutterAssetsConfigType {
+  FlutterGen = 1,
+  Cr1992 = 2,
+}
 
-// 只从 interaction.manager.ts 中复制
+export interface InteractionEvent {
+  timestamp: number
+  eventType: InteractionEventType
+  projectInfo: ProjectInfoMsgInterface
+  data: any
+}
+
 export enum InteractionEventType {
 
   // sync
@@ -20,7 +30,9 @@ export enum InteractionEventType {
 
   // assets
   webToExt_assets = 600100,
-  webToExt_assets_updateItem = 600110,
+  webToExt_assets_run = 600101,
+  webToExt_assets_read_configs = 600102,
+  webToExt_assets_save_configs = 600103,
 
   // intl
   webToExt_intl = 600200,

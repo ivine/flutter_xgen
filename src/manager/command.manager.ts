@@ -4,7 +4,6 @@ import { FileUtil } from '../util/file.util'
 import { FXGUIWebPanel } from '../webview/fxg_web_panel'
 
 import { getExtensionContext } from '../extension'
-import { InteractionEvent } from './interaction.manager'
 
 export interface FXGCommandData {
   title: string

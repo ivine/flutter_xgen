@@ -1,16 +1,17 @@
 import { useEffect, useRef, useState } from "react"
-import { VSCodeButton, VSCodeCheckbox, VSCodeTextField, VSCodeDropdown, VSCodeOption } from '@vscode/webview-ui-toolkit/react'
-import { AssetsMsgInterface, FlutterAssetsGeneratorConfigByCr1992, MsgInterface } from "../enum/vscode_extension.type"
+import { VSCodeDropdown, VSCodeOption } from '@vscode/webview-ui-toolkit/react'
+import {
+  FlutterAssetsConfigType,
+  FlutterAssetsGeneratorConfigByCr1992,
+  InteractionEventType,
+  MsgInterface
+} from "../enum/vscode_extension.type"
 import FXGTextField from "../component/text_field"
 import FXGCheckBox from "../component/check_box"
 import FXGButton from "../component/button"
 import { isObjectEqual } from "../util/object.util"
 import FXGProjectInfoPanel from "../component/project_info_panel"
-
-enum FlutterAssetsConfigType {
-  Cr1992,
-  FlutterGen,
-}
+import InteractionManager from "../interaction/interaction.manager"
 
 const defaultFlutterAssetsGeneratorConfigByCr1992: any = {}
 
@@ -200,9 +201,46 @@ function FlutterAssetsConfigView(props: MsgInterface) {
                 updateWatcherEnable(value)
               }}
             />
-            <FXGButton title="立即执行" leftSpacing={40} rightSpacing={10} onClick={() => { }} />
-            <FXGButton title="读取配置" leftSpacing={10} rightSpacing={10} onClick={() => { }} />
-            <FXGButton title="保存配置" disabled={saveConfigButtonDisabled} leftSpacing={10} rightSpacing={10} onClick={() => { }} />
+            <FXGButton
+              title="立即执行"
+              leftSpacing={40}
+              rightSpacing={10}
+              onClick={() => {
+                InteractionManager.getInstance().postMsg(
+                  InteractionEventType.webToExt_assets_run,
+                  props.projectInfo,
+                  null,
+                );
+              }}
+            />
+            <FXGButton
+              title="读取配置"
+              leftSpacing={10}
+              rightSpacing={10}
+              onClick={() => {
+                InteractionManager.getInstance().postMsg(
+                  InteractionEventType.webToExt_assets_read_configs,
+                  props.projectInfo,
+                  null,
+                );
+              }}
+            />
+            <FXGButton
+              title="保存配置"
+              disabled={saveConfigButtonDisabled}
+              leftSpacing={10}
+              rightSpacing={10}
+              onClick={() => {
+                InteractionManager.getInstance().postMsg(
+                  InteractionEventType.webToExt_assets_save_configs,
+                  props.projectInfo,
+                  {
+                    generatorType: currentConfigType,
+                    flutterAssetsGeneratorConfigByCr1992: flutterAssetsGeneratorConfigByCr1992.current,
+                  },
+                );
+              }}
+            />
           </div>
         </div>
         <div style={{ height: 20 }} />

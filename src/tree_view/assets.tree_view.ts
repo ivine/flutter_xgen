@@ -5,11 +5,11 @@ import { FileUtil } from '../util/file.util'
 
 import WorkspaceManager from '../manager/workspace.manager'
 import { TreeViewType } from '../manager/tree_view.manager'
-import { InteractionEvent, InteractionEventType } from '../manager/interaction.manager'
 import { FXGCommandData, FXGCommandType, getFXGCommandData } from '../manager/command.manager'
 
 import TreeViewUtil from './tree_view.util'
 import { TreeNodeType, AssetsTreeNode } from './tree_node'
+import { InteractionEvent, InteractionEventType } from '../webview/const'
 
 export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
   private _onDidChangeTreeData: vscode.EventEmitter<AssetsTreeNode | undefined | null | void> = new vscode.EventEmitter<AssetsTreeNode | undefined | null | void>()

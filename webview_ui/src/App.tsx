@@ -43,9 +43,9 @@ function App() {
     let data = msg.data
     try {
       const test_string = JSON.stringify(data)
-      console.log('dw test, onMsg ----- start -----')
+      console.log('onMsg ----- start -----')
       console.log(test_string)
-      console.log('dw test, onMsg ----- end -----')
+      console.log('onMsg ----- end -----')
     } catch (error) {
       //
     }

@@ -39,4 +39,17 @@ export default class WorkspaceManager {
 
     this.subProjectList.push(new FXGProject(subProjectDir, false))
   }
+
+  public getProjectByDir(dir: string | null): FXGProject | null {
+    let project: FXGProject | null = null
+    if (dir === this.mainProject.dir) {
+      project = this.mainProject
+    } else {
+      const list = this.subProjectList.filter((p) => p.dir === dir)
+      if (list.length > 0) {
+        project = list[0]
+      }
+    }
+    return project
+  }
 }

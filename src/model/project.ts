@@ -1,17 +1,16 @@
 import * as vscode from 'vscode'
-const yaml = require('js-yaml');
+const yaml = require('js-yaml')
 
-import { IntlArbFile } from '../model/intl'
 import { FileUtil } from '../util/file.util'
-import TreeViewUtil from '../tree_view/tree_view.util';
-import { AssetsTreeNode, IntlTreeNode, TreeNodeType } from '../tree_view/tree_node';
+import TreeViewUtil from '../tree_view/tree_view.util'
+import { AssetsTreeNode, IntlTreeNode, TreeNodeType } from '../tree_view/tree_node'
 
-import { TreeViewType } from '../manager/tree_view.manager';
-import { InteractionEventType } from '../manager/interaction.manager';
-import WatcherManager, { FileWatcher, WatcherEventType, WatcherType } from '../manager/watcher.manager';
+import { TreeViewType } from '../manager/tree_view.manager'
+import WatcherManager, { FileWatcher, WatcherEventType, WatcherType } from '../manager/watcher.manager'
 
-import { PreviewItem } from './preview';
-import { FlutterAssetsGeneratorConfigByCr1992, FlutterGenConfig, FlutterIntlConfig } from './project.enum';
+import { PreviewItem } from './preview'
+import { FlutterAssetsGeneratorConfigByCr1992, FlutterGenConfig, FlutterIntlConfig } from './project.enum'
+import { FlutterAssetsConfigType, InteractionEventType } from '../webview/const'
 
 export type TreeViewRefreshCallback = (treeViewType: TreeViewType) => void
 
@@ -101,8 +100,8 @@ export default class FXGProject {
   private async getCurrentPubspecData() {
     let pubspecPath = `${this.dir}/pubspec.yaml`
     if (!FileUtil.pathExists(pubspecPath)) {
-      console.log("pubspec no exist, TODO: add alert");
-      return;
+      console.log("pubspec no exist, TODO: add alert")
+      return
     }
     let result: string = await FileUtil.readFile(pubspecPath)
     this.pubspecData = yaml.load(result)
@@ -153,7 +152,7 @@ export default class FXGProject {
     let pathsSettings = this.pubspecData["flutter"]["assets"]
     if (!Array.isArray(pathsSettings)) {
       console.log('getCurrentAssetsFileTree, assetsSettings is not array')
-      return;
+      return
     }
 
     let nodes: AssetsTreeNode[] = []
@@ -253,7 +252,7 @@ export default class FXGProject {
     let pathsSettings = this.pubspecData["flutter_intl"]
     if (!pathsSettings) {
       console.log('getCurrentLocalizationFileTree, assetsSettings is not array')
-      return;
+      return
     }
 
     let l10nFilesDir: string = `${this.dir}/lib/l10n`
@@ -333,4 +332,9 @@ export default class FXGProject {
     let result: PreviewItem = new PreviewItem(path)
     return result
   }
+
+  // MARK: - generator
+  public runAssetsGenerator() { }
+  public readAssetsGeneratorConfig(type: FlutterAssetsConfigType): any | null { }
+  public saveAssetsGeneratorConfig(type: FlutterAssetsConfigType, config: any) { }
 }

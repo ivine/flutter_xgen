@@ -1,14 +1,21 @@
 import * as vscode from 'vscode'
-import * as fs from 'fs'
-import * as path from 'path'
 
 import { getUri, getNonce } from "../util/webview.util"
-import { AssetsMsgInterface, L10nMsgInterface, MsgInterface, WebViewType, WebViewTypeData, getWebViewTypeData } from "./const"
-import { InteractionEvent, InteractionEventType } from '../manager/interaction.manager'
+import {
+  AssetsMsgInterface,
+  InteractionEvent,
+  InteractionEventType,
+  L10nMsgInterface,
+  MsgInterface,
+  ProjectInfoMsgInterface,
+  WebViewType,
+  WebViewTypeData,
+  getWebViewTypeData
+} from "./const"
 import WorkspaceManager from '../manager/workspace.manager'
 import { FileUtil } from '../util/file.util'
 import StoreManager from '../manager/store.manager'
-import { getExtensionContext } from '../extension'
+import FXGProject from '../model/project'
 
 export class FXGUIWebPanel {
   public static currentPanel: FXGUIWebPanel | undefined
@@ -64,6 +71,8 @@ export class FXGUIWebPanel {
       isWebNewCreate = true
     }
     FXGUIWebPanel.currentPanel.postMsg(event, isWebNewCreate)
+
+
   }
 
   async postMsg(event: InteractionEvent, isWebNewCreate: boolean) {
@@ -190,13 +199,14 @@ export class FXGUIWebPanel {
   // web h5 -> vscode extension
   private _setWebviewMessageListener(webview: vscode.Webview) {
     webview.onDidReceiveMessage(
-      (message: any) => {
-        const command = message.command
-        const text = message.text
+      (message: InteractionEvent) => {
+        const eventType: InteractionEventType = message.eventType
+        const projectInfo: ProjectInfoMsgInterface = message.projectInfo
 
-        switch (command) {
-          case "hello":
-            vscode.window.showInformationMessage(text)
+        switch (eventType) {
+          case InteractionEventType.webToExt_assets_run:
+            const project: FXGProject | null = WorkspaceManager.getInstance().getProjectByDir(projectInfo.dir)
+            project.runAssetsGenerator()
             return
         }
       },

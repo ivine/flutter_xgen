@@ -1,10 +1,9 @@
 import * as vscode from 'vscode'
-import * as path from 'path';
 
-import { FileUtil } from "../util/file.util";
+import { FileUtil } from "../util/file.util"
 import { TreeNode, TreeNodeType } from "./tree_node"
-import { FXGCommandData, FXGCommandType, getFXGCommandData } from '../manager/command.manager';
-import { InteractionEvent, InteractionEventType } from '../manager/interaction.manager';
+import { FXGCommandData, FXGCommandType, getFXGCommandData } from '../manager/command.manager'
+import { InteractionEvent, InteractionEventType } from '../webview/const'
 
 export default class TreeViewUtil {
 
@@ -17,18 +16,18 @@ export default class TreeViewUtil {
       let bFileName = FileUtil.getFileName(b.nodeAbsolutePath)
 
       if (aIsFolder && !bIsFolder) {
-        return -1; // 文件夹排在前面
+        return -1 // 文件夹排在前面
       } else if (!aIsFolder && bIsFolder) {
-        return 1; // 文件排在后面
+        return 1 // 文件排在后面
       } else {
-        return aFileName.localeCompare(bFileName); // 相同类型按名称排序
+        return aFileName.localeCompare(bFileName) // 相同类型按名称排序
       }
-    });
+    })
   }
 
   static getIconPathForFilePath(filePath: string): string {
     let ext: string = FileUtil.getFileExtension(filePath)
-    return "";
+    return ""
   }
 
   static async getTreeNodeCommand(
