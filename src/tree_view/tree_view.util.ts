@@ -3,7 +3,8 @@ import * as vscode from 'vscode'
 import { FileUtil } from "../util/file.util"
 import { TreeNode, TreeNodeType } from "./tree_node"
 import { FXGCommandData, FXGCommandType, getFXGCommandData } from '../manager/command.manager'
-import { InteractionEvent, InteractionEventType } from '../webview/const'
+import { InteractionEvent, InteractionEventType, ProjectInfoMsgInterface } from '../webview/const'
+import WorkspaceManager from '../manager/workspace.manager'
 
 export default class TreeViewUtil {
 
@@ -46,13 +47,15 @@ export default class TreeViewUtil {
         arguments: [filePath]
       }
     } else {
+      const projectInfo: ProjectInfoMsgInterface = {
+        name: projectName,
+        dir: projectDir,
+        watcherTypes: WorkspaceManager.getInstance().getProjectByDir(projectDir)?.watcherTypes ?? []
+      }
       const event: InteractionEvent = {
         timestamp: Date.now(),
         eventType: eventType,
-        projectInfo: {
-          name: projectName,
-          dir: projectDir,
-        },
+        projectInfo: projectInfo,
         data: filePath
       }
       resultCommand = Object.assign(

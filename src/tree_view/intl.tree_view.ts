@@ -9,7 +9,7 @@ import { FXGCommandType, getFXGCommandData } from '../manager/command.manager'
 
 import TreeViewUtil from './tree_view.util'
 import { IntlTreeNode, TreeNodeType } from './tree_node'
-import { InteractionEventType } from '../webview/const'
+import { InteractionEvent, InteractionEventType, ProjectInfoMsgInterface } from '../webview/const'
 
 export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
   private _onDidChangeTreeData: vscode.EventEmitter<IntlTreeNode | undefined | null | void> = new vscode.EventEmitter<IntlTreeNode | undefined | null | void>()
@@ -117,6 +117,18 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
   }
 
   private assembleDirTreeNode_Preview(project: FXGProject): IntlTreeNode {
+    const projectInfo: ProjectInfoMsgInterface = {
+      name: project.projectName,
+      dir: project.dir,
+      watcherTypes: WorkspaceManager.getInstance().getProjectByDir(project.dir)?.watcherTypes ?? []
+    }
+    const args: InteractionEvent = {
+      timestamp: Date.now(),
+      eventType: InteractionEventType.extToWeb_preview_localization,
+      projectInfo: projectInfo,
+      data: null
+    }
+
     const node = new IntlTreeNode(
       "预览",
       vscode.TreeItemCollapsibleState.None,
@@ -131,15 +143,7 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
         getFXGCommandData(FXGCommandType.openFXGUIWeb),
         {
           arguments: [
-            {
-              timestamp: Date.now(),
-              eventType: InteractionEventType.extToWeb_preview_localization,
-              projectInfo: {
-                dir: project.dir,
-                name: project.projectName,
-              },
-              data: null
-            }
+            args
           ]
         }
       ),
@@ -148,6 +152,18 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
   }
 
   private assembleDirTreeNode_Configs(project: FXGProject): IntlTreeNode {
+    const projectInfo: ProjectInfoMsgInterface = {
+      name: project.projectName,
+      dir: project.dir,
+      watcherTypes: WorkspaceManager.getInstance().getProjectByDir(project.dir)?.watcherTypes ?? []
+    }
+    const args: InteractionEvent = {
+      timestamp: Date.now(),
+      eventType: InteractionEventType.extToWeb_configs_localization,
+      projectInfo: projectInfo,
+      data: null
+    }
+
     const node = new IntlTreeNode(
       "生成器配置",
       vscode.TreeItemCollapsibleState.None,
@@ -162,15 +178,7 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
         getFXGCommandData(FXGCommandType.openFXGUIWeb),
         {
           arguments: [
-            {
-              timestamp: Date.now(),
-              eventType: InteractionEventType.extToWeb_configs_localization,
-              projectInfo: {
-                dir: project.dir,
-                name: project.projectName,
-              },
-              data: null
-            }
+            args
           ]
         }
       ),

@@ -4,13 +4,9 @@ import * as vscode from 'vscode'
 import _ from 'lodash'
 
 import { getExtensionContext } from '../extension'
+import { generateRandomString } from '../util/string.util'
 
 export type WatcherEventCallback = (eventType: WatcherEventType, uri: vscode.Uri) => void
-
-export enum WatcherType {
-  assets = "Assets",
-  intl = "Intl",
-}
 
 export enum WatcherEventType {
   onCreated = "onCreated",
@@ -28,6 +24,7 @@ export default class WatcherManager {
   private constructor() { }
 
   static getInstance(): WatcherManager {
+    // TODO: 在vscode窗口打开的时候开启
     if (!WatcherManager.instance) {
       WatcherManager.instance = new WatcherManager()
     }
@@ -46,45 +43,20 @@ export default class WatcherManager {
   }
 
   public createWatch(
-    type: WatcherType,
     projectDir: string,
     targetDir: string,
     callback: (eventType: WatcherEventType, uri: vscode.Uri) => void
-  ): FileWatcher | null {
-    let resWatcher: FileWatcher | null = null
-    switch (type) {
-      case WatcherType.assets: {
-        let watcher = new AssetFileWatcher(projectDir, targetDir)
-        let result = _.find(this.watcherList, function (o) { return o.id < watcher.id })
-        if (result) {
-          watcher = result
-          result.addCallback(callback)
-        } else {
-          watcher.start()
-          this.watcherList.push(watcher)
-        }
-        watcher.addCallback(callback)
-        resWatcher = watcher
-      }
-        break
-
-      case WatcherType.intl: {
-        let watcher = new IntlFileWatcher(projectDir, targetDir)
-        let result = _.find(this.watcherList, function (o) { return o.id < watcher.id })
-        if (result) {
-          watcher = result
-        } else {
-          watcher.start()
-          this.watcherList.push(watcher)
-        }
-        watcher.addCallback(callback)
-        resWatcher = watcher
-      } break
-
-      default:
-        break
+  ): FileWatcher {
+    let watcher = new FileWatcher(projectDir, targetDir)
+    let result = _.find(this.watcherList, function (o) { return o.id === watcher.id })
+    if (result) {
+      watcher = result
+    } else {
+      watcher.addCallback(callback)
+      watcher.start()
+      this.watcherList.push(watcher)
     }
-    return resWatcher
+    return watcher
   }
 
   public stopWatch(watcher: FileWatcher | null) {
@@ -104,15 +76,13 @@ export class FileWatcher {
   id: string
   projectPath: string
   targetDir: string
-  type: WatcherType
   watcher: vscode.FileSystemWatcher | null = null
   callbackList: WatcherEventCallback[] = []
 
-  constructor(projectPath: string, targetDir: string, type: WatcherType) {
+  constructor(projectPath: string, targetDir: string) {
     this.projectPath = projectPath
-    this.id = `${projectPath}_${type}`
+    this.id = `${targetDir}_${generateRandomString()}`
     this.targetDir = targetDir
-    this.type = type
   }
 
   public start() {
@@ -130,11 +100,10 @@ export class FileWatcher {
     })
     getExtensionContext().subscriptions.push(this.watcher)
 
-    vscode.window.setStatusBarMessage(`Flutter XGen: ${this.type} 文件夹监听已开启`, 3000)
+    vscode.window.setStatusBarMessage(`Flutter XGen: ${this.targetDir} 文件夹监听已开启`, 3000)
   }
 
   public stop() {
-    this.callbackList = []
     this.watcher?.dispose()
     this.watcher = null
   }
@@ -164,17 +133,5 @@ export class FileWatcher {
         console.log("onWatchingEvent, error: ", error)
       }
     }
-  }
-}
-
-class AssetFileWatcher extends FileWatcher {
-  constructor(projectPath: string, watchFilePath: string) {
-    super(projectPath, watchFilePath, WatcherType.assets)
-  }
-}
-
-class IntlFileWatcher extends FileWatcher {
-  constructor(projectPath: string, watchFilePath: string) {
-    super(projectPath, watchFilePath, WatcherType.intl)
   }
 }

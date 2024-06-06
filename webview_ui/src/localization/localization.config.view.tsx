@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { VSCodeButton, VSCodeCheckbox, VSCodeTextField } from '@vscode/webview-ui-toolkit/react'
 
 import { L10nMsgInterface, FlutterIntlConfig } from "../enum/vscode_extension.type";
@@ -29,12 +29,10 @@ export interface LocalizationConfigViewInterface {
 
 function LocalizationConfigView(props: LocalizationConfigViewInterface) {
   const [expand, setExpand] = useState(false)
-  const [watcherEnable, setWatcherEnable] = useState(false)
   const [flutterIntlConfig, setFlutterIntlConfig] = useState<FlutterIntlConfig | null>(defaultFlutterIntlConfig)
   const [modifiedSaveFlutterIntlConfig, setModifiedSaveFlutterIntlConfig] = useState<boolean>(false)
 
   useEffect(() => {
-    setWatcherEnable(props.msg.watcherEnable)
     setFlutterIntlConfig(Object.assign({}, defaultFlutterIntlConfig, props.msg.flutterIntlConfig))
   }, [props.msg.flutterIntlConfig])
 
@@ -48,8 +46,13 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
     return result
   }
 
+  const watcherEnable: boolean = useMemo(() => {
+    let result: boolean = false
+    return result
+  }, [])
+
   const updateWatcherEnable = (value: boolean) => {
-    setWatcherEnable(value)
+
   }
 
   const updateFlutterIntlConfig = (key: string, value: any) => {

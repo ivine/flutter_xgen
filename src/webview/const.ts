@@ -25,6 +25,12 @@ export function getWebViewTypeData(type: WebViewType): WebViewTypeData | null {
   return typeData
 }
 
+export enum FXGWatcherType {
+  l10n = 100,
+  assets_cr1992 = 200,
+  assets_flutter_gen = 201,
+}
+
 export enum FlutterAssetsConfigType {
   FlutterGen = 1,
   Cr1992 = 2,
@@ -43,7 +49,6 @@ export const FlutterAssetsConfigCr1992Constants = {
 
 // MARK: - Msg
 export interface AssetsMsgInterface {
-  watcherEnable: boolean
   previewItem: any
   fileExt: string
   flutterGenConfig: FlutterGenConfig | null
@@ -51,7 +56,6 @@ export interface AssetsMsgInterface {
 }
 
 export interface L10nMsgInterface {
-  watcherEnable: boolean
   flutterIntlConfig: FlutterIntlConfig | null
   arbs: any | null
 }
@@ -59,6 +63,7 @@ export interface L10nMsgInterface {
 export interface ProjectInfoMsgInterface {
   name: string
   dir: string
+  watcherTypes: number[]
 }
 export interface MsgInterface {
   type: InteractionEventType
@@ -101,6 +106,8 @@ export enum InteractionEventType {
   webToExt_assets_run = 600101,
   webToExt_assets_read_config = 600102,
   webToExt_assets_save_config = 600103,
+  webToExt_assets_watcher_cr1992_enable = 600104,
+  webToExt_assets_watcher_flutter_gen_enable = 600105,
 
   // intl
   webToExt_intl = 600200,

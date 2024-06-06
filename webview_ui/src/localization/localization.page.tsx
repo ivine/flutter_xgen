@@ -21,8 +21,7 @@ import LocalizationConfigView, {
 import FXGProjectInfoPanel from '../component/project_info_panel'
 
 function LocalizationPage(props: MsgInterface) {
-  const msg = props.data.l10n;
-  const watcherEnable = msg.watcherEnable
+  const msg = props.data.l10n
   const flutterIntlConfig = msg.flutterIntlConfig
   const arbs = msg.arbs
 
@@ -55,7 +54,7 @@ function LocalizationPage(props: MsgInterface) {
   useEffect(() => {
     console.log('dw test, flutterIntlConfig: ', flutterIntlConfig)
     if (!flutterIntlConfig) {
-      return;
+      return
     }
 
     // 国际化主键 keys

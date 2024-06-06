@@ -3,6 +3,7 @@ import * as vscode from 'vscode'
 import { getUri, getNonce } from "../util/webview.util"
 import {
   AssetsMsgInterface,
+  FXGWatcherType,
   InteractionEvent,
   InteractionEventType,
   L10nMsgInterface,
@@ -74,42 +75,41 @@ export class FXGUIWebPanel {
   }
 
   async postMsg(event: InteractionEvent, isWebNewCreate: boolean) {
+    let project: FXGProject | null = null
+    if (WorkspaceManager.getInstance().mainProject.dir === event.projectInfo.dir) {
+      project = WorkspaceManager.getInstance().mainProject
+    } else {
+      const filterList = WorkspaceManager.getInstance().subProjectList.filter((e) => e.dir === event.projectInfo.dir)
+      if (filterList.length > 0) {
+        project = filterList[0]
+      }
+    }
+
+    if (project === null) {
+      vscode.window.showErrorMessage("FlutterXGen: 打开面板失败")
+      return;
+    }
+
     const assets: AssetsMsgInterface = {
-      watcherEnable: false,
       flutterGenConfig: null,
       flutterAssetsGeneratorConfigByCr1992: null,
       previewItem: null,
       fileExt: "",
     }
     const l0n: L10nMsgInterface = {
-      watcherEnable: false,
       flutterIntlConfig: null,
       arbs: {}
     }
 
-    // {
-    //   timestamp: Date.now(),
-    //   eventType: InteractionEventType.extToWeb_preview,
-    //   projectInfo: {
-    //     name: projectName,
-    //     dir: projectDir,
-    //   },
-    //   data: filePath
-    // }
-
     try {
       if (event.eventType === InteractionEventType.extToWeb_preview_assets) {
-        assets.watcherEnable = StoreManager.getInstance().getWatcherEnable(WorkspaceManager.getInstance().mainProject.dir)
         const item = WorkspaceManager.getInstance().mainProject.getPreviewItem(event.data, false, false)
         assets.previewItem = this._panel.webview.asWebviewUri(vscode.Uri.file(item.path))
         assets.fileExt = FileUtil.getFileExtension(item.path)
       } else if (event.eventType === InteractionEventType.extToWeb_configs_assets) {
-        assets.watcherEnable = StoreManager.getInstance().getWatcherEnable(WorkspaceManager.getInstance().mainProject.dir)
         assets.flutterGenConfig = WorkspaceManager.getInstance().mainProject.flutterGenConfig
         assets.flutterAssetsGeneratorConfigByCr1992 = WorkspaceManager.getInstance().mainProject.flutterAssetsGeneratorConfigByCr1992
       } else if (event.eventType === InteractionEventType.extToWeb_preview_localization || event.eventType === InteractionEventType.extToWeb_configs_localization) {
-        const project = WorkspaceManager.getInstance().mainProject // TODO: sub project
-        l0n.watcherEnable = StoreManager.getInstance().getWatcherEnable(WorkspaceManager.getInstance().mainProject.dir)
         l0n.flutterIntlConfig = project.flutterIntlConfig
         const l10nNodes = project.l10nNodes
         for (const node of l10nNodes) {
@@ -130,10 +130,13 @@ export class FXGUIWebPanel {
     } catch (error) {
       console.log('extToWeb_preview_localization, error: ', error)
     }
-
+    const watcherTypes: number[] = StoreManager.getInstance().getProjectWatcherTypes(event.projectInfo.dir) // 拿最新的
     const msg: MsgInterface = {
       type: event.eventType,
-      projectInfo: event.projectInfo,
+      projectInfo: {
+        ...event.projectInfo,
+        watcherTypes: watcherTypes
+      },
       data: {
         assets: assets,
         l10n: l0n,
@@ -218,6 +221,21 @@ export class FXGUIWebPanel {
           case InteractionEventType.webToExt_assets_save_config: {
             const project: FXGProject | null = WorkspaceManager.getInstance().getProjectByDir(projectInfo.dir)
             project.saveAssetsGeneratorConfig(data.type, data.config)
+          }
+            return
+
+          case InteractionEventType.webToExt_assets_watcher_cr1992_enable:
+          case InteractionEventType.webToExt_assets_watcher_flutter_gen_enable: {
+            const project: FXGProject | null = WorkspaceManager.getInstance().getProjectByDir(projectInfo.dir)
+            if (typeof data !== 'boolean' || project === null) {
+              return
+            }
+            const enable: boolean = data
+            if (eventType === InteractionEventType.webToExt_assets_watcher_cr1992_enable) {
+              project.setWatcherEnable(enable, FXGWatcherType.assets_cr1992)
+            } else if (eventType === InteractionEventType.webToExt_assets_watcher_flutter_gen_enable) {
+              project.setWatcherEnable(enable, FXGWatcherType.assets_flutter_gen)
+            }
           }
             return
         }

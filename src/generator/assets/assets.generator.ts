@@ -1,5 +1,6 @@
 const fs = require('fs')
 const p = require('path')
+import * as vscode from 'vscode'
 
 import { Document, Scalar, YAMLMap, YAMLSeq } from 'yaml'
 
@@ -32,6 +33,7 @@ class AssetsGenerator {
     if (project === null) {
       throw (new Error("项目不存在"))
     }
+
     const assetsPaths = (project.pubspecDoc.get('flutter') as YAMLMap)?.get('assets') as YAMLSeq
     let avaliableAssetsPaths: string[] = assetsPaths.items.map((e: Scalar) => e.value as string)
     if (!Array.isArray(avaliableAssetsPaths)) {
@@ -75,7 +77,8 @@ class AssetsGenerator {
     const fileContent = this.generateAssetsDotDartFileContent(config, fileItemList)
 
     // 写入文件
-    const output_file_path = `${projectInfo.dir}/lib/${output_dir}/${output_filename}.dart`
+    const file_relative_path = `lib/${output_dir}/${output_filename}.dart`
+    const output_file_path = `${projectInfo.dir}/${file_relative_path}`
     if (fs.existsSync(output_file_path)) {
       fs.writeFileSync(output_file_path, '')
     } else {
@@ -83,6 +86,8 @@ class AssetsGenerator {
       fs.mkdirSync(p.dirname(output_file_path), { recursive: true })
     }
     fs.writeFileSync(output_file_path, fileContent)
+
+    vscode.window.showInformationMessage(`FlutterXGen: ${file_relative_path} 生成成功`)
   }
 
   private generateAssetsDotDartFileContent(config: FlutterAssetsGeneratorConfigByCr1992, assets: AssetFileByCr1992[]): string {

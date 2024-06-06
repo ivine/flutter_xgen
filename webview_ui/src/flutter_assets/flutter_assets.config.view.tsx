@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { VSCodeDropdown, VSCodeOption } from '@vscode/webview-ui-toolkit/react'
 import {
+  FXGWatcherType,
   FlutterAssetsConfigType,
   FlutterAssetsGeneratorConfigByCr1992,
   InteractionEventType,
@@ -58,14 +59,13 @@ const flutterAssetsConfigStringToType = (type: string): FlutterAssetsConfigType 
 
 function FlutterAssetsConfigView(props: MsgInterface) {
   const assetsMsg = props.data.assets
+  const watcherTypes = props.projectInfo.watcherTypes ?? []
   const [currentConfigType, setCurrentConfigType] = useState<FlutterAssetsConfigType>(FlutterAssetsConfigType.Cr1992)
-  const watcherEnable = useRef<boolean>(false)
   const flutterAssetsGeneratorConfigByCr1992 = useRef<FlutterAssetsGeneratorConfigByCr1992 | null>(null)
   const configsModified = useRef<any>({})
   const [updateCounter, setUpdateCounter] = useState<number>(0)
 
   useEffect(() => {
-    watcherEnable.current = assetsMsg.watcherEnable
     flutterAssetsGeneratorConfigByCr1992.current = Object.assign({}, defaultFlutterAssetsGeneratorConfigByCr1992, assetsMsg.flutterAssetsGeneratorConfigByCr1992 ?? {})
     const tmpConfigsModified = {}
     tmpConfigsModified[flutterAssetsConfigTypeToString(FlutterAssetsConfigType.Cr1992)] = false
@@ -74,10 +74,29 @@ function FlutterAssetsConfigView(props: MsgInterface) {
     updateUI()
   }, [assetsMsg])
 
+  const watcherEnable: boolean = useMemo(() => {
+    let result: boolean = false
+    if (currentConfigType === FlutterAssetsConfigType.Cr1992) {
+      result = watcherTypes.includes(FXGWatcherType.assets_cr1992)
+    } else if (currentConfigType === FlutterAssetsConfigType.FlutterGen) {
+      result = watcherTypes.includes(FXGWatcherType.assets_flutter_gen)
+    }
+    return result
+  }, [currentConfigType, watcherTypes])
+
   const updateUI = () => {
     let value = updateCounter + 1
     // console.log('updateUI, value: ', value)
     setUpdateCounter(value)
+  }
+
+  const updateWatcherEnable = (value: boolean) => {
+    if (currentConfigType === FlutterAssetsConfigType.Cr1992) {
+      InteractionManager.getInstance().postMsg(InteractionEventType.webToExt_assets_watcher_cr1992_enable, props.projectInfo, value)
+    } else if (currentConfigType === FlutterAssetsConfigType.FlutterGen) {
+      InteractionManager.getInstance().postMsg(InteractionEventType.webToExt_assets_watcher_flutter_gen_enable, props.projectInfo, value)
+    }
+    updateUI()
   }
 
   const changeConfigType = (type: string) => {
@@ -98,11 +117,6 @@ function FlutterAssetsConfigView(props: MsgInterface) {
       // console.log('checkIfConfigModified, error: ', error)
     }
     return result
-  }
-
-  const updateWatcherEnable = (value: boolean) => {
-    watcherEnable.current = value
-    updateUI()
   }
 
   const updateFlutterAssetsGeneratorByCr1992ConfigValue = (key: string, value) => {
@@ -197,7 +211,7 @@ function FlutterAssetsConfigView(props: MsgInterface) {
           >
             <FXGCheckBox
               title="自动生成"
-              checked={watcherEnable.current}
+              checked={watcherEnable}
               onChange={(value) => {
                 updateWatcherEnable(value)
               }}

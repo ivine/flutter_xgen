@@ -2,16 +2,19 @@
   "type": 300102,
   "projectInfo": {
     "dir": "~/Downloads/pokaliveapp_flutter_download_test",
-    "name": "pokaliveapp_flutter_download_test"
+    "name": "pokaliveapp_flutter_download_test",
+    "watcherTypes": [
+      100,
+      200,
+      201
+    ]
   },
   "data": {
     "assets": {
-      "watcherEnable": false,
       "previewItem": null,
       "fileExt": ""
     },
     "l10n": {
-      "watcherEnable": false,
       "flutterIntlConfig": {
         "enabled": true,
         "main_locale": ""

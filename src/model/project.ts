@@ -1,4 +1,5 @@
 import * as vscode from 'vscode'
+import _ from 'lodash'
 const fs = require('fs')
 const p = require('path')
 import YAML, { Document, Scalar, YAMLMap, YAMLSeq } from 'yaml'
@@ -8,13 +9,14 @@ import TreeViewUtil from '../tree_view/tree_view.util'
 import { AssetsTreeNode, IntlTreeNode, TreeNodeType } from '../tree_view/tree_node'
 
 import { TreeViewType } from '../manager/tree_view.manager'
-import WatcherManager, { FileWatcher, WatcherEventType, WatcherType } from '../manager/watcher.manager'
+import WatcherManager, { FileWatcher, WatcherEventType } from '../manager/watcher.manager'
 
 import { PreviewItem } from './preview'
 import { FlutterAssetsGeneratorConfigByCr1992, FlutterGenConfig, FlutterIntlConfig } from './project.enum'
-import { FlutterAssetsConfigType, InteractionEvent, InteractionEventType, ProjectInfoMsgInterface } from '../webview/const'
+import { FXGWatcherType, FlutterAssetsConfigType, InteractionEvent, InteractionEventType, ProjectInfoMsgInterface } from '../webview/const'
 import AssetsGenerator from '../generator/assets/assets.generator'
 import { FXGUIWebPanel } from '../webview/fxg_web_panel'
+import StoreManager from '../manager/store.manager'
 
 export type TreeViewRefreshCallback = (treeViewType: TreeViewType) => void
 
@@ -33,8 +35,11 @@ export default class FXGProject {
   assetsDirPath: string = ""
   l10nsDirPath: string = ""
 
+  watcherTypes: FXGWatcherType[] = []
   assetsDirWatcher: FileWatcher | null = null
   l10nsDirWatcher: FileWatcher | null = null
+  assetsDirWatchEventDebounce: (eventType: WatcherEventType, uri: vscode.Uri) => void
+  l10nDirWatchEventDebounce: (eventType: WatcherEventType, uri: vscode.Uri) => void
 
   refreshTreeViewCallbackList: TreeViewRefreshCallback[] = []
 
@@ -52,9 +57,14 @@ export default class FXGProject {
     this.loading = true
     try {
       await this.getCurrentPubspecDoc()
-      this.addWatchers()
       this.getCurrentAssetsFileTree()
       this.getCurrentLocalizationFileTree()
+      this.addWatchers()
+      this.setupWatchersDebounce()
+
+      // TODO: re-enable watcher
+      // StoreManager.getInstance().getWatcherEnable
+
     } catch (error) {
       console.log("FXGProject - setup, error:", error)
     }
@@ -62,19 +72,66 @@ export default class FXGProject {
   }
 
   public addWatchers() {
-    // assets watcher
-    this.assetsDirWatcher = WatcherManager.getInstance().createWatch(WatcherType.assets, this.dir, this.assetsDirPath, (eventType, uri) => {
+    // 因为树也需要更新
+    this.assetsDirWatcher = WatcherManager.getInstance().createWatch(this.dir, this.assetsDirPath, (eventType, uri) => {
+      this.assetsDirWatchEventDebounce(eventType, uri)
       if (eventType === WatcherEventType.onChanged) {
         return
       }
       this.getCurrentAssetsFileTree()
     })
-    this.l10nsDirWatcher = WatcherManager.getInstance().createWatch(WatcherType.intl, this.dir, this.l10nsDirPath, (eventType, uri) => {
+    this.l10nsDirWatcher = WatcherManager.getInstance().createWatch(this.dir, this.l10nsDirPath, (eventType, uri) => {
+      this.l10nDirWatchEventDebounce(eventType, uri)
       if (eventType === WatcherEventType.onChanged) {
         return
       }
       this.getCurrentLocalizationFileTree()
     })
+  }
+
+  public setupWatchersDebounce() {
+    this.assetsDirWatchEventDebounce = _.debounce((eventType: WatcherEventType, uri: vscode.Uri) => {
+      this.setWatcherCallback(uri, eventType, FXGWatcherType.assets_cr1992)
+      this.setWatcherCallback(uri, eventType, FXGWatcherType.assets_flutter_gen)
+    }, 300)
+    this.l10nDirWatchEventDebounce = _.debounce((eventType: WatcherEventType, uri: vscode.Uri) => {
+      this.setWatcherCallback(uri, eventType, FXGWatcherType.l10n)
+    }, 300)
+  }
+
+  public setWatcherCallback(uri: vscode.Uri, eventType: WatcherEventType, watcherType: FXGWatcherType) {
+    const enable = StoreManager.getInstance().getWatcherEnable(this.dir, watcherType)
+    if (!enable) {
+      return
+    }
+    const projectInfo: ProjectInfoMsgInterface = {
+      name: this.projectName,
+      dir: this.dir,
+      watcherTypes: this.watcherTypes,
+    }
+    switch (watcherType) {
+      case FXGWatcherType.assets_cr1992: {
+        if (eventType === WatcherEventType.onChanged || this.flutterAssetsGeneratorConfigByCr1992 === null) {
+          return
+        }
+        AssetsGenerator.getInstance().runCr1992Generator(projectInfo, this.flutterAssetsGeneratorConfigByCr1992)
+      }
+        break;
+
+      case FXGWatcherType.assets_flutter_gen:
+
+        break;
+
+      case FXGWatcherType.l10n:
+
+        break;
+      default:
+        break;
+    }
+  }
+
+  public setWatcherEnable(enable: boolean, type: FXGWatcherType) {
+    StoreManager.getInstance().setWatcherEnable(enable, this.dir, type)
   }
 
   public dispose() {
@@ -89,13 +146,15 @@ export default class FXGProject {
 
   public async refresh() {
     await this.getCurrentPubspecDoc()
+    const projectInfo: ProjectInfoMsgInterface = {
+      name: this.projectName,
+      dir: this.dir,
+      watcherTypes: this.watcherTypes
+    }
     const event: InteractionEvent = {
       timestamp: Date.now(),
       eventType: InteractionEventType.extToWeb_configs_assets,
-      projectInfo: {
-        name: this.projectName,
-        dir: this.dir,
-      },
+      projectInfo: projectInfo,
       data: null
     }
     FXGUIWebPanel.currentPanel.postMsg(event, true)
@@ -133,7 +192,7 @@ export default class FXGProject {
     }
     this.pubspecDoc = await FileUtil.readYamlFile(pubspecPath)
 
-    // 根据项目配置来确定路径
+    // TODO: 根据项目配置来确定路径
     this.assetsDirPath = `${this.dir}/assets`
     this.l10nsDirPath = `${this.dir}/lib/l10n`
 
@@ -373,10 +432,10 @@ export default class FXGProject {
         const projectInfo: ProjectInfoMsgInterface = {
           dir: this.dir,
           name: this.projectName,
+          watcherTypes: this.watcherTypes,
         }
         try {
           await AssetsGenerator.getInstance().runCr1992Generator(projectInfo, config)
-          vscode.window.setStatusBarMessage("FXG: Assets.dart 生成成功", 3000)
         } catch (error) {
           console.log('runAssetsGenerator - error: ', error)
         }
@@ -393,7 +452,7 @@ export default class FXGProject {
 
   public async readAssetsGeneratorConfig(type: FlutterAssetsConfigType) {
     await this.refresh()
-    vscode.window.setStatusBarMessage("FXG: assets 生成器配置读取完成", 3000)
+    vscode.window.setStatusBarMessage("FlutterXGen: assets 生成器配置读取完成", 3000)
   }
 
   public async saveAssetsGeneratorConfig(type: FlutterAssetsConfigType, config: any) {
@@ -411,7 +470,7 @@ export default class FXGProject {
         // TODO: 加入换行符
         this.saveCurrentPubspec()
         await this.refresh()
-        vscode.window.setStatusBarMessage("FXG: pubspec.yaml 保存成功", 3000)
+        vscode.window.setStatusBarMessage("FlutterXGen: pubspec.yaml 保存成功", 3000)
       }
         break;
 

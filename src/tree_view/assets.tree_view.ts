@@ -9,7 +9,7 @@ import { FXGCommandData, FXGCommandType, getFXGCommandData } from '../manager/co
 
 import TreeViewUtil from './tree_view.util'
 import { TreeNodeType, AssetsTreeNode } from './tree_node'
-import { InteractionEvent, InteractionEventType } from '../webview/const'
+import { InteractionEvent, InteractionEventType, ProjectInfoMsgInterface } from '../webview/const'
 
 export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
   private _onDidChangeTreeData: vscode.EventEmitter<AssetsTreeNode | undefined | null | void> = new vscode.EventEmitter<AssetsTreeNode | undefined | null | void>()
@@ -123,6 +123,17 @@ export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
   }
 
   private assembleDirTreeNode_Configs(projectDir: string, projectName: string): AssetsTreeNode {
+    const projectInfo: ProjectInfoMsgInterface = {
+      name: projectName,
+      dir: projectDir,
+      watcherTypes: WorkspaceManager.getInstance().getProjectByDir(projectDir)?.watcherTypes ?? []
+    }
+    const args: InteractionEvent = {
+      timestamp: Date.now(),
+      eventType: InteractionEventType.extToWeb_configs_assets,
+      projectInfo: projectInfo,
+      data: null
+    }
     const node: AssetsTreeNode = new AssetsTreeNode(
       "生成器配置",
       vscode.TreeItemCollapsibleState.None,
@@ -137,15 +148,7 @@ export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
         getFXGCommandData(FXGCommandType.openFXGUIWeb),
         {
           arguments: [
-            {
-              timestamp: Date.now(),
-              eventType: InteractionEventType.extToWeb_configs_assets,
-              projectInfo: {
-                name: projectName,
-                dir: projectDir,
-              },
-              data: null
-            }
+            args
           ]
         }
       ),
@@ -281,21 +284,24 @@ export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
         arguments: [filePath]
       }
     } else {
-      const event: InteractionEvent = {
+      const projectInfo: ProjectInfoMsgInterface = {
+        name: projectName,
+        dir: projectDir,
+        watcherTypes: WorkspaceManager.getInstance().getProjectByDir(projectDir)?.watcherTypes ?? []
+      }
+      const args: InteractionEvent = {
         timestamp: Date.now(),
         eventType: InteractionEventType.extToWeb_preview_assets,
-        projectInfo: {
-          name: projectName,
-          dir: projectDir,
-        },
+        projectInfo: projectInfo,
         data: filePath
       }
+
       resultCommand = Object.assign(
         {},
         getFXGCommandData(FXGCommandType.openFXGUIWeb),
         {
           arguments: [
-            event,
+            args,
           ]
         }
       )

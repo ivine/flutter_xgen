@@ -2,11 +2,15 @@
   "type": 300201,
   "projectInfo": {
     "dir": "~/Downloads/pokaliveapp_flutter_download_test",
-    "name": "pokaliveapp_flutter_download_test"
+    "name": "pokaliveapp_flutter_download_test",
+    "watcherTypes": [
+      100,
+      200,
+      201
+    ]
   },
   "data": {
     "assets": {
-      "watcherEnable": false,
       "flutterAssetsGeneratorConfigByCr1992": {
         "auto_detection": true,
         "named_with_parent": true
@@ -15,7 +19,6 @@
       "fileExt": ""
     },
     "l10n": {
-      "watcherEnable": false,
       "flutterIntlConfig": null,
       "arbs": {}
     }
