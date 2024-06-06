@@ -2,7 +2,7 @@ import * as vscode from 'vscode'
 import _ from 'lodash'
 const fs = require('fs')
 const p = require('path')
-import YAML, { Document, Scalar, YAMLMap, YAMLSeq } from 'yaml'
+import YAML, { Document, YAMLMap, YAMLSeq } from 'yaml'
 
 import { FileUtil } from '../util/file.util'
 import TreeViewUtil from '../tree_view/tree_view.util'
@@ -61,10 +61,6 @@ export default class FXGProject {
       this.getCurrentLocalizationFileTree()
       this.addWatchers()
       this.setupWatchersDebounce()
-
-      // TODO: re-enable watcher
-      // StoreManager.getInstance().getWatcherEnable
-
     } catch (error) {
       console.log("FXGProject - setup, error:", error)
     }
@@ -427,13 +423,13 @@ export default class FXGProject {
 
   // MARK: - generator
   public async runAssetsGenerator(type: FlutterAssetsConfigType, config: any) {
+    const projectInfo: ProjectInfoMsgInterface = {
+      dir: this.dir,
+      name: this.projectName,
+      watcherTypes: this.watcherTypes,
+    }
     switch (type) {
       case FlutterAssetsConfigType.Cr1992:
-        const projectInfo: ProjectInfoMsgInterface = {
-          dir: this.dir,
-          name: this.projectName,
-          watcherTypes: this.watcherTypes,
-        }
         try {
           await AssetsGenerator.getInstance().runCr1992Generator(projectInfo, config)
         } catch (error) {
@@ -441,8 +437,13 @@ export default class FXGProject {
         }
         break;
 
-      case FlutterAssetsConfigType.FlutterGen:
-
+      case FlutterAssetsConfigType.FlutterGen: {
+        try {
+          await AssetsGenerator.getInstance().runFlutterGen(projectInfo, config)
+        } catch (error) {
+          console.log('runAssetsGenerator - error: ', error)
+        }
+      }
         break;
 
       default:

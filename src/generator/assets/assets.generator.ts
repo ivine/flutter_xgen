@@ -2,14 +2,15 @@ const fs = require('fs')
 const p = require('path')
 import * as vscode from 'vscode'
 
-import { Document, Scalar, YAMLMap, YAMLSeq } from 'yaml'
+import { Scalar, YAMLMap, YAMLSeq } from 'yaml'
 
 import WorkspaceManager from "../../manager/workspace.manager"
 import AssetFileByCr1992 from "../../model/assets"
 import FXGProject from "../../model/project"
-import { FlutterAssetsGeneratorConfigByCr1992 } from "../../model/project.enum"
+import { FlutterAssetsGeneratorConfigByCr1992, FlutterGenConfig } from "../../model/project.enum"
 import { FileUtil } from "../../util/file.util"
 import { FlutterAssetsConfigCr1992Constants, ProjectInfoMsgInterface } from "../../webview/const"
+import { checkIfDartPackageInstalled, installDartPubGlobalPackage, runTerminalCommand } from '../../util/process.util'
 
 class AssetsGenerator {
   private static instance: AssetsGenerator | null = null
@@ -19,6 +20,32 @@ class AssetsGenerator {
       AssetsGenerator.instance = new AssetsGenerator()
     }
     return AssetsGenerator.instance
+  }
+
+  // MARK: - Flutter Gen
+  public async runFlutterGen(projectInfo: ProjectInfoMsgInterface, config: FlutterGenConfig) {
+    // TODO: 检查 Flutter Gen 安装方式
+
+    // 当前默认用户使用 dart pub global
+    // TODO: /bin/sh: dart: command not found
+    const packageName = "flutter_gen"
+    const isInstalled_pub_global = await checkIfDartPackageInstalled(packageName)
+    if (!isInstalled_pub_global) {
+      // 安装
+      const suc = await installDartPubGlobalPackage(packageName)
+      if (suc) {
+        await runTerminalCommand(packageName)
+      }
+    } else {
+      const commandString = `
+      source ~/.zshrc
+      cd ${projectInfo.dir}
+      fluttergen
+      `; // TODO: 优化一下
+
+      const result = await runTerminalCommand(commandString)
+      console.log('runFlutterGen, result: ', result.stdout)
+    }
   }
 
   // MARK: - FlutterAssetsGenerator - cr1992

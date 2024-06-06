@@ -4,6 +4,7 @@ import {
   FXGWatcherType,
   FlutterAssetsConfigType,
   FlutterAssetsGeneratorConfigByCr1992,
+  FlutterGenConfig,
   InteractionEventType,
   MsgInterface
 } from "../enum/vscode_extension.type"
@@ -62,6 +63,7 @@ function FlutterAssetsConfigView(props: MsgInterface) {
   const watcherTypes = props.projectInfo.watcherTypes ?? []
   const [currentConfigType, setCurrentConfigType] = useState<FlutterAssetsConfigType>(FlutterAssetsConfigType.Cr1992)
   const flutterAssetsGeneratorConfigByCr1992 = useRef<FlutterAssetsGeneratorConfigByCr1992 | null>(null)
+  const flutterGenConfig = useRef<FlutterGenConfig | null>(null)
   const configsModified = useRef<any>({})
   const [updateCounter, setUpdateCounter] = useState<number>(0)
 
@@ -83,6 +85,14 @@ function FlutterAssetsConfigView(props: MsgInterface) {
     }
     return result
   }, [currentConfigType, watcherTypes])
+
+  const currentGeneratorConfig: any | null = useMemo(() => {
+    if (currentConfigType === FlutterAssetsConfigType.Cr1992) {
+      return flutterAssetsGeneratorConfigByCr1992
+    } else if (currentConfigType === FlutterAssetsConfigType.FlutterGen) {
+      return flutterGenConfig
+    }
+  }, [currentConfigType])
 
   const updateUI = () => {
     let value = updateCounter + 1
@@ -227,7 +237,7 @@ function FlutterAssetsConfigView(props: MsgInterface) {
                   props.projectInfo,
                   {
                     type: currentConfigType,
-                    config: flutterAssetsGeneratorConfigByCr1992.current,
+                    config: currentGeneratorConfig,
                   },
                 );
               }}
@@ -242,7 +252,7 @@ function FlutterAssetsConfigView(props: MsgInterface) {
                   props.projectInfo,
                   {
                     type: currentConfigType,
-                    config: flutterAssetsGeneratorConfigByCr1992.current,
+                    config: currentGeneratorConfig,
                   },
                 );
               }}
@@ -258,7 +268,7 @@ function FlutterAssetsConfigView(props: MsgInterface) {
                   props.projectInfo,
                   {
                     type: currentConfigType,
-                    config: flutterAssetsGeneratorConfigByCr1992.current,
+                    config: currentGeneratorConfig,
                   },
                 );
               }}

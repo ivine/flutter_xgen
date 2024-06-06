@@ -1,3 +1,5 @@
+import * as vscode from 'vscode'
+
 import FXGProject from '../model/project'
 import { PreviewItem } from '../model/preview'
 
@@ -12,15 +14,35 @@ export default class WorkspaceManager {
     return WorkspaceManager.instance
   }
 
+  get dartPath(): string {
+    let dart = vscode.workspace.getConfiguration('dart')
+    let sdkPaths = dart.get<string[]>('sdkPaths');
+    if (sdkPaths.length > 0) {
+      return sdkPaths[0]
+    }
+    return ""
+  }
+
   mainProject: FXGProject | null = null
   subProjectList: FXGProject[] = []
 
   previewItem: PreviewItem | null = null
 
   public setup(dir: string) {
+    this.setupEnvPaths()
     this.dir = dir
 
     this.mainProject = new FXGProject(dir, true)
+  }
+
+  public setupEnvPaths() {
+    try {
+      let dart = vscode.workspace.getConfiguration('dart')
+      let sdkPaths = dart.get<string[]>('sdkPaths');
+      let flutterSdkPaths = dart.get<string[]>('flutterSdkPaths');
+    } catch (error) {
+
+    }
   }
 
   public dispose() {
