@@ -52,7 +52,6 @@ function LocalizationPage(props: MsgInterface) {
   }, [])
 
   useEffect(() => {
-    console.log('dw test, flutterIntlConfig: ', flutterIntlConfig)
     if (!flutterIntlConfig) {
       return
     }

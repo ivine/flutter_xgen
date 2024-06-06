@@ -90,6 +90,7 @@ export enum InteractionEventType {
   sync_asset = 100001,
   sync_intl = 100002,
   sync_preview = 100003,
+  sync_project_info = 100004,
 
   // VSCode Extension --> Web
   extToWeb_preview = 300100,

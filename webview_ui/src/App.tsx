@@ -14,6 +14,7 @@ import "./App.css"
 
 function App() {
   const screenTypeRef = useRef<ScreenType>(ScreenType.none)
+  const msgRef = useRef<MsgInterface | null>(null)
   const [msg, setMsg] = useState<MsgInterface | null>(null)
 
   useEffect(() => {
@@ -37,18 +38,29 @@ function App() {
     }
   }, [])
 
-  const onMsg = (msg: any) => {
-    console.log('app on message: ', msg)
-    let data = msg.data
+  const onMsg = (originalMsg: any) => {
+    console.log('app on message: ', originalMsg)
     try {
+      const data: MsgInterface = originalMsg.data
+
+      // --- log --- //
       const test_string = JSON.stringify(data)
       console.log('onMsg ----- start -----')
       console.log(test_string)
       console.log('onMsg ----- end -----')
+      // --- log --- //
+
+      if (data.type === InteractionEventType.sync_project_info) {
+        // 同步
+        const tmpData = Object.assign({}, msgRef.current)
+        tmpData.projectInfo = data.projectInfo
+        setCurrentMsg(tmpData)
+      } else {
+        onReceiveMsg(data)
+      }
     } catch (error) {
       //
     }
-    onReceiveMsg(data)
   }
 
   const onReceiveMsg = async (receiveMsg: MsgInterface) => {
@@ -67,7 +79,12 @@ function App() {
     }
 
     screenTypeRef.current = tmpScreentType
-    setMsg(receiveMsg)
+    setCurrentMsg(receiveMsg)
+  }
+
+  const setCurrentMsg = (msg: MsgInterface) => {
+    msgRef.current = msg
+    setMsg(msg)
   }
 
   return (

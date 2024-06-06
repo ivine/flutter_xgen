@@ -96,6 +96,7 @@ function FlutterAssetsConfigView(props: MsgInterface) {
     } else if (currentConfigType === FlutterAssetsConfigType.FlutterGen) {
       InteractionManager.getInstance().postMsg(InteractionEventType.webToExt_assets_watcher_flutter_gen_enable, props.projectInfo, value)
     }
+    InteractionManager.getInstance().postMsg(InteractionEventType.sync_project_info, props.projectInfo, null)
     updateUI()
   }
 

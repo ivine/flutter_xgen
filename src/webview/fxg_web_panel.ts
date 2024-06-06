@@ -86,7 +86,7 @@ export class FXGUIWebPanel {
     }
 
     if (project === null) {
-      vscode.window.showErrorMessage("FlutterXGen: 打开面板失败")
+      vscode.window.showErrorMessage("Flutter XGen: 打开面板失败")
       return;
     }
 
@@ -102,7 +102,9 @@ export class FXGUIWebPanel {
     }
 
     try {
-      if (event.eventType === InteractionEventType.extToWeb_preview_assets) {
+      if (event.eventType === InteractionEventType.sync_project_info) {
+
+      } else if (event.eventType === InteractionEventType.extToWeb_preview_assets) {
         const item = WorkspaceManager.getInstance().mainProject.getPreviewItem(event.data, false, false)
         assets.previewItem = this._panel.webview.asWebviewUri(vscode.Uri.file(item.path))
         assets.fileExt = FileUtil.getFileExtension(item.path)
@@ -142,9 +144,13 @@ export class FXGUIWebPanel {
         l10n: l0n,
       }
     }
-    setTimeout(() => {
+    if (isWebNewCreate) {
       FXGUIWebPanel.currentPanel._panel.webview.postMessage(msg)
-    }, isWebNewCreate ? 500 : 0)
+    } else {
+      setTimeout(() => {
+        FXGUIWebPanel.currentPanel._panel.webview.postMessage(msg)
+      }, 500)
+    }
   }
 
   public dispose() {
@@ -206,23 +212,34 @@ export class FXGUIWebPanel {
         const projectInfo: ProjectInfoMsgInterface = message.projectInfo
 
         switch (eventType) {
+          case InteractionEventType.sync_project_info: {
+            const event: InteractionEvent = {
+              timestamp: Date.now(),
+              eventType: InteractionEventType.sync_project_info,
+              projectInfo: projectInfo,
+              data: null
+            }
+            FXGUIWebPanel.currentPanel.postMsg(event, true)
+          }
+            break
+
           case InteractionEventType.webToExt_assets_run: {
             const project: FXGProject | null = WorkspaceManager.getInstance().getProjectByDir(projectInfo.dir)
             project.runAssetsGenerator(data.type, data.config)
           }
-            return
+            break
 
           case InteractionEventType.webToExt_assets_read_config: {
             const project: FXGProject | null = WorkspaceManager.getInstance().getProjectByDir(projectInfo.dir)
             project.readAssetsGeneratorConfig(data.type)
           }
-            return
+            break
 
           case InteractionEventType.webToExt_assets_save_config: {
             const project: FXGProject | null = WorkspaceManager.getInstance().getProjectByDir(projectInfo.dir)
             project.saveAssetsGeneratorConfig(data.type, data.config)
           }
-            return
+            break
 
           case InteractionEventType.webToExt_assets_watcher_cr1992_enable:
           case InteractionEventType.webToExt_assets_watcher_flutter_gen_enable: {
@@ -237,7 +254,7 @@ export class FXGUIWebPanel {
               project.setWatcherEnable(enable, FXGWatcherType.assets_flutter_gen)
             }
           }
-            return
+            break
         }
       },
       undefined,

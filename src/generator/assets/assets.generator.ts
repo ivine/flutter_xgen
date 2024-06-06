@@ -87,7 +87,7 @@ class AssetsGenerator {
     }
     fs.writeFileSync(output_file_path, fileContent)
 
-    vscode.window.showInformationMessage(`FlutterXGen: ${file_relative_path} 生成成功`)
+    vscode.window.showInformationMessage(`Flutter XGen: ${file_relative_path} 生成成功`)
   }
 
   private generateAssetsDotDartFileContent(config: FlutterAssetsGeneratorConfigByCr1992, assets: AssetFileByCr1992[]): string {

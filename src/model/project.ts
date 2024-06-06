@@ -452,7 +452,7 @@ export default class FXGProject {
 
   public async readAssetsGeneratorConfig(type: FlutterAssetsConfigType) {
     await this.refresh()
-    vscode.window.setStatusBarMessage("FlutterXGen: assets 生成器配置读取完成", 3000)
+    vscode.window.setStatusBarMessage("Flutter XGen: assets 生成器配置读取完成", 3000)
   }
 
   public async saveAssetsGeneratorConfig(type: FlutterAssetsConfigType, config: any) {
@@ -470,7 +470,7 @@ export default class FXGProject {
         // TODO: 加入换行符
         this.saveCurrentPubspec()
         await this.refresh()
-        vscode.window.setStatusBarMessage("FlutterXGen: pubspec.yaml 保存成功", 3000)
+        vscode.window.setStatusBarMessage("Flutter XGen: pubspec.yaml 保存成功", 3000)
       }
         break;
 
