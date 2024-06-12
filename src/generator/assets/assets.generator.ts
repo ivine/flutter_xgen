@@ -36,16 +36,16 @@ class AssetsGenerator {
       if (suc) {
         await runTerminalCommand(packageName)
       }
-    } else {
-      const commandString = `
+    }
+    const commandString = `
       source ~/.zshrc
       cd ${projectInfo.dir}
       fluttergen
       `; // TODO: 优化一下
 
-      const result = await runTerminalCommand(commandString)
-      console.log('runFlutterGen, result: ', result.stdout)
-    }
+    const result = await runTerminalCommand(commandString)
+    vscode.window.setStatusBarMessage("Flutter XGen: FlutterGen 生成成功", 3000)
+    console.log('runFlutterGen, result: ', result.stdout)
   }
 
   // MARK: - FlutterAssetsGenerator - cr1992

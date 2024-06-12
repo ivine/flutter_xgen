@@ -120,7 +120,7 @@ export default class FXGProject {
         break
 
       case FXGWatcherType.l10n:
-
+        IntlGenerator.getInstance().run(projectInfo, this.flutterIntlConfig)
         break
       default:
         break

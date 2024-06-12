@@ -259,13 +259,16 @@ export class FXGUIWebPanel {
           }
             break
 
+          case InteractionEventType.webToExt_intl_watcher_enable:
           case InteractionEventType.webToExt_assets_watcher_cr1992_enable:
           case InteractionEventType.webToExt_assets_watcher_flutter_gen_enable: {
             if (typeof data !== 'boolean' || project === null) {
               return
             }
             const enable: boolean = data
-            if (eventType === InteractionEventType.webToExt_assets_watcher_cr1992_enable) {
+            if (eventType === InteractionEventType.webToExt_intl_watcher_enable) {
+              project.setWatcherEnable(enable, FXGWatcherType.l10n)
+            } else if (eventType === InteractionEventType.webToExt_assets_watcher_cr1992_enable) {
               project.setWatcherEnable(enable, FXGWatcherType.assets_cr1992)
             } else if (eventType === InteractionEventType.webToExt_assets_watcher_flutter_gen_enable) {
               project.setWatcherEnable(enable, FXGWatcherType.assets_flutter_gen)

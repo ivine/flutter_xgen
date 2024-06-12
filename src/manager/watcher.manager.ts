@@ -14,6 +14,7 @@ export enum WatcherEventType {
   onDeleted = "onDeleted",
 }
 
+// TODO: 在项目打开后开始自动监听
 export default class WatcherManager {
   private static instance: WatcherManager | null = null
   private rootPath: string = ""
