@@ -111,7 +111,11 @@ export class FXGUIWebPanel {
       } else if (event.eventType === InteractionEventType.extToWeb_configs_assets) {
         assets.flutterGenConfig = WorkspaceManager.getInstance().mainProject.flutterGenConfig
         assets.flutterAssetsGeneratorConfigByCr1992 = WorkspaceManager.getInstance().mainProject.flutterAssetsGeneratorConfigByCr1992
-      } else if (event.eventType === InteractionEventType.extToWeb_preview_localization || event.eventType === InteractionEventType.extToWeb_configs_localization) {
+      } else if (
+        event.eventType === InteractionEventType.sync_intl ||
+        event.eventType === InteractionEventType.extToWeb_preview_localization ||
+        event.eventType === InteractionEventType.extToWeb_configs_localization
+      ) {
         l0n.flutterIntlConfig = project.flutterIntlConfig
         const l10nNodes = project.l10nNodes
         for (const node of l10nNodes) {
@@ -213,6 +217,17 @@ export class FXGUIWebPanel {
         const project: FXGProject | null = WorkspaceManager.getInstance().getProjectByDir(projectInfo.dir)
 
         switch (eventType) {
+          case InteractionEventType.sync_intl: {
+            const event: InteractionEvent = {
+              timestamp: Date.now(),
+              eventType: InteractionEventType.extToWeb_preview_localization,
+              projectInfo: projectInfo,
+              data: null
+            }
+            FXGUIWebPanel.currentPanel.postMsg(event, true)
+          }
+            break
+
           case InteractionEventType.sync_project_info: {
             const event: InteractionEvent = {
               timestamp: Date.now(),

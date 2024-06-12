@@ -1,14 +1,13 @@
+import _ from "lodash"
 import { useEffect, useMemo, useRef, useState } from "react"
-import { VSCodeButton, VSCodeCheckbox, VSCodeTextField } from '@vscode/webview-ui-toolkit/react'
+import { VSCodeTextField } from '@vscode/webview-ui-toolkit/react'
 
-import { FXGWatcherType, FlutterPubspecYamlConfigType, FlutterIntlConfig, InteractionEventType, MsgInterface } from "../enum/vscode_extension.type";
-import { isObjectEqual } from "../util/object.util";
-import { getStringOrEmpty, isEmptyString } from "../util/string.util";
-import InteractionManager from "../interaction/interaction.manager";
-import FXGCheckBox from "../component/check_box";
-import FXGContainer from "../component/container";
-import FXGButton from "../component/button";
-import _ from "lodash";
+import { FXGWatcherType, FlutterPubspecYamlConfigType, FlutterIntlConfig, InteractionEventType, MsgInterface } from "../enum/vscode_extension.type"
+import { isObjectEqual } from "../util/object.util"
+import { getStringOrEmpty, isEmptyString } from "../util/string.util"
+import InteractionManager from "../interaction/interaction.manager"
+import FXGCheckBox from "../component/check_box"
+import FXGButton from "../component/button"
 
 export const LocalizationConfigViewCollapsedHeight = 40
 export const LocalizationConfigViewExpandedHeight = 220
@@ -125,6 +124,13 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
           title={"从 arb 文件同步"}
           leftSpacing={16}
           onClick={() => {
+            InteractionManager.getInstance().postMsg(
+              InteractionEventType.sync_intl,
+              props.msg.projectInfo,
+              {
+                type: FlutterPubspecYamlConfigType.flutter_intl,
+              },
+            )
           }}
         />
         <FXGButton
@@ -138,7 +144,7 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
                 type: FlutterPubspecYamlConfigType.flutter_intl,
                 config: flutterIntlConfigRef.current,
               },
-            );
+            )
           }}
         />
         <FXGButton
@@ -153,7 +159,7 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
                 type: FlutterPubspecYamlConfigType.flutter_intl,
                 config: flutterIntlConfigRef.current,
               },
-            );
+            )
           }}
         />
         <FXGButton
@@ -175,7 +181,6 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
     }
     const configs = flutterIntlConfigRef.current
     const containerH = LocalizationConfigViewExpandedHeight - LocalizationConfigViewCollapsedHeight
-    const checkBoxH = 40
     const textFieldH = 60
     return (
       <div
