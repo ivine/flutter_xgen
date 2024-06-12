@@ -1,13 +1,13 @@
-export enum FlutterAssetsConfigType {
-  FlutterGen = 1,
-  Cr1992 = 2,
-}
-
-
 export enum FXGWatcherType {
   l10n = 100,
   assets_cr1992 = 200,
   assets_flutter_gen = 201,
+}
+
+export enum FlutterPubspecYamlConfigType {
+  flutter_gen = 1,
+  flutter_assets_generator_cr1992 = 2,
+  flutter_intl = 3,
 }
 
 export interface InteractionEvent {
@@ -46,8 +46,10 @@ export enum InteractionEventType {
 
   // intl
   webToExt_intl = 600200,
-  webToExt_intl_updateItem = 600210,
-  webToExt_intl_removeItem = 600211,
+  webToExt_intl_run = 600201,
+  webToExt_intl_read_config = 600202,
+  webToExt_intl_save_config = 600203,
+  webToExt_intl_watcher_enable = 600204,
 
   // preview
   webToExt_preview = 600900,

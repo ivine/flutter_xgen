@@ -9,7 +9,11 @@ export default class InteractionManager {
   private static instance: InteractionManager | null = null
   private vscode: any | null = null
   private constructor() {
-    this.vscode = acquireVsCodeApi()
+    try {
+      this.vscode = acquireVsCodeApi()
+    } catch (error) {
+      console.log('webview, InteractionManager - acquireVsCodeApi error: ', error)
+    }
   }
   static getInstance(): InteractionManager {
     if (!InteractionManager.instance) {

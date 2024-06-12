@@ -1,9 +1,14 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { VSCodeButton, VSCodeCheckbox, VSCodeTextField } from '@vscode/webview-ui-toolkit/react'
 
-import { L10nMsgInterface, FlutterIntlConfig } from "../enum/vscode_extension.type";
+import { FXGWatcherType, FlutterPubspecYamlConfigType, FlutterIntlConfig, InteractionEventType, MsgInterface } from "../enum/vscode_extension.type";
 import { isObjectEqual } from "../util/object.util";
-import { getStringOrEmpty } from "../util/string.util";
+import { getStringOrEmpty, isEmptyString } from "../util/string.util";
+import InteractionManager from "../interaction/interaction.manager";
+import FXGCheckBox from "../component/check_box";
+import FXGContainer from "../component/container";
+import FXGButton from "../component/button";
+import _ from "lodash";
 
 export const LocalizationConfigViewCollapsedHeight = 40
 export const LocalizationConfigViewExpandedHeight = 220
@@ -23,64 +28,75 @@ const checkedFlutterIntlConfig: FlutterIntlConfig = {
 }
 
 export interface LocalizationConfigViewInterface {
-  msg: L10nMsgInterface
+  msg: MsgInterface
   onUpdateHeight: (height: number) => void
 }
 
 function LocalizationConfigView(props: LocalizationConfigViewInterface) {
+  const l10n = props.msg.data.l10n
+  const watcherTypes = props.msg.projectInfo.watcherTypes ?? []
   const [expand, setExpand] = useState(false)
-  const [flutterIntlConfig, setFlutterIntlConfig] = useState<FlutterIntlConfig | null>(defaultFlutterIntlConfig)
-  const [modifiedSaveFlutterIntlConfig, setModifiedSaveFlutterIntlConfig] = useState<boolean>(false)
+  const flutterIntlConfigRef = useRef<FlutterIntlConfig | null>(null) // 配置引用
+  const isModifiedConfigRef = useRef<boolean>() // 是否修改了配置
+
+  const [updateCounter, setUpdateCounter] = useState<number>(0)
 
   useEffect(() => {
-    setFlutterIntlConfig(Object.assign({}, defaultFlutterIntlConfig, props.msg.flutterIntlConfig))
-  }, [props.msg.flutterIntlConfig])
+    flutterIntlConfigRef.current = l10n.flutterIntlConfig
+    isModifiedConfigRef.current = false
+  }, [l10n])
 
-  const checkIfFlutterIntlConfigModified = (configs: any) => {
+  const checkIfConfigModified = (originalConfig: any, targetConfig: any): boolean => {
+    let tmpOriginalConfig = originalConfig
+    if (typeof tmpOriginalConfig !== 'object') {
+      tmpOriginalConfig = {}
+    }
     let result = false
     try {
-      result = !isObjectEqual(props.msg.flutterIntlConfig, configs)
+      result = !isObjectEqual(tmpOriginalConfig, targetConfig)
     } catch (error) {
-      // console.log('checkIfFlutterIntlConfigsModified, error: ', error)
+      // console.log('checkIfConfigModified, error: ', error)
     }
     return result
   }
 
   const watcherEnable: boolean = useMemo(() => {
-    let result: boolean = false
+    let result: boolean = watcherTypes.includes(FXGWatcherType.l10n)
     return result
-  }, [])
+  }, [watcherTypes])
 
-  const updateWatcherEnable = (value: boolean) => {
-
+  const updateUI = () => {
+    let value = updateCounter + 1
+    // console.log('updateUI, value: ', value)
+    setUpdateCounter(value)
   }
 
-  const updateFlutterIntlConfig = (key: string, value: any) => {
+  const updateWatcherEnable = (value: boolean) => {
+    InteractionManager.getInstance().postMsg(InteractionEventType.webToExt_intl_watcher_enable, props.msg.projectInfo, value)
+    InteractionManager.getInstance().postMsg(InteractionEventType.sync_project_info, props.msg.projectInfo, null)
+    updateUI()
+  }
+
+  const updateFlutterIntlConfig = (key: string, value: any, shouldRemoveKey: boolean = false) => {
     if (!Object.keys(checkedFlutterIntlConfig).includes(key)) {
       return
     }
-    const tmpConfig = Object.assign({}, flutterIntlConfig)
-    tmpConfig[key] = value
-    const modified = checkIfFlutterIntlConfigModified(tmpConfig)
-    if (modified !== modifiedSaveFlutterIntlConfig) {
-      setModifiedSaveFlutterIntlConfig(modified)
+    const tmpConfig = Object.assign({}, flutterIntlConfigRef.current)
+    if (shouldRemoveKey) {
+      delete tmpConfig[key]
+    } else {
+      tmpConfig[key] = value
     }
-    setFlutterIntlConfig(tmpConfig)
+    checkIfConfigModified(flutterIntlConfigRef.current, tmpConfig)
+    flutterIntlConfigRef.current = tmpConfig
+    updateSaveConfigButtonState()
+    // console.log(`updateFlutterIntlConfig, key: ${key}, value: ${value}, shouldRemoveKey: ${shouldRemoveKey}`)
   }
 
-  const renderButton = (title: string, onClick: () => void, leftPadding: boolean, rightPadding: boolean) => {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'row',
-        }}
-      >
-        {leftPadding ? <div style={{ width: 20 }} /> : null}
-        <VSCodeButton onClick={onClick}>{title}</VSCodeButton>
-        {rightPadding ? <div style={{ width: 20 }} /> : null}
-      </div>
-    )
+  const updateSaveConfigButtonState = () => {
+    const modified = checkIfConfigModified(props.msg.data.l10n.flutterIntlConfig, flutterIntlConfigRef.current)
+    isModifiedConfigRef.current = modified
+    updateUI()
   }
 
   const renderFunctionButtons = () => {
@@ -90,64 +106,65 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
           display: 'flex',
           flexDirection: 'row',
           width: '100%',
-          height: 40,
         }}
       >
-        <VSCodeCheckbox
+        <FXGCheckBox
+          title="自动生成"
           checked={watcherEnable}
-          clickHandler={(e) => {
-            updateWatcherEnable(!watcherEnable)
+          onChange={(value) => {
+            updateWatcherEnable(value)
           }}
-        >
-          自动生成
-        </VSCodeCheckbox>
-        {
-          renderButton(
-            "立即生成",
-            () => { },
-            true,
-            false,
-          )
-        }
-        {
-          renderButton(
-            "arb 文件同步",
-            () => { },
-            true,
-            false,
-          )
-        }
-        {
-          renderButton(
-            "读取配置",
-            () => { },
-            true,
-            false,
-          )
-        }
-        {
-          modifiedSaveFlutterIntlConfig ? renderButton(
-            "保存配置",
-            () => {
-              console.log('保存配置')
-              setModifiedSaveFlutterIntlConfig(false)
-            },
-            true,
-            false,
-          ) : null
-        }
-        {
-          renderButton(
-            expand ? '隐藏' : '查看配置',
-            () => {
-              let value = !expand
-              props.onUpdateHeight(value ? LocalizationConfigViewExpandedHeight : LocalizationConfigViewCollapsedHeight)
-              setExpand(value)
-            },
-            true,
-            true,
-          )
-        }
+        />
+        <FXGButton
+          title={"立即生成"}
+          leftSpacing={16}
+          onClick={() => {
+          }}
+        />
+        <FXGButton
+          title={"从 arb 文件同步"}
+          leftSpacing={16}
+          onClick={() => {
+          }}
+        />
+        <FXGButton
+          title="读取配置"
+          leftSpacing={16}
+          onClick={() => {
+            InteractionManager.getInstance().postMsg(
+              InteractionEventType.webToExt_intl_read_config,
+              props.msg.projectInfo,
+              {
+                type: FlutterPubspecYamlConfigType.flutter_intl,
+                config: flutterIntlConfigRef.current,
+              },
+            );
+          }}
+        />
+        <FXGButton
+          title="保存配置"
+          disabled={!isModifiedConfigRef.current}
+          leftSpacing={16}
+          onClick={() => {
+            InteractionManager.getInstance().postMsg(
+              InteractionEventType.webToExt_intl_save_config,
+              props.msg.projectInfo,
+              {
+                type: FlutterPubspecYamlConfigType.flutter_intl,
+                config: flutterIntlConfigRef.current,
+              },
+            );
+          }}
+        />
+        <FXGButton
+          title={expand ? '隐藏' : '查看配置'}
+          leftSpacing={16}
+          onClick={() => {
+            let value = !expand
+            props.onUpdateHeight(value ? LocalizationConfigViewExpandedHeight : LocalizationConfigViewCollapsedHeight)
+            setExpand(value)
+          }}
+        />
       </div>
     )
   }
@@ -156,7 +173,7 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
     if (!expand) {
       return <></>
     }
-    const configs = flutterIntlConfig
+    const configs = flutterIntlConfigRef.current
     const containerH = LocalizationConfigViewExpandedHeight - LocalizationConfigViewCollapsedHeight
     const checkBoxH = 40
     const textFieldH = 60
@@ -176,17 +193,15 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
             flexDirection: 'column',
           }}
         >
-          <div style={{ height: 16 }} />
-          <VSCodeCheckbox
-            style={{ height: checkBoxH }}
+          <div style={{ height: 20 }} />
+          <FXGCheckBox
+            title="enabled"
             checked={configs.enabled}
-            onChange={(e) => {
-              updateFlutterIntlConfig('enable', !configs.enabled)
+            onChange={(value) => {
+              updateFlutterIntlConfig('enabled', !configs.enabled)
             }}
-          >
-            enable
-          </VSCodeCheckbox>
-          <div style={{ height: 16 }} />
+          />
+          <div style={{ height: 20 }} />
           <VSCodeTextField
             type="text"
             placeholder="S"
@@ -194,7 +209,7 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
             value={getStringOrEmpty(configs.class_name)}
             onChange={(e) => {
               const value = e.target._value
-              updateFlutterIntlConfig('class_name', value)
+              updateFlutterIntlConfig('class_name', value, isEmptyString(value))
             }}
           >
             class_name
@@ -207,7 +222,7 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
             value={getStringOrEmpty(configs.main_locale)}
             onChange={(e) => {
               const value = e.target._value
-              updateFlutterIntlConfig('main_locale', value)
+              updateFlutterIntlConfig('main_locale', value, false)
             }}
           >
             main_locale
@@ -222,17 +237,16 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
             flexDirection: 'column',
           }}
         >
-          <div style={{ height: 16 }} />
-          <VSCodeCheckbox
-            style={{ height: checkBoxH }}
+          <div style={{ height: 20 }} />
+          <FXGCheckBox
+            title="use_deferred_loading"
             checked={configs.use_deferred_loading}
-            onChange={(e) => {
-              updateFlutterIntlConfig('use_deferred_loading', !configs.use_deferred_loading)
+            onChange={(value) => {
+              const tmpValue: boolean = !configs.use_deferred_loading
+              updateFlutterIntlConfig('use_deferred_loading', tmpValue, !tmpValue)
             }}
-          >
-            use_deferred_loading
-          </VSCodeCheckbox>
-          <div style={{ height: 16 }} />
+          />
+          <div style={{ height: 20 }} />
           <VSCodeTextField
             type="text"
             placeholder="lib/l10n"
@@ -240,7 +254,7 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
             value={getStringOrEmpty(configs.arb_dir)}
             onChange={(e) => {
               const value = e.target._value
-              updateFlutterIntlConfig('arb_dir', value)
+              updateFlutterIntlConfig('arb_dir', value, isEmptyString(value))
             }}
           >
             arb_dir
@@ -253,7 +267,7 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
             value={getStringOrEmpty(configs.output_dir)}
             onChange={(e) => {
               const value = e.target._value
-              updateFlutterIntlConfig('output_dir', value)
+              updateFlutterIntlConfig('output_dir', value, isEmptyString(value))
             }}
           >
             output_dir

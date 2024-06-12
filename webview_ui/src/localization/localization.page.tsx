@@ -8,12 +8,14 @@ import {
   textColumn,
   keyColumn,
 } from 'react-datasheet-grid'
-
+import { Operation } from "react-datasheet-grid/dist/types"
 import 'react-datasheet-grid/dist/style.css'
+import Tooltip from "rc-tooltip"
+
 import './localization.page.css'
 
 import { MsgInterface } from "../enum/vscode_extension.type"
-import { getRandomString, isEmptyString } from "../util/string.util"
+import { getRandomString, hashString, isEmptyString } from "../util/string.util"
 import LocalizationConfigView, {
   LocalizationConfigViewCollapsedHeight,
 } from "./localization.config.view"
@@ -21,22 +23,42 @@ import LocalizationConfigView, {
 import FXGProjectInfoPanel from '../component/project_info_panel'
 
 function LocalizationPage(props: MsgInterface) {
-  const msg = props.data.l10n
-  const flutterIntlConfig = msg.flutterIntlConfig
-  const arbs = msg.arbs
+  const data = props.data
+  const l10n = data.l10n
+  const flutterIntlConfig = l10n.flutterIntlConfig
+  const arbs = l10n.arbs
 
   const [height, setHeight] = useState(0)
   const [configsBarHeight, setConfigsBarHeight] = useState(LocalizationConfigViewCollapsedHeight)
   const containerRef = useRef(null)
 
   const [columns, setColumns] = useState<Column[]>([])
+  const [modidfied, setModified] = useState<boolean>(false)
+  const originRowsRef = useRef<any[]>() // 用于比较
   const [rows, setRows] = useState<any[]>([])
   const createRow = useCallback(() => {
     return { id: getRandomString(20) }
   }, [])
 
   function vscodeRightClickEvent(e) {
+    e.preventDefault()
     e.stopImmediatePropagation()
+  }
+
+  const gridDataToJSON = (data) => { }
+
+  const currentCurrentDataModified = async () => {
+    try {
+      const originStr = JSON.stringify(originRowsRef.current)
+      const currentStr = JSON.stringify(rows)
+      const originHash = await hashString(originStr)
+      const currentHash = await hashString(currentStr)
+      const tmpModified1 = originStr !== currentStr
+      const tmpModified = originHash !== currentHash
+      setModified(tmpModified)
+    } catch (error) {
+      //
+    }
   }
 
   useEffect(() => {
@@ -95,9 +117,21 @@ function LocalizationPage(props: MsgInterface) {
       }
       tmpRows.push(tmpItem)
     }
+
+    originRowsRef.current = tmpRows
     setColumns(tmpColumns)
     setRows(tmpRows)
+    setTimeout(() => {
+      currentCurrentDataModified()
+    }, 100);
   }, [arbs])
+
+  useEffect(() => {
+    if (rows.length === 0 || originRowsRef.current.length === 0) {
+      return
+    }
+    currentCurrentDataModified()
+  }, [rows])
 
   const renderL10nConfigsBar = () => {
     return (
@@ -110,7 +144,7 @@ function LocalizationPage(props: MsgInterface) {
         }}
       >
         <LocalizationConfigView
-          msg={msg}
+          msg={props}
           onUpdateHeight={(height: number) => {
             setConfigsBarHeight(height)
           }}
@@ -140,8 +174,11 @@ function LocalizationPage(props: MsgInterface) {
         columns={columns}
         value={rows}
         createRow={createRow}
-        onChange={(e) => {
-          setRows(e)
+        onChange={(value: any[], operations: Operation[]) => {
+          setRows(value)
+        }}
+        onFocus={(opts: any) => {
+          console.log('opts --> ', opts)
         }}
       />
     )

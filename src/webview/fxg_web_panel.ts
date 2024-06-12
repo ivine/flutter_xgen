@@ -210,6 +210,7 @@ export class FXGUIWebPanel {
         const data = message.data
         const eventType: InteractionEventType = message.eventType
         const projectInfo: ProjectInfoMsgInterface = message.projectInfo
+        const project: FXGProject | null = WorkspaceManager.getInstance().getProjectByDir(projectInfo.dir)
 
         switch (eventType) {
           case InteractionEventType.sync_project_info: {
@@ -224,26 +225,22 @@ export class FXGUIWebPanel {
             break
 
           case InteractionEventType.webToExt_assets_run: {
-            const project: FXGProject | null = WorkspaceManager.getInstance().getProjectByDir(projectInfo.dir)
             project.runAssetsGenerator(data.type, data.config)
           }
             break
 
           case InteractionEventType.webToExt_assets_read_config: {
-            const project: FXGProject | null = WorkspaceManager.getInstance().getProjectByDir(projectInfo.dir)
             project.readAssetsGeneratorConfig(data.type)
           }
             break
 
           case InteractionEventType.webToExt_assets_save_config: {
-            const project: FXGProject | null = WorkspaceManager.getInstance().getProjectByDir(projectInfo.dir)
-            project.saveAssetsGeneratorConfig(data.type, data.config)
+            project.saveFlutterPubspecYamlConfig(data.type, data.config)
           }
             break
 
           case InteractionEventType.webToExt_assets_watcher_cr1992_enable:
           case InteractionEventType.webToExt_assets_watcher_flutter_gen_enable: {
-            const project: FXGProject | null = WorkspaceManager.getInstance().getProjectByDir(projectInfo.dir)
             if (typeof data !== 'boolean' || project === null) {
               return
             }
@@ -253,6 +250,16 @@ export class FXGUIWebPanel {
             } else if (eventType === InteractionEventType.webToExt_assets_watcher_flutter_gen_enable) {
               project.setWatcherEnable(enable, FXGWatcherType.assets_flutter_gen)
             }
+          }
+            break
+
+          case InteractionEventType.webToExt_intl_read_config: {
+            project.readAssetsGeneratorConfig(data.type)
+          }
+            break
+
+          case InteractionEventType.webToExt_intl_save_config: {
+            project.saveFlutterPubspecYamlConfig(data.type, data.config)
           }
             break
         }

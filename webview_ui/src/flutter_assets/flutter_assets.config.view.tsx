@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { VSCodeDropdown, VSCodeOption } from '@vscode/webview-ui-toolkit/react'
 import {
   FXGWatcherType,
-  FlutterAssetsConfigType,
+  FlutterPubspecYamlConfigType,
   FlutterAssetsGeneratorConfigByCr1992,
   FlutterGenConfig,
   InteractionEventType,
@@ -28,13 +28,13 @@ const checkedFlutterAssetsGeneratorConfigByCr1992: FlutterAssetsGeneratorConfigB
   leading_with_package_name: false,
 }
 
-const flutterAssetsConfigTypeToString = (type: FlutterAssetsConfigType): string => {
+const FlutterPubspecYamlConfigTypeToString = (type: FlutterPubspecYamlConfigType): string => {
   let result: string = ''
   switch (type) {
-    case FlutterAssetsConfigType.Cr1992:
+    case FlutterPubspecYamlConfigType.flutter_assets_generator_cr1992:
       result = 'Flutter Assets Generator'
       break;
-    case FlutterAssetsConfigType.FlutterGen:
+    case FlutterPubspecYamlConfigType.flutter_gen:
       result = 'Flutter Gen'
       break;
     default:
@@ -43,14 +43,14 @@ const flutterAssetsConfigTypeToString = (type: FlutterAssetsConfigType): string 
   return result
 }
 
-const flutterAssetsConfigStringToType = (type: string): FlutterAssetsConfigType => {
-  let result: FlutterAssetsConfigType = FlutterAssetsConfigType.Cr1992
+const flutterAssetsConfigStringToType = (type: string): FlutterPubspecYamlConfigType => {
+  let result: FlutterPubspecYamlConfigType = FlutterPubspecYamlConfigType.flutter_assets_generator_cr1992
   switch (type) {
     case 'Flutter Assets Generator':
-      result = FlutterAssetsConfigType.Cr1992
+      result = FlutterPubspecYamlConfigType.flutter_assets_generator_cr1992
       break;
     case 'Flutter Gen':
-      result = FlutterAssetsConfigType.FlutterGen
+      result = FlutterPubspecYamlConfigType.flutter_gen
       break;
     default:
       break;
@@ -61,35 +61,35 @@ const flutterAssetsConfigStringToType = (type: string): FlutterAssetsConfigType 
 function FlutterAssetsConfigView(props: MsgInterface) {
   const assetsMsg = props.data.assets
   const watcherTypes = props.projectInfo.watcherTypes ?? []
-  const [currentConfigType, setCurrentConfigType] = useState<FlutterAssetsConfigType>(FlutterAssetsConfigType.Cr1992)
-  const flutterAssetsGeneratorConfigByCr1992 = useRef<FlutterAssetsGeneratorConfigByCr1992 | null>(null)
-  const flutterGenConfig = useRef<FlutterGenConfig | null>(null)
-  const configsModified = useRef<any>({})
+  const [currentConfigType, setCurrentConfigType] = useState<FlutterPubspecYamlConfigType>(FlutterPubspecYamlConfigType.flutter_assets_generator_cr1992)
+  const flutterAssetsGeneratorConfigByCr1992 = useRef<FlutterAssetsGeneratorConfigByCr1992 | null>(null) // 配置引用
+  const flutterGenConfig = useRef<FlutterGenConfig | null>(null) // 配置引用
+  const configsModified = useRef<any>({}) // 已修改的配置列表 {Flutter Assets Generator: false, Flutter Gen: false}
   const [updateCounter, setUpdateCounter] = useState<number>(0)
 
   useEffect(() => {
     flutterAssetsGeneratorConfigByCr1992.current = Object.assign({}, defaultFlutterAssetsGeneratorConfigByCr1992, assetsMsg.flutterAssetsGeneratorConfigByCr1992 ?? {})
     const tmpConfigsModified = {}
-    tmpConfigsModified[flutterAssetsConfigTypeToString(FlutterAssetsConfigType.Cr1992)] = false
-    tmpConfigsModified[flutterAssetsConfigTypeToString(FlutterAssetsConfigType.FlutterGen)] = false
+    tmpConfigsModified[FlutterPubspecYamlConfigTypeToString(FlutterPubspecYamlConfigType.flutter_assets_generator_cr1992)] = false
+    tmpConfigsModified[FlutterPubspecYamlConfigTypeToString(FlutterPubspecYamlConfigType.flutter_gen)] = false
     configsModified.current = tmpConfigsModified
     updateUI()
   }, [assetsMsg])
 
   const watcherEnable: boolean = useMemo(() => {
     let result: boolean = false
-    if (currentConfigType === FlutterAssetsConfigType.Cr1992) {
+    if (currentConfigType === FlutterPubspecYamlConfigType.flutter_assets_generator_cr1992) {
       result = watcherTypes.includes(FXGWatcherType.assets_cr1992)
-    } else if (currentConfigType === FlutterAssetsConfigType.FlutterGen) {
+    } else if (currentConfigType === FlutterPubspecYamlConfigType.flutter_gen) {
       result = watcherTypes.includes(FXGWatcherType.assets_flutter_gen)
     }
     return result
   }, [currentConfigType, watcherTypes])
 
   const currentGeneratorConfig: any | null = useMemo(() => {
-    if (currentConfigType === FlutterAssetsConfigType.Cr1992) {
+    if (currentConfigType === FlutterPubspecYamlConfigType.flutter_assets_generator_cr1992) {
       return flutterAssetsGeneratorConfigByCr1992
-    } else if (currentConfigType === FlutterAssetsConfigType.FlutterGen) {
+    } else if (currentConfigType === FlutterPubspecYamlConfigType.flutter_gen) {
       return flutterGenConfig
     }
   }, [currentConfigType])
@@ -101,9 +101,9 @@ function FlutterAssetsConfigView(props: MsgInterface) {
   }
 
   const updateWatcherEnable = (value: boolean) => {
-    if (currentConfigType === FlutterAssetsConfigType.Cr1992) {
+    if (currentConfigType === FlutterPubspecYamlConfigType.flutter_assets_generator_cr1992) {
       InteractionManager.getInstance().postMsg(InteractionEventType.webToExt_assets_watcher_cr1992_enable, props.projectInfo, value)
-    } else if (currentConfigType === FlutterAssetsConfigType.FlutterGen) {
+    } else if (currentConfigType === FlutterPubspecYamlConfigType.flutter_gen) {
       InteractionManager.getInstance().postMsg(InteractionEventType.webToExt_assets_watcher_flutter_gen_enable, props.projectInfo, value)
     }
     InteractionManager.getInstance().postMsg(InteractionEventType.sync_project_info, props.projectInfo, null)
@@ -116,7 +116,7 @@ function FlutterAssetsConfigView(props: MsgInterface) {
     updateUI()
   }
 
-  const checkIfConfigModified = (originalConfig: any, targetConfig: any) => {
+  const checkIfConfigModified = (originalConfig: any, targetConfig: any): boolean => {
     let tmpOriginalConfig = originalConfig
     if (typeof tmpOriginalConfig !== 'object') {
       tmpOriginalConfig = {}
@@ -152,10 +152,10 @@ function FlutterAssetsConfigView(props: MsgInterface) {
   const updateSaveConfigButtonState = () => {
     const tmpConfigsModified = Object.assign({}, configsModified)
     let modified = false
-    if (currentConfigType === FlutterAssetsConfigType.Cr1992) {
+    if (currentConfigType === FlutterPubspecYamlConfigType.flutter_assets_generator_cr1992) {
       modified = checkIfConfigModified(assetsMsg.flutterAssetsGeneratorConfigByCr1992, flutterAssetsGeneratorConfigByCr1992.current)
-      tmpConfigsModified[flutterAssetsConfigTypeToString(FlutterAssetsConfigType.Cr1992)] = modified
-    } else if (currentConfigType === FlutterAssetsConfigType.FlutterGen) {
+      tmpConfigsModified[FlutterPubspecYamlConfigTypeToString(FlutterPubspecYamlConfigType.flutter_assets_generator_cr1992)] = modified
+    } else if (currentConfigType === FlutterPubspecYamlConfigType.flutter_gen) {
 
     }
     configsModified.current = tmpConfigsModified
@@ -163,12 +163,12 @@ function FlutterAssetsConfigView(props: MsgInterface) {
   }
 
   const renderTopBar = () => {
-    const types: FlutterAssetsConfigType[] = [
-      FlutterAssetsConfigType.Cr1992,
-      FlutterAssetsConfigType.FlutterGen,
+    const types: FlutterPubspecYamlConfigType[] = [
+      FlutterPubspecYamlConfigType.flutter_assets_generator_cr1992,
+      FlutterPubspecYamlConfigType.flutter_gen,
     ]
 
-    const saveConfigButtonDisabled = !configsModified.current[flutterAssetsConfigTypeToString(currentConfigType)]
+    const saveConfigButtonDisabled = !configsModified.current[FlutterPubspecYamlConfigTypeToString(currentConfigType)]
     return (
       <div
         style={{
@@ -208,7 +208,7 @@ function FlutterAssetsConfigView(props: MsgInterface) {
               }}
             >
               {types.map((e, index) => {
-                return <VSCodeOption key={`options_${index}`}>{flutterAssetsConfigTypeToString(e)}</VSCodeOption>
+                return <VSCodeOption key={`options_${index}`}>{FlutterPubspecYamlConfigTypeToString(e)}</VSCodeOption>
               })}
             </VSCodeDropdown>
           </div>
@@ -414,8 +414,8 @@ function FlutterAssetsConfigView(props: MsgInterface) {
     >
       <FXGProjectInfoPanel {...props.projectInfo} />
       {renderTopBar()}
-      {currentConfigType === FlutterAssetsConfigType.Cr1992 ? renderCr1992ConfigView() : <></>}
-      {currentConfigType === FlutterAssetsConfigType.FlutterGen ? renderFlutterGenConfigView() : <></>}
+      {currentConfigType === FlutterPubspecYamlConfigType.flutter_assets_generator_cr1992 ? renderCr1992ConfigView() : <></>}
+      {currentConfigType === FlutterPubspecYamlConfigType.flutter_gen ? renderFlutterGenConfigView() : <></>}
     </div>
   )
 }

@@ -13,7 +13,7 @@ import WatcherManager, { FileWatcher, WatcherEventType } from '../manager/watche
 
 import { PreviewItem } from './preview'
 import { FlutterAssetsGeneratorConfigByCr1992, FlutterGenConfig, FlutterIntlConfig } from './project.enum'
-import { FXGWatcherType, FlutterAssetsConfigType, InteractionEvent, InteractionEventType, ProjectInfoMsgInterface } from '../webview/const'
+import { FXGWatcherType, FlutterPubspecYamlConfigType, InteractionEvent, InteractionEventType, ProjectInfoMsgInterface } from '../webview/const'
 import AssetsGenerator from '../generator/assets/assets.generator'
 import { FXGUIWebPanel } from '../webview/fxg_web_panel'
 import StoreManager from '../manager/store.manager'
@@ -140,7 +140,7 @@ export default class FXGProject {
     WatcherManager.getInstance().stopWatch(this.l10nsDirWatcher)
   }
 
-  public async refresh() {
+  public async refresh(eventType: InteractionEventType, data: any | null = null) {
     await this.getCurrentPubspecDoc()
     const projectInfo: ProjectInfoMsgInterface = {
       name: this.projectName,
@@ -149,9 +149,9 @@ export default class FXGProject {
     }
     const event: InteractionEvent = {
       timestamp: Date.now(),
-      eventType: InteractionEventType.extToWeb_configs_assets,
+      eventType: eventType,
       projectInfo: projectInfo,
-      data: null
+      data: data
     }
     FXGUIWebPanel.currentPanel.postMsg(event, true)
   }
@@ -422,14 +422,14 @@ export default class FXGProject {
   }
 
   // MARK: - generator
-  public async runAssetsGenerator(type: FlutterAssetsConfigType, config: any) {
+  public async runAssetsGenerator(type: FlutterPubspecYamlConfigType, config: any) {
     const projectInfo: ProjectInfoMsgInterface = {
       dir: this.dir,
       name: this.projectName,
       watcherTypes: this.watcherTypes,
     }
     switch (type) {
-      case FlutterAssetsConfigType.Cr1992:
+      case FlutterPubspecYamlConfigType.flutter_assets_generator_cr1992:
         try {
           await AssetsGenerator.getInstance().runCr1992Generator(projectInfo, config)
         } catch (error) {
@@ -437,7 +437,7 @@ export default class FXGProject {
         }
         break;
 
-      case FlutterAssetsConfigType.FlutterGen: {
+      case FlutterPubspecYamlConfigType.flutter_gen: {
         try {
           await AssetsGenerator.getInstance().runFlutterGen(projectInfo, config)
         } catch (error) {
@@ -451,35 +451,67 @@ export default class FXGProject {
     }
   }
 
-  public async readAssetsGeneratorConfig(type: FlutterAssetsConfigType) {
-    await this.refresh()
-    vscode.window.setStatusBarMessage("Flutter XGen: assets 生成器配置读取完成", 3000)
+  public async readAssetsGeneratorConfig(type: FlutterPubspecYamlConfigType) {
+    try {
+      switch (type) {
+        case FlutterPubspecYamlConfigType.flutter_assets_generator_cr1992:
+        case FlutterPubspecYamlConfigType.flutter_gen:
+          await this.refresh(InteractionEventType.extToWeb_configs_assets, null)
+          break;
+
+        case FlutterPubspecYamlConfigType.flutter_intl:
+          await this.refresh(InteractionEventType.extToWeb_configs_localization, null)
+          break;
+
+        default:
+          break;
+      }
+      vscode.window.setStatusBarMessage("Flutter XGen: 生成器配置读取完成", 3000)
+    } catch (error) {
+      console.log('readAssetsGeneratorConfig, error: ', error)
+    }
   }
 
-  public async saveAssetsGeneratorConfig(type: FlutterAssetsConfigType, config: any) {
-    switch (type) {
-      case FlutterAssetsConfigType.Cr1992: {
-        if (config === null) {
-          return
+  public async saveFlutterPubspecYamlConfig(type: FlutterPubspecYamlConfigType, config: any) {
+    try {
+      switch (type) {
+        case FlutterPubspecYamlConfigType.flutter_assets_generator_cr1992: {
+          if (config === null) {
+            return
+          }
+          const key: string = 'flutter_assets_generator'
+          if (this.pubspecDoc.has(key)) {
+            this.pubspecDoc.delete(key)
+          }
+          const pair = this.pubspecDoc.createPair(key, config)
+          this.pubspecDoc.add(pair)
+          // TODO: 加入换行符
+          this.saveCurrentPubspec()
+          await this.refresh(InteractionEventType.extToWeb_configs_assets, null)
         }
-        const key: string = 'flutter_assets_generator'
-        if (this.pubspecDoc.has(key)) {
-          this.pubspecDoc.delete(key)
+          break;
+
+        case FlutterPubspecYamlConfigType.flutter_intl: {
+          if (config === null) {
+            return
+          }
+          const key: string = 'flutter_intl'
+          if (this.pubspecDoc.has(key)) {
+            this.pubspecDoc.delete(key)
+          }
+          const pair = this.pubspecDoc.createPair(key, config)
+          this.pubspecDoc.add(pair)
+          this.saveCurrentPubspec()
+          await this.refresh(InteractionEventType.extToWeb_configs_localization, null)
         }
-        const pair = this.pubspecDoc.createPair(key, config)
-        this.pubspecDoc.add(pair)
-        // TODO: 加入换行符
-        this.saveCurrentPubspec()
-        await this.refresh()
-        vscode.window.setStatusBarMessage("Flutter XGen: pubspec.yaml 保存成功", 3000)
+          break;
+
+        default:
+          break;
       }
-        break;
-
-      case FlutterAssetsConfigType.FlutterGen:
-
-        break;
-      default:
-        break;
+      vscode.window.setStatusBarMessage("Flutter XGen: pubspec.yaml 保存成功", 3000)
+    } catch (error) {
+      console.log('saveFlutterPubsepcYamlConfig, error: ', error)
     }
   }
 }
