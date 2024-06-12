@@ -82,6 +82,18 @@ export class FileUtil {
     })
   }
 
+  public static writeFile(filePath: string, data: string): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      fs.writeFile(filePath, data, 'utf8', (err) => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve(data)
+        }
+      })
+    })
+  }
+
   public static async readYamlFile(filePath: string): Promise<any | null> {
     try {
       const fileContents = await this.readFile(filePath)

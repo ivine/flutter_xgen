@@ -17,6 +17,7 @@ import { FXGWatcherType, FlutterPubspecYamlConfigType, InteractionEvent, Interac
 import AssetsGenerator from '../generator/assets/assets.generator'
 import { FXGUIWebPanel } from '../webview/fxg_web_panel'
 import StoreManager from '../manager/store.manager'
+import IntlGenerator from '../generator/intl/intl.generator'
 
 export type TreeViewRefreshCallback = (treeViewType: TreeViewType) => void
 
@@ -112,17 +113,17 @@ export default class FXGProject {
         }
         AssetsGenerator.getInstance().runCr1992Generator(projectInfo, this.flutterAssetsGeneratorConfigByCr1992)
       }
-        break;
+        break
 
       case FXGWatcherType.assets_flutter_gen:
 
-        break;
+        break
 
       case FXGWatcherType.l10n:
 
-        break;
+        break
       default:
-        break;
+        break
     }
   }
 
@@ -422,7 +423,7 @@ export default class FXGProject {
   }
 
   // MARK: - generator
-  public async runAssetsGenerator(type: FlutterPubspecYamlConfigType, config: any) {
+  public async runGenerator(type: FlutterPubspecYamlConfigType, config: any, data: any | null = null) {
     const projectInfo: ProjectInfoMsgInterface = {
       dir: this.dir,
       name: this.projectName,
@@ -433,21 +434,43 @@ export default class FXGProject {
         try {
           await AssetsGenerator.getInstance().runCr1992Generator(projectInfo, config)
         } catch (error) {
-          console.log('runAssetsGenerator - error: ', error)
+          console.log('runCr1992Generator - error: ', error)
         }
-        break;
+        break
 
       case FlutterPubspecYamlConfigType.flutter_gen: {
         try {
           await AssetsGenerator.getInstance().runFlutterGen(projectInfo, config)
         } catch (error) {
-          console.log('runAssetsGenerator - error: ', error)
+          console.log('runFlutterGen - error: ', error)
         }
       }
-        break;
+        break
+
+      case FlutterPubspecYamlConfigType.flutter_intl: {
+        if (data === null) {
+          return
+        }
+        try {
+          const jsonMap = JSON.parse(data) as object
+          // 保存到本地
+          for (let arbFileName of Object.keys(jsonMap)) {
+            const json = jsonMap[arbFileName]
+            const tmpJsonStr = JSON.stringify(json, null, 2)
+            const filePath = `${this.l10nsDirPath}/${arbFileName}`
+            await FileUtil.writeFile(filePath, tmpJsonStr)
+          }
+
+          // 执行
+          await IntlGenerator.getInstance().run(projectInfo, config)
+        } catch (error) {
+          console.log('IntlGenerator.getInstance().run - error: ', error)
+        }
+      }
+        break
 
       default:
-        break;
+        break
     }
   }
 
@@ -457,14 +480,14 @@ export default class FXGProject {
         case FlutterPubspecYamlConfigType.flutter_assets_generator_cr1992:
         case FlutterPubspecYamlConfigType.flutter_gen:
           await this.refresh(InteractionEventType.extToWeb_configs_assets, null)
-          break;
+          break
 
         case FlutterPubspecYamlConfigType.flutter_intl:
           await this.refresh(InteractionEventType.extToWeb_configs_localization, null)
-          break;
+          break
 
         default:
-          break;
+          break
       }
       vscode.window.setStatusBarMessage("Flutter XGen: 生成器配置读取完成", 3000)
     } catch (error) {
@@ -489,7 +512,7 @@ export default class FXGProject {
           this.saveCurrentPubspec()
           await this.refresh(InteractionEventType.extToWeb_configs_assets, null)
         }
-          break;
+          break
 
         case FlutterPubspecYamlConfigType.flutter_intl: {
           if (config === null) {
@@ -504,10 +527,10 @@ export default class FXGProject {
           this.saveCurrentPubspec()
           await this.refresh(InteractionEventType.extToWeb_configs_localization, null)
         }
-          break;
+          break
 
         default:
-          break;
+          break
       }
       vscode.window.setStatusBarMessage("Flutter XGen: pubspec.yaml 保存成功", 3000)
     } catch (error) {

@@ -29,6 +29,7 @@ const checkedFlutterIntlConfig: FlutterIntlConfig = {
 export interface LocalizationConfigViewInterface {
   msg: MsgInterface
   onUpdateHeight: (height: number) => void
+  onGetGridData: () => any[]
 }
 
 function LocalizationConfigView(props: LocalizationConfigViewInterface) {
@@ -57,6 +58,28 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
       // console.log('checkIfConfigModified, error: ', error)
     }
     return result
+  }
+
+  const gridDataToJSON = (data: any[]): Map<string, Map<string, string>> => {
+    const jsonMap: Map<string, Map<string, string>> = new Map()
+    for (let tmpData of data) {
+      const allKeys = Object.keys(tmpData)
+      const targetKey = tmpData['key']
+      for (let arbFileName of allKeys) {
+        if (arbFileName === 'key') {
+          continue
+        }
+        let arbJSONMap = new Map<string, string>()
+        if (jsonMap.has(arbFileName)) {
+          arbJSONMap = jsonMap.get(arbFileName)
+        } else {
+          jsonMap.set(arbFileName, arbJSONMap)
+        }
+        arbJSONMap.set(targetKey, tmpData[arbFileName])
+        jsonMap.set(arbFileName, arbJSONMap)
+      }
+    }
+    return jsonMap
   }
 
   const watcherEnable: boolean = useMemo(() => {
@@ -98,6 +121,19 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
     updateUI()
   }
 
+  function mapToObject(map: Map<string, any>): any {
+    const obj = Object.fromEntries(
+      Array.from(map.entries()).map(([key, value]) => {
+        if (value instanceof Map) {
+          return [key, mapToObject(value)]; // 递归转换内部 Map
+        } else {
+          return [key, value];
+        }
+      })
+    );
+    return obj;
+  }
+
   const renderFunctionButtons = () => {
     return (
       <div
@@ -118,6 +154,22 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
           title={"立即生成"}
           leftSpacing={16}
           onClick={() => {
+            const newJSON = gridDataToJSON(props.onGetGridData())
+            if (typeof newJSON === 'object') {
+              try {
+                const newJSONString = JSON.stringify(mapToObject(newJSON), null, 2)
+                InteractionManager.getInstance().postMsg(
+                  InteractionEventType.webToExt_intl_run,
+                  props.msg.projectInfo,
+                  {
+                    type: FlutterPubspecYamlConfigType.flutter_intl,
+                    data: newJSONString
+                  },
+                )
+              } catch (error) {
+                //
+              }
+            }
           }}
         />
         <FXGButton

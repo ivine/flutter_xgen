@@ -1,16 +1,13 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 import {
   Column,
-  DataSheetGrid,
-  checkboxColumn,
   DynamicDataSheetGrid,
   textColumn,
   keyColumn,
 } from 'react-datasheet-grid'
 import { Operation } from "react-datasheet-grid/dist/types"
 import 'react-datasheet-grid/dist/style.css'
-import Tooltip from "rc-tooltip"
 
 import './localization.page.css'
 
@@ -44,8 +41,6 @@ function LocalizationPage(props: MsgInterface) {
     e.preventDefault()
     e.stopImmediatePropagation()
   }
-
-  const gridDataToJSON = (data) => { }
 
   const currentCurrentDataModified = async () => {
     try {
@@ -147,6 +142,9 @@ function LocalizationPage(props: MsgInterface) {
           msg={props}
           onUpdateHeight={(height: number) => {
             setConfigsBarHeight(height)
+          }}
+          onGetGridData={() => {
+            return rows
           }}
         />
       </div>

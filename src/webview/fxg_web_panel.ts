@@ -240,7 +240,12 @@ export class FXGUIWebPanel {
             break
 
           case InteractionEventType.webToExt_assets_run: {
-            project.runAssetsGenerator(data.type, data.config)
+            try {
+              const json = JSON.parse(data.data)
+              project.runGenerator(data.type, json)
+            } catch (error) {
+
+            }
           }
             break
 
@@ -265,6 +270,12 @@ export class FXGUIWebPanel {
             } else if (eventType === InteractionEventType.webToExt_assets_watcher_flutter_gen_enable) {
               project.setWatcherEnable(enable, FXGWatcherType.assets_flutter_gen)
             }
+          }
+            break
+
+
+          case InteractionEventType.webToExt_intl_run: {
+            project.runGenerator(data.type, data.config, data.data)
           }
             break
 
