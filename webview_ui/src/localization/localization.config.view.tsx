@@ -8,6 +8,8 @@ import { getStringOrEmpty, isEmptyString } from "../util/string.util"
 import InteractionManager from "../interaction/interaction.manager"
 import FXGCheckBox from "../component/check_box"
 import FXGButton from "../component/button"
+import FXGSpacer from "../component/spacer"
+import FXGContainer from "../component/container"
 
 export const LocalizationConfigViewCollapsedHeight = 40
 export const LocalizationConfigViewExpandedHeight = 220
@@ -135,6 +137,7 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
   }
 
   const renderFunctionButtons = () => {
+    const tmpWatcherEnable = watcherEnable && !props.msg.data.l10n.localizelyFlutterIntlInstalled
     return (
       <div
         style={{
@@ -143,13 +146,22 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
           width: '100%',
         }}
       >
-        <FXGCheckBox
-          title="自动生成"
-          checked={watcherEnable}
-          onChange={(value) => {
-            updateWatcherEnable(value)
+        <FXGContainer
+          style={{
+            flexDirection: 'column',
+            alignItems: 'flex-start',
           }}
-        />
+        >
+          <FXGCheckBox
+            title="自动生成"
+            checked={tmpWatcherEnable}
+            enabled={!props.msg.data.l10n.localizelyFlutterIntlInstalled}
+            onChange={(value) => {
+              updateWatcherEnable(value)
+            }}
+          />
+          {props.msg.data.l10n.localizelyFlutterIntlInstalled ? <div style={{ marginTop: 2 }}>localizely.flutter-intl 已安装</div> : null}
+        </FXGContainer>
         <FXGButton
           title={"立即生成"}
           leftSpacing={16}

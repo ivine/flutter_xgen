@@ -57,6 +57,7 @@ export interface AssetsMsgInterface {
 }
 
 export interface L10nMsgInterface {
+  localizelyFlutterIntlInstalled: boolean
   flutterIntlConfig: FlutterIntlConfig | null
   arbs: any | null
 }

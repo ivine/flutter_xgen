@@ -97,6 +97,7 @@ export class FXGUIWebPanel {
       fileExt: "",
     }
     const l0n: L10nMsgInterface = {
+      localizelyFlutterIntlInstalled: false,
       flutterIntlConfig: null,
       arbs: {}
     }
@@ -129,6 +130,16 @@ export class FXGUIWebPanel {
             //
           }
           l0n.arbs[name] = json
+        }
+
+        try {
+          // 检查 localizely.flutter-intl 是否安装
+          const extension = vscode.extensions.getExtension('localizely.flutter-intl')
+          if (extension) {
+            l0n.localizelyFlutterIntlInstalled = true
+          }
+        } catch (error) {
+          //
         }
       } else {
 

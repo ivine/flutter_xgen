@@ -5,6 +5,7 @@ import FXGSpacer from "./spacer"
 interface FXGCheckBoxInterface {
   checked: boolean
   title?: string
+  enabled?: boolean
   topSpacing?: number
   leftSpacing?: number
   bottomSpacing?: number
@@ -14,12 +15,14 @@ interface FXGCheckBoxInterface {
 
 function FXGCheckBox(props: FXGCheckBoxInterface) {
   let checked = false
+  let enabled = true
   let topS = 0
   let leftS = 0
   let bottomS = 0
   let rightS = 0
   if (typeof props === 'object') {
     checked = typeof props.checked === 'boolean' ? props.checked : false
+    enabled = typeof props.enabled === 'boolean' ? props.enabled : false
     topS = typeof props.topSpacing === 'number' ? props.topSpacing : 0
     leftS = typeof props.leftSpacing === 'number' ? props.leftSpacing : 0
     bottomS = typeof props.bottomSpacing === 'number' ? props.bottomSpacing : 0
@@ -31,6 +34,8 @@ function FXGCheckBox(props: FXGCheckBoxInterface) {
       style={{
         display: 'flex',
         flexDirection: 'row',
+        opacity: enabled ? 1 : '0.5',
+        pointerEvents: enabled ? 'auto' : 'none',
       }}
     >
       <div style={{ width: leftS }} />
