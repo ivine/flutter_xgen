@@ -3,7 +3,7 @@
   "displayName": "Flutter XGen",
   "description": "A plugin designed to create a Flutter resources file from pubspec.yaml.",
   "license": "MIT",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "publisher": "Dengwww",
   "author": {
     "name": "Dengwww",
@@ -30,17 +30,17 @@
     "Other"
   ],
   "activationEvents": [
-    "workspaceContains:**"
+    "onStartupFinished",
+    "workspaceContains:**/pubspec.yaml"
   ],
   "main": "./dist/extension.js",
   "scripts": {
     "install_all": "yarn && cd webview_ui && yarn",
     "dev": "tsc -watch -p ./",
     "dev_webview": "cd webview_ui && yarn dev",
-    "build": "tsc -p ./ && source webview_ui.sh",
-    "build_webview": "source webview_ui.sh",
-    "vscode_prepublish": "npm run compile",
-    "pretest": "npm run compile && npm run lint",
+    "build_webview": "cd webview_ui && yarn && yarn build && rm -rf ../dist/webview_ui/ && mv dist ../dist/webview_ui/",
+    "build": "yarn build_webview && tsc -p ./",
+    "vsix": "yarn build && vsce package",
     "lint": "eslint src --ext ts"
   },
   "dependencies": {
@@ -92,7 +92,7 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "FXG",
+          "id": "FlutterXGen",
           "title": "FlutterXGen",
           "icon": "images/icon.svg"
         }
@@ -105,7 +105,7 @@
       }
     ],
     "views": {
-      "FXG": [
+      "FlutterXGen": [
         {
           "id": "FXG_Assets",
           "name": "Assets"
