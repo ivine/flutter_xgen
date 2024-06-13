@@ -16,6 +16,7 @@ export default defineConfig({
         assetFileNames: `assets/[name].[ext]`
       }
     },
-    sourcemap: true, // TODO: 区分生产和开发
+    chunkSizeWarningLimit: 1024,
+    sourcemap: false, // TODO: 区分生产和开发
   },
 })
