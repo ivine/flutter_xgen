@@ -63,6 +63,24 @@
     "vscode-test": "^1.6.1"
   },
   "contributes": {
+    "configuration": [
+      {
+        "order": 1,
+        "title": "Paths",
+        "properties": {
+          "FlutterXGen.dartSDK": {
+            "type": "string",
+            "default": "",
+            "description": "Dart sdk path"
+          },
+          "FlutterXGen.flutterSDK": {
+            "type": "string",
+            "default": "",
+            "description": "Flutter sdk path"
+          }
+        }
+      }
+    ],
     "commands": [
       {
         "command": "FXG.generateAssets",
