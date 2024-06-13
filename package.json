@@ -29,7 +29,9 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "workspaceContains:**"
+  ],
   "main": "./dist/extension.js",
   "scripts": {
     "install_all": "yarn && cd webview_ui && yarn",

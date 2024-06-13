@@ -29,9 +29,7 @@ function workspaceDir(): string | null {
 	}
 }
 
-export function activate(context: vscode.ExtensionContext) {
-	initializeExtension(context)
-
+const setupManager = () => {
 	// manager 初始化
 	const wsDir = workspaceDir()
 	CommandManager.getInstance().setup()
@@ -40,6 +38,12 @@ export function activate(context: vscode.ExtensionContext) {
 	WatcherManager.getInstance().setup(wsDir)
 	TreeViewManager.getInstance().setup(wsDir)
 	StoreManager.getInstance().setup(wsDir)
+}
+
+export function activate(context: vscode.ExtensionContext) {
+	initializeExtension(context)
+
+	setupManager()
 
 	// debug webview
 	context.subscriptions.push(
