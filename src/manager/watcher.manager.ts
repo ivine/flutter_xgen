@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as vscode from 'vscode'
 
-import _ from 'lodash'
+import { find } from 'lodash'
 
 import { getExtensionContext } from '../extension'
 import { generateRandomString } from '../util/string.util'
@@ -49,7 +49,7 @@ export default class WatcherManager {
     callback: (eventType: WatcherEventType, uri: vscode.Uri) => void
   ): FileWatcher {
     let watcher = new FileWatcher(projectDir, targetDir)
-    let result = _.find(this.watcherList, function (o) { return o.id === watcher.id })
+    let result = find(this.watcherList, function (o) { return o.id === watcher.id })
     if (result) {
       watcher = result
     } else {
@@ -64,7 +64,7 @@ export default class WatcherManager {
     if (!watcher) {
       return
     }
-    let result = _.find(this.watcherList, function (o) { return o.id < watcher.id })
+    let result = find(this.watcherList, function (o) { return o.id < watcher.id })
     if (!result) {
       console.info("WatcherManager - stopWatch, can not find watcher")
       return

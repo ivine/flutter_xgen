@@ -1,3 +1,4 @@
+import { isEqual } from "lodash"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { VSCodeDropdown, VSCodeOption } from '@vscode/webview-ui-toolkit/react'
 import {
@@ -14,9 +15,11 @@ import FXGButton from "../component/button"
 import { isObjectEqual } from "../util/object.util"
 import FXGProjectInfoPanel from "../component/project_info_panel"
 import InteractionManager from "../interaction/interaction.manager"
+import FXGContainer from "../component/container"
 
 const defaultFlutterAssetsGeneratorConfigByCr1992: any = {}
 
+// 占位，用于检查传入的参数是否包含某个字段。TODO: 这里要优化的
 const checkedFlutterAssetsGeneratorConfigByCr1992: FlutterAssetsGeneratorConfigByCr1992 = {
   output_dir: "",
   auto_detection: false,
@@ -69,6 +72,7 @@ function FlutterAssetsConfigView(props: MsgInterface) {
 
   useEffect(() => {
     flutterAssetsGeneratorConfigByCr1992.current = Object.assign({}, defaultFlutterAssetsGeneratorConfigByCr1992, assetsMsg.flutterAssetsGeneratorConfigByCr1992 ?? {})
+    flutterGenConfig.current = Object.assign({}, assetsMsg.flutterGenConfig)
     const tmpConfigsModified = {}
     tmpConfigsModified[FlutterPubspecYamlConfigTypeToString(FlutterPubspecYamlConfigType.flutter_assets_generator_cr1992)] = false
     tmpConfigsModified[FlutterPubspecYamlConfigTypeToString(FlutterPubspecYamlConfigType.flutter_gen)] = false
@@ -86,13 +90,13 @@ function FlutterAssetsConfigView(props: MsgInterface) {
     return result
   }, [currentConfigType, watcherTypes])
 
-  const currentGeneratorConfig: any | null = useMemo(() => {
+  const getCurrentGeneratorConfig = (): any | null => {
     if (currentConfigType === FlutterPubspecYamlConfigType.flutter_assets_generator_cr1992) {
-      return flutterAssetsGeneratorConfigByCr1992
+      return flutterAssetsGeneratorConfigByCr1992.current
     } else if (currentConfigType === FlutterPubspecYamlConfigType.flutter_gen) {
-      return flutterGenConfig
+      return flutterGenConfig.current
     }
-  }, [currentConfigType])
+  }
 
   const updateUI = () => {
     let value = updateCounter + 1
@@ -139,6 +143,13 @@ function FlutterAssetsConfigView(props: MsgInterface) {
     )
   }
 
+  const updateFlutterGenConfigValue = (key: string, value) => {
+    const tmpConfig = Object.assign({}, flutterGenConfig.current)
+    tmpConfig[key] = value
+    flutterGenConfig.current = tmpConfig
+    updateSaveConfigButtonState()
+  }
+
   const updateConfigValue = (ref: any, checkedConfig: any, key: string, value: any): any => {
     if (!Object.keys(checkedConfig).includes(key)) {
       return
@@ -156,7 +167,9 @@ function FlutterAssetsConfigView(props: MsgInterface) {
       modified = checkIfConfigModified(assetsMsg.flutterAssetsGeneratorConfigByCr1992, flutterAssetsGeneratorConfigByCr1992.current)
       tmpConfigsModified[FlutterPubspecYamlConfigTypeToString(FlutterPubspecYamlConfigType.flutter_assets_generator_cr1992)] = modified
     } else if (currentConfigType === FlutterPubspecYamlConfigType.flutter_gen) {
-
+      modified = !isEqual(assetsMsg.flutterGenConfig, flutterGenConfig.current)
+      console.log('dw test, modified: ', modified)
+      tmpConfigsModified[FlutterPubspecYamlConfigTypeToString(FlutterPubspecYamlConfigType.flutter_gen)] = modified
     }
     configsModified.current = tmpConfigsModified
     updateUI()
@@ -169,6 +182,8 @@ function FlutterAssetsConfigView(props: MsgInterface) {
     ]
 
     const saveConfigButtonDisabled = !configsModified.current[FlutterPubspecYamlConfigTypeToString(currentConfigType)]
+    console.log('dw test, FlutterPubspecYamlConfigTypeToString(currentConfigType): ', FlutterPubspecYamlConfigTypeToString(currentConfigType))
+    console.log('dw test, saveConfigButtonDisabled: ', saveConfigButtonDisabled)
     return (
       <div
         style={{
@@ -237,7 +252,7 @@ function FlutterAssetsConfigView(props: MsgInterface) {
                   props.projectInfo,
                   {
                     type: currentConfigType,
-                    config: currentGeneratorConfig,
+                    config: getCurrentGeneratorConfig(),
                   },
                 );
               }}
@@ -252,7 +267,6 @@ function FlutterAssetsConfigView(props: MsgInterface) {
                   props.projectInfo,
                   {
                     type: currentConfigType,
-                    config: currentGeneratorConfig,
                   },
                 );
               }}
@@ -268,7 +282,7 @@ function FlutterAssetsConfigView(props: MsgInterface) {
                   props.projectInfo,
                   {
                     type: currentConfigType,
-                    config: currentGeneratorConfig,
+                    config: getCurrentGeneratorConfig(),
                   },
                 );
               }}
@@ -304,7 +318,7 @@ function FlutterAssetsConfigView(props: MsgInterface) {
           }}
         >
           <div
-            style={{ fontSize: 16, fontWeight: '500', }}
+            style={{ fontSize: 18, fontWeight: '500', }}
           >
             Flutter Assets Generator
           </div>
@@ -394,10 +408,326 @@ function FlutterAssetsConfigView(props: MsgInterface) {
   }
 
   const renderFlutterGenConfigView = () => {
+    const config: FlutterGenConfig | null = flutterGenConfig.current
+    if (config === null) {
+      return (
+        <div>暂无配置</div>
+      )
+    }
     return (
-      <>
-        <div>TODO: Flutter Gen</div>
-      </>
+      <div
+        style={{
+          display: 'flex',
+          flex: 1,
+          flexDirection: 'column',
+        }}
+      >
+        <div
+          style={{ fontSize: 18, fontWeight: '500', }}
+        >
+          Flutter Gen
+        </div>
+        {/* base */}
+        <FXGTextField
+          title="output"
+          value={config?.output}
+          tfType={"text"}
+          placeholder={"lib/gen/"}
+          onChange={(value) => {
+            updateFlutterGenConfigValue('output', value)
+          }}
+        />
+        <FXGTextField
+          title="line_length"
+          value={`${config?.line_length ?? ""}`}
+          tfType={"text"}
+          placeholder={"80"}
+          onChange={(value) => {
+            let len: number = 80
+            try {
+              len = parseInt(value, 10)
+              if (typeof len !== 'number') {
+                len = 80
+              }
+            } catch (error) {
+
+            }
+            updateFlutterGenConfigValue('line_length', len)
+          }}
+        />
+        <FXGCheckBox
+          title="parse_metadata"
+          checked={config?.parse_metadata ?? false}
+          onChange={(value) => {
+            updateFlutterGenConfigValue('parse_metadata', value)
+          }}
+        />
+        <div style={{ height: 20 }} />
+        <FXGContainer style={{ width: '50%', height: 1, backgroundColor: '#fff', opacity: 0.3 }} />
+        <div style={{ height: 10 }} />
+        {/* integrations */}
+        <div style={{ fontSize: 14, fontWeight: '500' }}>integrations</div>
+        <div
+          style={{
+            display: 'flex',
+            flex: 1,
+            flexDirection: 'column',
+            padding: 10
+          }}
+        >
+          <FXGCheckBox
+            title="flutter_svg"
+            checked={config?.integrations?.flutter_svg ?? false}
+            onChange={(value) => {
+              let obj: any = config?.integrations
+              if (typeof obj !== 'object') {
+                obj = {}
+              }
+              obj.flutter_svg = value
+              updateFlutterGenConfigValue('integrations', obj)
+            }}
+          />
+          <FXGCheckBox
+            title="flare_flutter"
+            checked={config?.integrations?.flare_flutter ?? false}
+            onChange={(value) => {
+              let obj: any = config?.integrations
+              if (typeof obj !== 'object') {
+                obj = {}
+              }
+              obj.flare_flutter = value
+              updateFlutterGenConfigValue('integrations', obj)
+            }}
+          />
+          <FXGCheckBox
+            title="rive"
+            checked={config?.integrations?.rive ?? false}
+            onChange={(value) => {
+              let obj: any = config?.integrations
+              if (typeof obj !== 'object') {
+                obj = {}
+              }
+              obj.rive = value
+              updateFlutterGenConfigValue('integrations', obj)
+            }}
+          />
+          <FXGCheckBox
+            title="lottie"
+            checked={config?.integrations?.lottie ?? false}
+            onChange={(value) => {
+              let obj: any = config?.integrations
+              if (typeof obj !== 'object') {
+                obj = {}
+              }
+              obj.lottie = value
+              updateFlutterGenConfigValue('integrations', obj)
+            }}
+          />
+        </div>
+        <div style={{ height: 20 }} />
+        <FXGContainer style={{ width: '50%', height: 1, backgroundColor: '#fff', opacity: 0.3 }} />
+        <div style={{ height: 10 }} />
+        {/* assets */}
+        <div style={{ fontSize: 14, fontWeight: '500' }}>assets</div>
+        <div
+          style={{
+            display: 'flex',
+            flex: 1,
+            flexDirection: 'column',
+            padding: 10
+          }}
+        >
+          <FXGCheckBox
+            title="enabled"
+            checked={config?.assets?.enabled ?? false}
+            onChange={(value) => {
+              let obj: any = config?.assets
+              if (typeof obj !== 'object') {
+                obj = {}
+              }
+              obj.enabled = value
+              updateFlutterGenConfigValue('assets', obj)
+            }}
+          />
+          <FXGCheckBox
+            title="outputs.package_parameter_enabled"
+            checked={config?.assets?.outputs?.package_parameter_enabled ?? false}
+            onChange={(value) => {
+              let obj: any = config?.assets
+              if (typeof obj !== 'object') {
+                obj = {}
+              }
+              if (typeof obj.outputs !== 'object') {
+                obj.output = {}
+              }
+              obj.output.package_parameter_enabled = value
+              updateFlutterGenConfigValue('assets', obj)
+            }}
+          />
+          <FXGTextField
+            title="outputs.style, 可选值: camel-case/snake-case/dot-delimiter"
+            value={config?.assets?.outputs?.style ?? ""}
+            tfType={"text"}
+            placeholder={"dot-delimiter"}
+            onChange={(value) => {
+              let obj: any = config.assets
+              if (typeof obj !== 'object') {
+                obj = {}
+              }
+              if (typeof obj?.outputs !== 'object') {
+                obj.output = {}
+              }
+              obj.output.style = value
+              updateFlutterGenConfigValue('assets', obj)
+            }}
+          />
+          <FXGTextField
+            title="outputs.class_name"
+            value={config?.assets?.outputs?.class_name ?? ""}
+            tfType={"text"}
+            placeholder={"Assets"}
+            onChange={(value) => {
+              let obj: any = config?.assets
+              if (typeof obj !== 'object') {
+                obj = {}
+              }
+              if (typeof obj?.outputs !== 'object') {
+                obj.output = {}
+              }
+              obj.output.class_name = value
+              updateFlutterGenConfigValue('assets', obj)
+            }}
+          />
+          <FXGTextField
+            title={"exclude, 用 , 分割，例如: assets/fonts, assets/images/dark, ..."}
+            value={Array.isArray(config?.assets?.exclude) && config?.assets?.exclude?.length > 0 ? config?.assets?.exclude?.join(', ') : ''}
+            tfType={"text"}
+            placeholder={""}
+            onChange={(value) => {
+              let result: string[] = []
+              try {
+                result = value.split(',')
+              } catch (error) {
+                //
+              }
+              let obj: any = config?.assets
+              if (typeof obj !== 'object') {
+                obj = {}
+              }
+              obj.exclude = result
+              updateFlutterGenConfigValue('assets', obj)
+            }}
+          />
+        </div>
+
+        <div style={{ height: 20 }} />
+        <FXGContainer style={{ width: '50%', height: 1, backgroundColor: '#fff', opacity: 0.3 }} />
+        <div style={{ height: 10 }} />
+        {/* fonts */}
+        <div style={{ fontSize: 14, fontWeight: '500' }}>fonts</div>
+        <div
+          style={{
+            display: 'flex',
+            flex: 1,
+            flexDirection: 'column',
+            padding: 10
+          }}
+        >
+          <FXGCheckBox
+            title="enabled"
+            checked={config?.fonts?.enabled ?? false}
+            onChange={(value) => {
+              let obj: any = config?.fonts
+              if (typeof obj !== 'object') {
+                obj = {}
+              }
+              obj.enabled = value
+              updateFlutterGenConfigValue('fonts', obj)
+            }}
+          />
+          <FXGTextField
+            title="outputs.class_name"
+            value={config?.fonts?.outputs?.class_name ?? ""}
+            tfType={"text"}
+            placeholder={"FontFamily"}
+            onChange={(value) => {
+              let obj: any = config?.fonts
+              if (typeof obj !== 'object') {
+                obj = {}
+              }
+              if (typeof obj?.outputs !== 'object') {
+                obj.output = {}
+              }
+              obj.output.class_name = value
+              updateFlutterGenConfigValue('fonts', obj)
+            }}
+          />
+        </div>
+
+        <div style={{ height: 20 }} />
+        <FXGContainer style={{ width: '50%', height: 1, backgroundColor: '#fff', opacity: 0.3 }} />
+        <div style={{ height: 10 }} />
+        {/* colors */}
+        <div style={{ fontSize: 14, fontWeight: '500' }}>colors</div>
+        <div
+          style={{
+            display: 'flex',
+            flex: 1,
+            flexDirection: 'column',
+            padding: 10
+          }}
+        >
+          <FXGCheckBox
+            title="enabled"
+            checked={config?.colors?.enabled ?? false}
+            onChange={(value) => {
+              let obj: any = config?.colors
+              if (typeof obj !== 'object') {
+                obj = {}
+              }
+              obj.enabled = value
+              updateFlutterGenConfigValue('colors', obj)
+            }}
+          />
+          <FXGTextField
+            title="outputs.class_name"
+            value={config?.colors?.outputs?.class_name ?? ""}
+            tfType={"text"}
+            placeholder={"Assets"}
+            onChange={(value) => {
+              let obj: any = config?.colors
+              if (typeof obj !== 'object') {
+                obj = {}
+              }
+              if (typeof obj?.outputs !== 'object') {
+                obj.output = {}
+              }
+              obj.output.class_name = value
+              updateFlutterGenConfigValue('colors', obj)
+            }}
+          />
+          <FXGTextField
+            title={"inputs, 用 , 分割，例如: assets/color/colorsA.xml, assets/color/colorsB.xml, ..."}
+            value={Array.isArray(config?.colors?.inputs) && config?.colors?.inputs?.length > 0 ? config?.colors?.inputs?.join(', ') : ''}
+            tfType={"text"}
+            placeholder={""}
+            onChange={(value) => {
+              let result: string[] = []
+              try {
+                result = value.split(',')
+              } catch (error) {
+                //
+              }
+              let obj: any = config?.colors
+              if (typeof obj !== 'object') {
+                obj = {}
+              }
+              obj.inputs = result
+              updateFlutterGenConfigValue('colors', obj)
+            }}
+          />
+        </div>
+      </div>
     )
   }
 

@@ -106,7 +106,17 @@ export interface FlutterGenConfig {
   output: string
   line_length: number
   parse_metadata: boolean
+  integrations: FlutterGenIntegrationsConfig
   assets: FlutterGenAssetsConfig
+  fonts: FlutterGenFontsConfig
+  colors: FlutterGenColorsConfig
+}
+
+export interface FlutterGenIntegrationsConfig {
+  flutter_svg: boolean
+  flare_flutter: boolean
+  rive: boolean
+  lottie: boolean
 }
 
 export interface FlutterGenAssetsConfig {
@@ -132,7 +142,7 @@ export interface FlutterGenFontsOutputConfig {
 
 export interface FlutterGenColorsConfig {
   enabled: boolean
-  inputs: any[]
+  inputs: string[]
   outputs: FlutterGenFontsOutputConfig
 }
 

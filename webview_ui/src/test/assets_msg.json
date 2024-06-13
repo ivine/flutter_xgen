@@ -1,24 +1,65 @@
 {
   "type": 300201,
   "projectInfo": {
-    "dir": "~/Downloads/pokaliveapp_flutter_download_test",
-    "name": "pokaliveapp_flutter_download_test",
+    "name": "pokalive_flutter",
+    "dir": "/Users/xxx/Downloads/abc",
     "watcherTypes": [
-      100,
       200,
-      201
+      100
     ]
   },
   "data": {
     "assets": {
+      "flutterGenConfig": {
+        "output": "lib/gen/",
+        "line_length": 140,
+        "parse_metadata": false,
+        "integrations": {
+          "flutter_svg": false,
+          "flare_flutter": false,
+          "rive": false,
+          "lottie": false
+        },
+        "assets": {
+          "enabled": true,
+          "outputs": {
+            "package_parameter_enabled": false,
+            "style": "dot-delimiter",
+            "class_name": "Assets"
+          },
+          "exclude": [
+            "assets/images/chip3/chip3.jpg",
+            "pictures/chip5.jpg",
+            "assets/flare/"
+          ]
+        },
+        "fonts": {
+          "enabled": true,
+          "outputs": {
+            "class_name": "FontFamily"
+          }
+        },
+        "colors": {
+          "enabled": true,
+          "inputs": [
+            "assets/color/colorsA.xml",
+            "assets/color/colorsB.xml"
+          ],
+          "outputs": {
+            "class_name": "ColorName"
+          }
+        }
+      },
       "flutterAssetsGeneratorConfigByCr1992": {
         "auto_detection": true,
-        "named_with_parent": true
+        "named_with_parent": true,
+        "leading_with_package_name": false
       },
       "previewItem": null,
       "fileExt": ""
     },
     "l10n": {
+      "localizelyFlutterIntlInstalled": false,
       "flutterIntlConfig": null,
       "arbs": {}
     }

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode'
-import _ from 'lodash'
+import { debounce } from 'lodash'
 const fs = require('fs')
 const p = require('path')
 import YAML, { Document, YAMLMap, YAMLSeq } from 'yaml'
@@ -87,11 +87,11 @@ export default class FXGProject {
   }
 
   public setupWatchersDebounce() {
-    this.assetsDirWatchEventDebounce = _.debounce((eventType: WatcherEventType, uri: vscode.Uri) => {
+    this.assetsDirWatchEventDebounce = debounce((eventType: WatcherEventType, uri: vscode.Uri) => {
       this.setWatcherCallback(uri, eventType, FXGWatcherType.assets_cr1992)
       this.setWatcherCallback(uri, eventType, FXGWatcherType.assets_flutter_gen)
     }, 300)
-    this.l10nDirWatchEventDebounce = _.debounce((eventType: WatcherEventType, uri: vscode.Uri) => {
+    this.l10nDirWatchEventDebounce = debounce((eventType: WatcherEventType, uri: vscode.Uri) => {
       this.setWatcherCallback(uri, eventType, FXGWatcherType.l10n)
     }, 300)
   }
@@ -503,6 +503,22 @@ export default class FXGProject {
             return
           }
           const key: string = 'flutter_assets_generator'
+          if (this.pubspecDoc.has(key)) {
+            this.pubspecDoc.delete(key)
+          }
+          const pair = this.pubspecDoc.createPair(key, config)
+          this.pubspecDoc.add(pair)
+          // TODO: 加入换行符
+          this.saveCurrentPubspec()
+          await this.refresh(InteractionEventType.extToWeb_configs_assets, null)
+        }
+          break
+
+        case FlutterPubspecYamlConfigType.flutter_gen: {
+          if (config === null) {
+            return
+          }
+          const key: string = 'flutter_gen'
           if (this.pubspecDoc.has(key)) {
             this.pubspecDoc.delete(key)
           }

@@ -22,7 +22,7 @@ function FXGCheckBox(props: FXGCheckBoxInterface) {
   let rightS = 0
   if (typeof props === 'object') {
     checked = typeof props.checked === 'boolean' ? props.checked : false
-    enabled = typeof props.enabled === 'boolean' ? props.enabled : false
+    enabled = typeof props.enabled === 'boolean' ? props.enabled : true
     topS = typeof props.topSpacing === 'number' ? props.topSpacing : 0
     leftS = typeof props.leftSpacing === 'number' ? props.leftSpacing : 0
     bottomS = typeof props.bottomSpacing === 'number' ? props.bottomSpacing : 0

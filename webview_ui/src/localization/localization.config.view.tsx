@@ -1,4 +1,3 @@
-import _ from "lodash"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { VSCodeTextField } from '@vscode/webview-ui-toolkit/react'
 
