@@ -36,10 +36,12 @@
   "main": "./dist/extension.js",
   "scripts": {
     "install_all": "yarn && cd webview_ui && yarn",
-    "dev": "tsc -watch -p ./",
+    "compile": "yarn check-types && node esbuild.js",
+    "check-types": "tsc --noEmit",
+    "dev": "yarn build_webview && node esbuild.js --watch",
     "dev_webview": "cd webview_ui && yarn dev",
     "build_webview": "cd webview_ui && yarn && yarn build && rm -rf ../dist/webview_ui/ && mv dist ../dist/webview_ui/",
-    "build": "yarn build_webview && tsc -p ./",
+    "build": "yarn build_webview && yarn check-types && node esbuild.js --production",
     "vsix": "yarn build && vsce package",
     "lint": "eslint src --ext ts"
   },
@@ -56,6 +58,7 @@
     "@types/vscode": "^1.88.0",
     "@typescript-eslint/eslint-plugin": "^7.7.1",
     "@typescript-eslint/parser": "^7.7.1",
+    "esbuild": "^0.21.5",
     "eslint": "^9.1.1",
     "glob": "^10.3.12",
     "prettier": "^3.2.5",

@@ -7,15 +7,13 @@
 			"command": "source ~/.zshrc && which node && yarn dev",
 			"problemMatcher": [
 				// "$ts-webpack",
-				"$tsc-watch"
+				// "$tsc-watch",
+				"$esbuild-watch",
 			],
 			"isBackground": true,
 			"presentation": {
-				"echo": true,
-				"reveal": "never",
-				"panel": "shared",
-				"showReuseMessage": true,
-				"clear": false
+				"group": "watch",
+				"reveal": "never"
 			},
 			"group": {
 				"kind": "build",
