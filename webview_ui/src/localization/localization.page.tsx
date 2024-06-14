@@ -62,6 +62,9 @@ function LocalizationPage(props: MsgInterface) {
 
     // 默认的右键事件
     window.addEventListener('contextmenu', vscodeRightClickEvent, true)
+    window.addEventListener('resize', () => {
+      setHeight(containerRef.current.clientHeight - (120 + configsBarHeight + 60))
+    });
 
     return () => {
       window.removeEventListener('contextmenu', vscodeRightClickEvent)
