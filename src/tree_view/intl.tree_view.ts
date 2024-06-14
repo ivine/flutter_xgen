@@ -1,15 +1,15 @@
 import * as vscode from 'vscode'
 
-import FXGProject, { TreeViewRefreshCallback } from '../model/project'
+import FXGProject from '../model/project'
 import { FileUtil } from '../util/file.util'
 
 import WorkspaceManager from '../manager/workspace.manager'
-import { TreeViewType } from '../manager/tree_view.manager'
 import { FXGCommandType, getFXGCommandData } from '../manager/command.manager'
 
 import TreeViewUtil from './tree_view.util'
 import { IntlTreeNode, TreeNodeType } from './tree_node'
 import { InteractionEvent, InteractionEventType, ProjectInfoMsgInterface } from '../webview/const'
+import { EventBusType, eventBus } from '../manager/event.manager'
 
 export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
   private _onDidChangeTreeData: vscode.EventEmitter<IntlTreeNode | undefined | null | void> = new vscode.EventEmitter<IntlTreeNode | undefined | null | void>()
@@ -26,14 +26,10 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
     this.rootPath = rootPath
     this.workspaceDirs = workspaceDirs
 
-    this.setupRefreshCallback()
-    this.setup()
-  }
+    eventBus.on(EventBusType.refreshL10nTreeView, (message) => {
+      this.setup()
+    })
 
-  refreshCallback: TreeViewRefreshCallback = (treeViewType: TreeViewType) => {
-    if (treeViewType !== TreeViewType.localizations) {
-      return
-    }
     this.setup()
   }
 
@@ -46,12 +42,6 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
   }
 
   // MARK: - setup
-  setupRefreshCallback() {
-    for (const proj of this.allProjects) {
-      proj.addTreeViewRefreshCallback(this.refreshCallback)
-    }
-  }
-
   async setup() {
     this.treeNodes = []
 
@@ -89,9 +79,6 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
 
   // MARK: - assemble
   private async assembleProjectTreeNode(project: FXGProject): Promise<IntlTreeNode | null> {
-    // preview node
-    const previewNode: IntlTreeNode = this.assembleDirTreeNode_Preview(project)
-
     // configs node
     const configsNode: IntlTreeNode = this.assembleDirTreeNode_Configs(project)
 
@@ -114,41 +101,6 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
       null,
     )
     return Promise.resolve(treeNode)
-  }
-
-  private assembleDirTreeNode_Preview(project: FXGProject): IntlTreeNode {
-    const projectInfo: ProjectInfoMsgInterface = {
-      name: project.projectName,
-      dir: project.dir,
-      watcherTypes: WorkspaceManager.getInstance().getProjectByDir(project.dir)?.watcherTypes ?? []
-    }
-    const args: InteractionEvent = {
-      timestamp: Date.now(),
-      eventType: InteractionEventType.extToWeb_preview_localization,
-      projectInfo: projectInfo,
-      data: null
-    }
-
-    const node = new IntlTreeNode(
-      "预览",
-      vscode.TreeItemCollapsibleState.None,
-
-      TreeNodeType.preview,
-      project.dir,
-      project.projectName,
-      [],
-      "",
-      Object.assign(
-        {},
-        getFXGCommandData(FXGCommandType.openFXGUIWeb),
-        {
-          arguments: [
-            args
-          ]
-        }
-      ),
-    )
-    return node
   }
 
   private assembleDirTreeNode_Configs(project: FXGProject): IntlTreeNode {

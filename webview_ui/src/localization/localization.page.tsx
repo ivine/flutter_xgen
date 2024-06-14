@@ -58,7 +58,7 @@ function LocalizationPage(props: MsgInterface) {
 
   useEffect(() => {
     // 高度
-    setHeight(containerRef.current.clientHeight - (configsBarHeight + 60))
+    setHeight(containerRef.current.clientHeight - (120 + configsBarHeight + 60))
 
     // 默认的右键事件
     window.addEventListener('contextmenu', vscodeRightClickEvent, true)

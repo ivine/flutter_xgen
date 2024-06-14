@@ -35,15 +35,7 @@ export default class WorkspaceManager {
     this.mainProject = new FXGProject(dir, true)
   }
 
-  public setupEnvPaths() {
-    try {
-      let dart = vscode.workspace.getConfiguration('dart')
-      let sdkPaths = dart.get<string[]>('sdkPaths');
-      let flutterSdkPaths = dart.get<string[]>('flutterSdkPaths');
-    } catch (error) {
-
-    }
-  }
+  public setupEnvPaths() { }
 
   public dispose() {
     this.mainProject = null

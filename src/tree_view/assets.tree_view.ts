@@ -1,15 +1,15 @@
 import * as vscode from 'vscode'
 
-import FXGProject, { TreeViewRefreshCallback } from '../model/project'
+import FXGProject from '../model/project'
 import { FileUtil } from '../util/file.util'
 
 import WorkspaceManager from '../manager/workspace.manager'
-import { TreeViewType } from '../manager/tree_view.manager'
 import { FXGCommandData, FXGCommandType, getFXGCommandData } from '../manager/command.manager'
 
 import TreeViewUtil from './tree_view.util'
 import { TreeNodeType, AssetsTreeNode } from './tree_node'
 import { InteractionEvent, InteractionEventType, ProjectInfoMsgInterface } from '../webview/const'
+import { EventBusType, eventBus } from '../manager/event.manager'
 
 export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
   private _onDidChangeTreeData: vscode.EventEmitter<AssetsTreeNode | undefined | null | void> = new vscode.EventEmitter<AssetsTreeNode | undefined | null | void>()
@@ -26,14 +26,10 @@ export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
     this.rootPath = rootPath
     this.workspaceDirs = workspaceDirs
 
-    this.setupRefreshCallback()
-    this.setup()
-  }
+    eventBus.on(EventBusType.refreshAssetsTreeView, (message) => {
+      this.setup()
+    })
 
-  refreshCallback: TreeViewRefreshCallback = (treeViewType: TreeViewType) => {
-    if (treeViewType !== TreeViewType.assets) {
-      return
-    }
     this.setup()
   }
 
@@ -46,13 +42,7 @@ export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
   }
 
   // MARK: - setup
-  setupRefreshCallback() {
-    for (const proj of this.allProjects) {
-      proj.addTreeViewRefreshCallback(this.refreshCallback)
-    }
-  }
-
-  async setup() {
+  public async setup() {
     this.treeNodes = []
 
     // 当前项目

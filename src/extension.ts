@@ -4,7 +4,6 @@ import * as vscode from 'vscode'
 
 import CommandManager from './manager/command.manager'
 
-import FileManager from './manager/file.manager'
 import WatcherManager from './manager/watcher.manager'
 import TreeViewManager from './manager/tree_view.manager'
 import WorkspaceManager from './manager/workspace.manager'
@@ -33,32 +32,17 @@ const setupManager = () => {
 	// manager 初始化
 	const wsDir = workspaceDir()
 	CommandManager.getInstance().setup()
-	WorkspaceManager.getInstance().setup(wsDir)
-	FileManager.getInstance().setup(wsDir)
-	WatcherManager.getInstance().setup(wsDir)
-	TreeViewManager.getInstance().setup(wsDir)
 	StoreManager.getInstance().setup(wsDir)
+	WatcherManager.getInstance().setup(wsDir)
+	WorkspaceManager.getInstance().setup(wsDir)
+	TreeViewManager.getInstance().setup(wsDir)
 }
 
 export function activate(context: vscode.ExtensionContext) {
 	initializeExtension(context)
 
+	// 每次切换 文件夹/workspace 的时候，都会触发
 	setupManager()
-
-	// debug webview
-	context.subscriptions.push(
-		vscode.debug.registerDebugConfigurationProvider('chrome', {
-			provideDebugConfigurations: (folder, token) => {
-				return [{
-					type: 'chrome',
-					request: 'attach',
-					name: 'Attach to Webview',
-					port: 9222,
-					webRoot: folder.uri.fsPath
-				}]
-			}
-		})
-	)
 }
 
 export function deactivate() {

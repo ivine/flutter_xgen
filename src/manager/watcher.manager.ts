@@ -1,4 +1,3 @@
-import * as fs from 'fs'
 import * as vscode from 'vscode'
 
 import { find } from 'lodash'
@@ -33,6 +32,7 @@ export default class WatcherManager {
   }
 
   public setup(rootPath: string) {
+    this.dispose()
     this.rootPath = rootPath
   }
 

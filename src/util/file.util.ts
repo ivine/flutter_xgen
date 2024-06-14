@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import YAML from 'yaml'
+import { parseDocument } from 'yaml'
 export class FileUtil {
   /**
    * 获取目录下所有文件（可选地包括子目录中的文件），默认排除.DS_Store文件
@@ -97,7 +97,7 @@ export class FileUtil {
   public static async readYamlFile(filePath: string): Promise<any | null> {
     try {
       const fileContents = await this.readFile(filePath)
-      const data = YAML.parseDocument(fileContents)
+      const data = parseDocument(fileContents)
       return data
     } catch (error) {
       console.log("file.util - readYamlFile, error: ", error)

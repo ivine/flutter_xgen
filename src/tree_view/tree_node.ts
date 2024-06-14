@@ -1,5 +1,4 @@
 import * as vscode from 'vscode'
-import TreeViewUtil from './tree_view.util'
 
 export enum TreeNodeType {
   file,

@@ -168,7 +168,6 @@ function FlutterAssetsConfigView(props: MsgInterface) {
       tmpConfigsModified[FlutterPubspecYamlConfigTypeToString(FlutterPubspecYamlConfigType.flutter_assets_generator_cr1992)] = modified
     } else if (currentConfigType === FlutterPubspecYamlConfigType.flutter_gen) {
       modified = !isEqual(assetsMsg.flutterGenConfig, flutterGenConfig.current)
-      console.log('dw test, modified: ', modified)
       tmpConfigsModified[FlutterPubspecYamlConfigTypeToString(FlutterPubspecYamlConfigType.flutter_gen)] = modified
     }
     configsModified.current = tmpConfigsModified
@@ -182,8 +181,6 @@ function FlutterAssetsConfigView(props: MsgInterface) {
     ]
 
     const saveConfigButtonDisabled = !configsModified.current[FlutterPubspecYamlConfigTypeToString(currentConfigType)]
-    console.log('dw test, FlutterPubspecYamlConfigTypeToString(currentConfigType): ', FlutterPubspecYamlConfigTypeToString(currentConfigType))
-    console.log('dw test, saveConfigButtonDisabled: ', saveConfigButtonDisabled)
     return (
       <div
         style={{

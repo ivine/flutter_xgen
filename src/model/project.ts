@@ -8,7 +8,6 @@ import { FileUtil } from '../util/file.util'
 import TreeViewUtil from '../tree_view/tree_view.util'
 import { AssetsTreeNode, IntlTreeNode, TreeNodeType } from '../tree_view/tree_node'
 
-import { TreeViewType } from '../manager/tree_view.manager'
 import WatcherManager, { FileWatcher, WatcherEventType } from '../manager/watcher.manager'
 
 import { PreviewItem } from './preview'
@@ -18,8 +17,8 @@ import AssetsGenerator from '../generator/assets/assets.generator'
 import { FXGUIWebPanel } from '../webview/fxg_web_panel'
 import StoreManager from '../manager/store.manager'
 import IntlGenerator from '../generator/intl/intl.generator'
-
-export type TreeViewRefreshCallback = (treeViewType: TreeViewType) => void
+import { EventBusType, eventBus } from '../manager/event.manager'
+import WorkspaceManager from '../manager/workspace.manager'
 
 export default class FXGProject {
   dir: string
@@ -42,8 +41,6 @@ export default class FXGProject {
   assetsDirWatchEventDebounce: (eventType: WatcherEventType, uri: vscode.Uri) => void
   l10nDirWatchEventDebounce: (eventType: WatcherEventType, uri: vscode.Uri) => void
 
-  refreshTreeViewCallbackList: TreeViewRefreshCallback[] = []
-
   assetNodes: AssetsTreeNode[] = []
   l10nNodes: IntlTreeNode[] = []
 
@@ -59,7 +56,7 @@ export default class FXGProject {
     try {
       await this.getCurrentPubspecDoc()
       this.getCurrentAssetsFileTree()
-      this.getCurrentLocalizationFileTree()
+      this.getCurrentL10nFileTree()
       this.addWatchers()
       this.setupWatchersDebounce()
     } catch (error) {
@@ -82,7 +79,7 @@ export default class FXGProject {
       if (eventType === WatcherEventType.onChanged) {
         return
       }
-      this.getCurrentLocalizationFileTree()
+      this.getCurrentL10nFileTree()
     })
   }
 
@@ -101,6 +98,10 @@ export default class FXGProject {
     if (!enable) {
       return
     }
+    const project: FXGProject = WorkspaceManager.getInstance().getProjectByDir(this.dir)
+    if (project.pubspecDoc === null) {
+      return
+    }
     const projectInfo: ProjectInfoMsgInterface = {
       name: this.projectName,
       dir: this.dir,
@@ -115,8 +116,12 @@ export default class FXGProject {
       }
         break
 
-      case FXGWatcherType.assets_flutter_gen:
-
+      case FXGWatcherType.assets_flutter_gen: {
+        if (eventType === WatcherEventType.onChanged || this.flutterGenConfig === null) {
+          return
+        }
+        AssetsGenerator.getInstance().runFlutterGen(projectInfo, this.flutterGenConfig)
+      }
         break
 
       case FXGWatcherType.l10n:
@@ -135,7 +140,6 @@ export default class FXGProject {
     this.assetNodes = []
     this.assetOneDimensionalPreviewNodes = []
     this.l10nNodes = []
-    this.refreshTreeViewCallbackList = []
 
     WatcherManager.getInstance().stopWatch(this.assetsDirWatcher)
     WatcherManager.getInstance().stopWatch(this.l10nsDirWatcher)
@@ -236,6 +240,9 @@ export default class FXGProject {
   }
 
   private async getCurrentAssetsFileTree() {
+    if (this.pubspecDoc === null) {
+      return
+    }
     let flutterMap = this.pubspecDoc.get('flutter') as YAMLMap
     let pathsSettings = flutterMap.get('assets') as YAMLSeq
 
@@ -273,13 +280,10 @@ export default class FXGProject {
     }
     this.assetNodes = nodes
 
-    // 通知
-    for (let cb of this.refreshTreeViewCallbackList) {
-      cb(TreeViewType.assets)
-    }
+    eventBus.emit(EventBusType.refreshAssetsTreeView)
 
     // 生成一维数组
-    this.assetOneDimensionalPreviewNodes = this.getOneDimensionalPreviewNodes(nodes)
+    // this.assetOneDimensionalPreviewNodes = this.getOneDimensionalPreviewNodes(nodes)
 
     // FlutterAssetsGenerator generate ruler: https://github.com/cr1992/FlutterAssetsGenerator
 
@@ -336,8 +340,11 @@ export default class FXGProject {
     return res
   }
 
-  private async getCurrentLocalizationFileTree() {
+  private async getCurrentL10nFileTree() {
     // flutter_intl
+    if (this.pubspecDoc === null) {
+      return
+    }
     const pathsSettings = this.pubspecDoc.get('flutter_intl') as YAMLMap
     if (!YAML.isMap(pathsSettings)) {
       console.log('getCurrentLocalizationFileTree, assetsSettings is not array')
@@ -380,26 +387,7 @@ export default class FXGProject {
 
     this.l10nNodes = nodes
 
-    // 通知
-    for (let cb of this.refreshTreeViewCallbackList) {
-      cb(TreeViewType.localizations)
-    }
-  }
-
-  public addTreeViewRefreshCallback(callback: TreeViewRefreshCallback) {
-    this.removeTreeViewRefreshCallback(callback)
-    this.refreshTreeViewCallbackList.push(callback)
-  }
-
-  public removeTreeViewRefreshCallback(callback: TreeViewRefreshCallback) {
-    const list: TreeViewRefreshCallback[] = []
-    for (let cb of this.refreshTreeViewCallbackList) {
-      if (cb === callback) {
-        continue
-      }
-      list.push(cb)
-    }
-    this.refreshTreeViewCallbackList = list
+    eventBus.emit(EventBusType.refreshL10nTreeView)
   }
 
   public getPreviewItem(selectedItem: string | null, previous: boolean, next: boolean): PreviewItem {
