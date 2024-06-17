@@ -40,7 +40,7 @@
     "check-types": "tsc --noEmit",
     "dev": "yarn build_webview && node esbuild.js --watch",
     "dev_webview": "cd webview_ui && yarn dev",
-    "build_webview": "cd webview_ui && yarn && yarn build && rm -rf ../dist/webview_ui/ && mv dist ../dist/webview_ui/",
+    "build_webview": "source ./shell_build_webview.sh",
     "build": "yarn build_webview && yarn check-types && node esbuild.js --production",
     "vsix": "yarn build && vsce package",
     "lint": "eslint src --ext ts"
