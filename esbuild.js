@@ -10,6 +10,7 @@ async function main() {
     format: 'cjs',
     minify: production,
     sourcemap: !production,
+    pure: production ? ['console.log', 'console.error'] : [],
     sourcesContent: false,
     platform: 'node',
     outfile: 'dist/extension.js',
