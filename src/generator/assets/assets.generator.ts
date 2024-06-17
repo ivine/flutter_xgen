@@ -4,12 +4,12 @@ import * as vscode from 'vscode'
 
 import { Scalar, YAMLMap, YAMLSeq } from 'yaml'
 
-import WorkspaceManager from "../../manager/workspace.manager"
-import AssetFileByCr1992 from "../../model/assets"
-import FXGProject from "../../model/project"
-import { FlutterAssetsGeneratorConfigByCr1992, FlutterGenConfig } from "../../model/project.enum"
-import { FileUtil } from "../../util/file.util"
-import { FlutterAssetsConfigCr1992Constants, ProjectInfoMsgInterface } from "../../webview/const"
+import WorkspaceManager from '../../manager/workspace.manager'
+import AssetFileByCr1992 from '../../model/assets'
+import FXGProject from '../../model/project'
+import { FlutterAssetsGeneratorConfigByCr1992, FlutterGenConfig } from '../../model/project.enum'
+import { FileUtil } from '../../util/file.util'
+import { FlutterAssetsConfigCr1992Constants, ProjectInfoMsgInterface } from '../../webview/const'
 import { checkIfDartPackageInstalled, installDartPubGlobalPackage, runTerminalCommand } from '../../util/process.util'
 
 class AssetsGenerator {
@@ -28,24 +28,31 @@ class AssetsGenerator {
 
     // 当前默认用户使用 dart pub global
     // TODO: /bin/sh: dart: command not found
-    const packageName = "flutter_gen"
-    const isInstalled_pub_global = await checkIfDartPackageInstalled(packageName)
-    if (!isInstalled_pub_global) {
-      // 安装
-      const suc = await installDartPubGlobalPackage(packageName)
-      if (suc) {
-        await runTerminalCommand(packageName)
+    try {
+      const packageName = 'flutter_gen'
+      const isInstalled_pub_global = await checkIfDartPackageInstalled(packageName)
+      if (!isInstalled_pub_global) {
+        // 安装
+        const suc = await installDartPubGlobalPackage(packageName)
+        if (suc) {
+          await runTerminalCommand(packageName)
+        }
       }
-    }
-    const commandString = `
-      source ~/.zshrc
+
+      const commandString = `
+      export PATH="$PATH:$HOME/.pub-cache/bin"
+      export PATH="$PATH:/usr/local/opt/dart/libexec/bin"
+      export PATH="$PATH:$HOME/fvm/default/bin"
       cd ${projectInfo.dir}
       fluttergen
-      `; // TODO: 优化一下
+      ` // TODO: 优化一下
 
-    const result = await runTerminalCommand(commandString)
-    vscode.window.setStatusBarMessage("Flutter XGen: FlutterGen 生成成功", 3000)
-    console.log('runFlutterGen, result: ', result.stdout)
+      const result = await runTerminalCommand(commandString)
+      vscode.window.setStatusBarMessage('Flutter XGen: FlutterGen 生成成功', 3000)
+      console.log('runFlutterGen, result: ', result.stdout)
+    } catch (error) {
+      vscode.window.setStatusBarMessage('Flutter XGen: FlutterGen 生成失败', 3000)
+    }
   }
 
   // MARK: - FlutterAssetsGenerator - cr1992
@@ -58,19 +65,19 @@ class AssetsGenerator {
     // 读取配置
     const project: FXGProject | null = WorkspaceManager.getInstance().getProjectByDir(projectInfo.dir)
     if (project === null) {
-      throw (new Error("项目不存在"))
+      throw new Error('项目不存在')
     }
 
     const assetsPaths = (project.pubspecDoc.get('flutter') as YAMLMap)?.get('assets') as YAMLSeq
     let avaliableAssetsPaths: string[] = assetsPaths.items.map((e: Scalar) => e.value as string)
     if (!Array.isArray(avaliableAssetsPaths)) {
-      throw (Error("未配置 flutter: assets: 路径"))
+      throw Error('未配置 flutter: assets: 路径')
     } else if (avaliableAssetsPaths.length === 0) {
-      throw (Error("flutter: assets: 路径为空"))
+      throw Error('flutter: assets: 路径为空')
     }
     if (Array.isArray(path_ignore) && path_ignore.length > 0) {
       // 过滤路径
-      avaliableAssetsPaths = avaliableAssetsPaths.filter((item1: string) => !avaliableAssetsPaths.some(item2 => item1.includes(item2)))
+      avaliableAssetsPaths = avaliableAssetsPaths.filter((item1: string) => !avaliableAssetsPaths.some((item2) => item1.includes(item2)))
     }
     // 移除不存在的路径
     avaliableAssetsPaths = avaliableAssetsPaths.filter((e: string) => {
@@ -114,7 +121,7 @@ class AssetsGenerator {
     }
     fs.writeFileSync(output_file_path, fileContent)
 
-    vscode.window.showInformationMessage(`Flutter XGen: ${file_relative_path} 生成成功`)
+    vscode.window.showInformationMessage(`Flutter XGen: Cr1992 ${file_relative_path} 生成成功`)
   }
 
   private generateAssetsDotDartFileContent(config: FlutterAssetsGeneratorConfigByCr1992, assets: AssetFileByCr1992[]): string {

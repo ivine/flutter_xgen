@@ -74,16 +74,32 @@
   "contributes": {
     "commands": [
       {
-        "command": "FXG.generateAssets",
-        "title": "Flutter XGen: 生成 Assets.dart"
+        "command": "FXG.openFlutterXGenPanel",
+        "title": "Flutter XGen: 打开 FXG 面板"
       },
       {
-        "command": "FXG.startWatchAssets",
-        "title": "Flutter XGen: 开始监听 Assets 文件夹"
+        "command": "FXG.generateAssetsBaseOnCr1992",
+        "title": "Flutter XGen: Cr1992 生成 Assets.dart"
       },
       {
-        "command": "FXG.stopWatchAssets",
-        "title": "Flutter XGen: 停止监听 Assets 文件夹"
+        "command": "FXG.startWatchAssetsBaseOnCr1992",
+        "title": "Flutter XGen: Cr1992 开始监听 Assets 文件夹"
+      },
+      {
+        "command": "FXG.stopWatchAssetsBaseOnCr1992",
+        "title": "Flutter XGen: Cr1992 停止监听 Assets 文件夹"
+      },
+      {
+        "command": "FXG.generateAssetsBaseOnFlutterGen",
+        "title": "Flutter XGen: FlutterGen 生成 Assets.dart"
+      },
+      {
+        "command": "FXG.startWatchAssetsBaseOnFlutterGen",
+        "title": "Flutter XGen: FlutterGen 开始监听 Assets 文件夹"
+      },
+      {
+        "command": "FXG.stopWatchAssetsBaseOnFlutterGen",
+        "title": "Flutter XGen: FlutterGen 停止监听 Assets 文件夹"
       },
       {
         "command": "FXG.generateIntl",
