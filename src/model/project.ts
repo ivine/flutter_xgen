@@ -12,7 +12,13 @@ import WatcherManager, { FileWatcher, WatcherEventType } from '../manager/watche
 
 import { PreviewItem } from './preview'
 import { FlutterAssetsGeneratorConfigByCr1992, FlutterGenConfig, FlutterIntlConfig } from './project.enum'
-import { FXGWatcherType, FlutterPubspecYamlConfigType, InteractionEvent, InteractionEventType, ProjectInfoMsgInterface } from '../webview/const'
+import {
+  FXGWatcherType,
+  FlutterPubspecYamlConfigType,
+  InteractionEvent,
+  InteractionEventType,
+  ProjectInfoMsgInterface
+} from '../webview/const'
 import AssetsGenerator from '../generator/assets/assets.generator'
 import { FXGUIWebPanel } from '../webview/fxg_web_panel'
 import StoreManager from '../manager/store.manager'
@@ -32,8 +38,8 @@ export default class FXGProject {
   loading: boolean = false
   pubspecDoc: Document = null
 
-  assetsDirPath: string = ""
-  l10nsDirPath: string = ""
+  assetsDirPath: string = ''
+  l10nsDirPath: string = ''
 
   watcherTypes: FXGWatcherType[] = []
   assetsDirWatcher: FileWatcher | null = null
@@ -60,7 +66,7 @@ export default class FXGProject {
       this.addWatchers()
       this.setupWatchersDebounce()
     } catch (error) {
-      console.log("FXGProject - setup, error:", error)
+      console.log('FXGProject - setup, error:', error)
     }
     this.loading = false
   }
@@ -105,23 +111,25 @@ export default class FXGProject {
     const projectInfo: ProjectInfoMsgInterface = {
       name: this.projectName,
       dir: this.dir,
-      watcherTypes: this.watcherTypes,
+      watcherTypes: this.watcherTypes
     }
     switch (watcherType) {
-      case FXGWatcherType.assets_cr1992: {
-        if (eventType === WatcherEventType.onChanged || this.flutterAssetsGeneratorConfigByCr1992 === null) {
-          return
+      case FXGWatcherType.assets_cr1992:
+        {
+          if (eventType === WatcherEventType.onChanged || this.flutterAssetsGeneratorConfigByCr1992 === null) {
+            return
+          }
+          AssetsGenerator.getInstance().runCr1992Generator(projectInfo, this.flutterAssetsGeneratorConfigByCr1992)
         }
-        AssetsGenerator.getInstance().runCr1992Generator(projectInfo, this.flutterAssetsGeneratorConfigByCr1992)
-      }
         break
 
-      case FXGWatcherType.assets_flutter_gen: {
-        if (eventType === WatcherEventType.onChanged || this.flutterGenConfig === null) {
-          return
+      case FXGWatcherType.assets_flutter_gen:
+        {
+          if (eventType === WatcherEventType.onChanged || this.flutterGenConfig === null) {
+            return
+          }
+          AssetsGenerator.getInstance().runFlutterGen(projectInfo, this.flutterGenConfig)
         }
-        AssetsGenerator.getInstance().runFlutterGen(projectInfo, this.flutterGenConfig)
-      }
         break
 
       case FXGWatcherType.l10n:
@@ -134,6 +142,17 @@ export default class FXGProject {
 
   public setWatcherEnable(enable: boolean, type: FXGWatcherType) {
     StoreManager.getInstance().setWatcherEnable(enable, this.dir, type)
+    let title: string = ''
+    if (type === FXGWatcherType.assets_cr1992) {
+      title = 'Cr1992 Asset'
+    } else if (type === FXGWatcherType.assets_flutter_gen) {
+      title = 'FlutterGen Asset'
+    } else if (type === FXGWatcherType.l10n) {
+      title = 'FlutterIntl L10n'
+    }
+    if (title.length > 0) {
+      vscode.window.setStatusBarMessage(`Flutter XGen: ${title} 生成器监听${enable ? '开启' : '关闭'}`, 3000)
+    }
   }
 
   public dispose() {
@@ -175,12 +194,10 @@ export default class FXGProject {
 
   // MARK: - Getter & Setter
   get projectName(): string {
-    let result: string = ""
+    let result: string = ''
     try {
       result = this.pubspecDoc.get('name') as string
-    } catch (error) {
-
-    }
+    } catch (error) {}
     return result
   }
 
@@ -188,7 +205,7 @@ export default class FXGProject {
   private async getCurrentPubspecDoc() {
     let pubspecPath = `${this.dir}/pubspec.yaml`
     if (!FileUtil.pathExists(pubspecPath)) {
-      console.log("pubspec no exist, TODO: add alert")
+      console.log('pubspec no exist, TODO: add alert')
       return
     }
     this.pubspecDoc = await FileUtil.readYamlFile(pubspecPath)
@@ -229,7 +246,7 @@ export default class FXGProject {
       } else {
         this.flutterAssetsGeneratorConfigByCr1992 = {
           auto_detection: true,
-          named_with_parent: true,
+          named_with_parent: true
         }
       }
     } catch (error) {
@@ -254,7 +271,7 @@ export default class FXGProject {
     let nodes: AssetsTreeNode[] = []
 
     for (const tmpPath of paths) {
-      let fullPath = this.dir + "/" + tmpPath.value
+      let fullPath = this.dir + '/' + tmpPath.value
       let isDir = await FileUtil.pathIsDir(fullPath)
       let subNodes: AssetsTreeNode[] = []
       let command: vscode.Command | null = null
@@ -274,7 +291,7 @@ export default class FXGProject {
         fullPath,
         command,
 
-        true,
+        true
       )
       nodes.push(node)
     }
@@ -316,7 +333,7 @@ export default class FXGProject {
         fullPath,
         command,
 
-        true,
+        true
       )
       nodes.push(node)
     }
@@ -353,7 +370,7 @@ export default class FXGProject {
 
     let l10nFilesDir: string = `${this.dir}/lib/l10n`
     let configL10nFilesDir: any = pathsSettings.get('arb-dir')
-    if (typeof configL10nFilesDir === "string" && configL10nFilesDir.length > 0) {
+    if (typeof configL10nFilesDir === 'string' && configL10nFilesDir.length > 0) {
       l10nFilesDir = `${this.dir}/${configL10nFilesDir}`
     }
 
@@ -380,7 +397,7 @@ export default class FXGProject {
         fullPath,
         command,
 
-        true,
+        true
       )
       nodes.push(node)
     }
@@ -397,11 +414,11 @@ export default class FXGProject {
     }
 
     if (previous) {
-      let index = this.assetOneDimensionalPreviewNodes.findIndex(e => e.nodeAbsolutePath === path)
+      let index = this.assetOneDimensionalPreviewNodes.findIndex((e) => e.nodeAbsolutePath === path)
       index = Math.min(Math.max(0, index - 1), this.assetOneDimensionalPreviewNodes.length - 1)
       path = this.assetOneDimensionalPreviewNodes[index].nodeAbsolutePath
     } else if (next) {
-      let index = this.assetOneDimensionalPreviewNodes.findIndex(e => e.nodeAbsolutePath === path)
+      let index = this.assetOneDimensionalPreviewNodes.findIndex((e) => e.nodeAbsolutePath === path)
       index = Math.min(Math.max(0, index + 1), this.assetOneDimensionalPreviewNodes.length - 1)
       path = this.assetOneDimensionalPreviewNodes[index].nodeAbsolutePath
     }
@@ -415,7 +432,7 @@ export default class FXGProject {
     const projectInfo: ProjectInfoMsgInterface = {
       dir: this.dir,
       name: this.projectName,
-      watcherTypes: this.watcherTypes,
+      watcherTypes: this.watcherTypes
     }
     switch (type) {
       case FlutterPubspecYamlConfigType.flutter_assets_generator_cr1992:
@@ -426,35 +443,37 @@ export default class FXGProject {
         }
         break
 
-      case FlutterPubspecYamlConfigType.flutter_gen: {
-        try {
-          await AssetsGenerator.getInstance().runFlutterGen(projectInfo, config)
-        } catch (error) {
-          console.log('runFlutterGen - error: ', error)
+      case FlutterPubspecYamlConfigType.flutter_gen:
+        {
+          try {
+            await AssetsGenerator.getInstance().runFlutterGen(projectInfo, config)
+          } catch (error) {
+            console.log('runFlutterGen - error: ', error)
+          }
         }
-      }
         break
 
-      case FlutterPubspecYamlConfigType.flutter_intl: {
-        if (data === null) {
-          return
-        }
-        try {
-          const jsonMap = JSON.parse(data) as object
-          // 保存到本地
-          for (let arbFileName of Object.keys(jsonMap)) {
-            const json = jsonMap[arbFileName]
-            const tmpJsonStr = JSON.stringify(json, null, 2)
-            const filePath = `${this.l10nsDirPath}/${arbFileName}`
-            await FileUtil.writeFile(filePath, tmpJsonStr)
+      case FlutterPubspecYamlConfigType.flutter_intl:
+        {
+          if (data === null) {
+            return
           }
+          try {
+            const jsonMap = JSON.parse(data) as object
+            // 保存到本地
+            for (let arbFileName of Object.keys(jsonMap)) {
+              const json = jsonMap[arbFileName]
+              const tmpJsonStr = JSON.stringify(json, null, 2)
+              const filePath = `${this.l10nsDirPath}/${arbFileName}`
+              await FileUtil.writeFile(filePath, tmpJsonStr)
+            }
 
-          // 执行
-          await IntlGenerator.getInstance().run(projectInfo, config)
-        } catch (error) {
-          console.log('IntlGenerator.getInstance().run - error: ', error)
+            // 执行
+            await IntlGenerator.getInstance().run(projectInfo, config)
+          } catch (error) {
+            console.log('IntlGenerator.getInstance().run - error: ', error)
+          }
         }
-      }
         break
 
       default:
@@ -477,7 +496,7 @@ export default class FXGProject {
         default:
           break
       }
-      vscode.window.setStatusBarMessage("Flutter XGen: 生成器配置读取完成", 3000)
+      vscode.window.setStatusBarMessage('Flutter XGen: 生成器配置读取完成', 3000)
     } catch (error) {
       console.log('readAssetsGeneratorConfig, error: ', error)
     }
@@ -486,57 +505,60 @@ export default class FXGProject {
   public async saveFlutterPubspecYamlConfig(type: FlutterPubspecYamlConfigType, config: any) {
     try {
       switch (type) {
-        case FlutterPubspecYamlConfigType.flutter_assets_generator_cr1992: {
-          if (config === null) {
-            return
+        case FlutterPubspecYamlConfigType.flutter_assets_generator_cr1992:
+          {
+            if (config === null) {
+              return
+            }
+            const key: string = 'flutter_assets_generator'
+            if (this.pubspecDoc.has(key)) {
+              this.pubspecDoc.delete(key)
+            }
+            const pair = this.pubspecDoc.createPair(key, config)
+            this.pubspecDoc.add(pair)
+            // TODO: 加入换行符
+            this.saveCurrentPubspec()
+            await this.refresh(InteractionEventType.extToWeb_configs_assets, null)
           }
-          const key: string = 'flutter_assets_generator'
-          if (this.pubspecDoc.has(key)) {
-            this.pubspecDoc.delete(key)
-          }
-          const pair = this.pubspecDoc.createPair(key, config)
-          this.pubspecDoc.add(pair)
-          // TODO: 加入换行符
-          this.saveCurrentPubspec()
-          await this.refresh(InteractionEventType.extToWeb_configs_assets, null)
-        }
           break
 
-        case FlutterPubspecYamlConfigType.flutter_gen: {
-          if (config === null) {
-            return
+        case FlutterPubspecYamlConfigType.flutter_gen:
+          {
+            if (config === null) {
+              return
+            }
+            const key: string = 'flutter_gen'
+            if (this.pubspecDoc.has(key)) {
+              this.pubspecDoc.delete(key)
+            }
+            const pair = this.pubspecDoc.createPair(key, config)
+            this.pubspecDoc.add(pair)
+            // TODO: 加入换行符
+            this.saveCurrentPubspec()
+            await this.refresh(InteractionEventType.extToWeb_configs_assets, null)
           }
-          const key: string = 'flutter_gen'
-          if (this.pubspecDoc.has(key)) {
-            this.pubspecDoc.delete(key)
-          }
-          const pair = this.pubspecDoc.createPair(key, config)
-          this.pubspecDoc.add(pair)
-          // TODO: 加入换行符
-          this.saveCurrentPubspec()
-          await this.refresh(InteractionEventType.extToWeb_configs_assets, null)
-        }
           break
 
-        case FlutterPubspecYamlConfigType.flutter_intl: {
-          if (config === null) {
-            return
+        case FlutterPubspecYamlConfigType.flutter_intl:
+          {
+            if (config === null) {
+              return
+            }
+            const key: string = 'flutter_intl'
+            if (this.pubspecDoc.has(key)) {
+              this.pubspecDoc.delete(key)
+            }
+            const pair = this.pubspecDoc.createPair(key, config)
+            this.pubspecDoc.add(pair)
+            this.saveCurrentPubspec()
+            await this.refresh(InteractionEventType.extToWeb_configs_localization, null)
           }
-          const key: string = 'flutter_intl'
-          if (this.pubspecDoc.has(key)) {
-            this.pubspecDoc.delete(key)
-          }
-          const pair = this.pubspecDoc.createPair(key, config)
-          this.pubspecDoc.add(pair)
-          this.saveCurrentPubspec()
-          await this.refresh(InteractionEventType.extToWeb_configs_localization, null)
-        }
           break
 
         default:
           break
       }
-      vscode.window.setStatusBarMessage("Flutter XGen: pubspec.yaml 保存成功", 3000)
+      vscode.window.setStatusBarMessage('Flutter XGen: pubspec.yaml 保存成功', 3000)
     } catch (error) {
       console.log('saveFlutterPubsepcYamlConfig, error: ', error)
     }

@@ -1,4 +1,4 @@
-import { Uri, Webview } from "vscode";
+import { Uri, Webview } from 'vscode'
 
 /**
  * A helper function which will get the webview URI of a given file or resource.
@@ -12,9 +12,8 @@ import { Uri, Webview } from "vscode";
  * @returns A URI pointing to the file/resource
  */
 export function getUri(webview: Webview, extensionUri: Uri, pathList: string[]) {
-  return webview.asWebviewUri(Uri.joinPath(extensionUri, ...pathList));
+  return webview.asWebviewUri(Uri.joinPath(extensionUri, ...pathList))
 }
-
 
 /**
  * A helper function that returns a unique alphanumeric identifier called a nonce.
@@ -25,10 +24,10 @@ export function getUri(webview: Webview, extensionUri: Uri, pathList: string[]) 
  * @returns A nonce
  */
 export function getNonce() {
-  let text = "";
-  const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let text = ''
+  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
   for (let i = 0; i < 32; i++) {
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
+    text += possible.charAt(Math.floor(Math.random() * possible.length))
   }
-  return text;
+  return text
 }

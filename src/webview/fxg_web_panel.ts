@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 
-import { getUri, getNonce } from "../util/webview.util"
+import { getUri, getNonce } from '../util/webview.util'
 import {
   AssetsMsgInterface,
   FXGWatcherType,
@@ -12,7 +12,7 @@ import {
   WebViewType,
   WebViewTypeData,
   getWebViewTypeData
-} from "./const"
+} from './const'
 import WorkspaceManager from '../manager/workspace.manager'
 import { FileUtil } from '../util/file.util'
 import StoreManager from '../manager/store.manager'
@@ -23,10 +23,7 @@ export class FXGUIWebPanel {
   private readonly _panel: vscode.WebviewPanel
   private _disposables: vscode.Disposable[] = []
 
-  private constructor(
-    panel: vscode.WebviewPanel,
-    extensionUri: vscode.Uri,
-  ) {
+  private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
     this._panel = panel
     this._panel.onDidDispose(() => this.dispose(), null, this._disposables)
     this._panel.onDidChangeViewState(this.onDidChangeViewState)
@@ -46,7 +43,7 @@ export class FXGUIWebPanel {
     if (FXGUIWebPanel.currentPanel) {
       FXGUIWebPanel.currentPanel._panel.reveal(viewColumn)
     } else {
-      let localResRoots = [vscode.Uri.joinPath(extensionUri, "dist"), vscode.Uri.joinPath(extensionUri, "webview_ui")]
+      let localResRoots = [vscode.Uri.joinPath(extensionUri, 'dist'), vscode.Uri.joinPath(extensionUri, 'webview_ui')]
       var workspaceFolderUri: vscode.Uri | null = null
       const workspaceFolders = vscode.workspace.workspaceFolders
       if (workspaceFolders && workspaceFolders.length > 0) {
@@ -58,16 +55,11 @@ export class FXGUIWebPanel {
       }
       localResRoots.push(vscode.Uri.file(WorkspaceManager.getInstance().mainProject.dir))
 
-      const panel = vscode.window.createWebviewPanel(
-        viewType,
-        title,
-        viewColumn,
-        {
-          enableScripts: true,
-          retainContextWhenHidden: true,
-          localResourceRoots: localResRoots,
-        }
-      )
+      const panel = vscode.window.createWebviewPanel(viewType, title, viewColumn, {
+        enableScripts: true,
+        retainContextWhenHidden: true,
+        localResourceRoots: localResRoots
+      })
       FXGUIWebPanel.currentPanel = new FXGUIWebPanel(panel, extensionUri)
       isWebNewCreate = true
     }
@@ -86,15 +78,15 @@ export class FXGUIWebPanel {
     }
 
     if (project === null) {
-      vscode.window.showErrorMessage("Flutter XGen: 打开面板失败")
-      return;
+      vscode.window.showErrorMessage('Flutter XGen: 打开面板失败')
+      return
     }
 
     const assets: AssetsMsgInterface = {
       flutterGenConfig: null,
       flutterAssetsGeneratorConfigByCr1992: null,
       previewItem: null,
-      fileExt: "",
+      fileExt: ''
     }
     const l0n: L10nMsgInterface = {
       localizelyFlutterIntlInstalled: false,
@@ -104,7 +96,6 @@ export class FXGUIWebPanel {
 
     try {
       if (event.eventType === InteractionEventType.sync_project_info) {
-
       } else if (event.eventType === InteractionEventType.extToWeb_preview_assets) {
         const item = WorkspaceManager.getInstance().mainProject.getPreviewItem(event.data, false, false)
         assets.previewItem = this._panel.webview.asWebviewUri(vscode.Uri.file(item.path))
@@ -142,7 +133,6 @@ export class FXGUIWebPanel {
           //
         }
       } else {
-
       }
     } catch (error) {
       console.log('extToWeb_preview_localization, error: ', error)
@@ -156,7 +146,7 @@ export class FXGUIWebPanel {
       },
       data: {
         assets: assets,
-        l10n: l0n,
+        l10n: l0n
       }
     }
     if (isWebNewCreate) {
@@ -180,11 +170,11 @@ export class FXGUIWebPanel {
   }
 
   private _getWebviewContent(webview: vscode.Webview, extensionUri: vscode.Uri) {
-    const stylesUri = getUri(webview, extensionUri, ["dist", "webview_ui", "assets", "index.css"])
-    const scriptUri = getUri(webview, extensionUri, ["dist", "webview_ui", "assets", "index.js"])
+    const stylesUri = getUri(webview, extensionUri, ['dist', 'webview_ui', 'assets', 'index.css'])
+    const scriptUri = getUri(webview, extensionUri, ['dist', 'webview_ui', 'assets', 'index.js'])
 
-    const scriptUri_svga = getUri(webview, extensionUri, ["dist", "webview_ui", "libs", "svga.lite.min.js"])
-    const scriptUri_wheel_zoom = getUri(webview, extensionUri, ["dist", "webview_ui", "libs", "vanilla-js-wheel-zoom.min.js"])
+    const scriptUri_svga = getUri(webview, extensionUri, ['dist', 'webview_ui', 'libs', 'svga.lite.min.js'])
+    const scriptUri_wheel_zoom = getUri(webview, extensionUri, ['dist', 'webview_ui', 'libs', 'vanilla-js-wheel-zoom.min.js'])
 
     const nonce = getNonce()
 
@@ -228,79 +218,85 @@ export class FXGUIWebPanel {
         const project: FXGProject | null = WorkspaceManager.getInstance().getProjectByDir(projectInfo.dir)
 
         switch (eventType) {
-          case InteractionEventType.sync_intl: {
-            const event: InteractionEvent = {
-              timestamp: Date.now(),
-              eventType: InteractionEventType.extToWeb_preview_localization,
-              projectInfo: projectInfo,
-              data: null
+          case InteractionEventType.sync_intl:
+            {
+              const event: InteractionEvent = {
+                timestamp: Date.now(),
+                eventType: InteractionEventType.extToWeb_preview_localization,
+                projectInfo: projectInfo,
+                data: null
+              }
+              FXGUIWebPanel.currentPanel.postMsg(event, true)
             }
-            FXGUIWebPanel.currentPanel.postMsg(event, true)
-          }
             break
 
-          case InteractionEventType.sync_project_info: {
-            const event: InteractionEvent = {
-              timestamp: Date.now(),
-              eventType: InteractionEventType.sync_project_info,
-              projectInfo: projectInfo,
-              data: null
+          case InteractionEventType.sync_project_info:
+            {
+              const event: InteractionEvent = {
+                timestamp: Date.now(),
+                eventType: InteractionEventType.sync_project_info,
+                projectInfo: projectInfo,
+                data: null
+              }
+              FXGUIWebPanel.currentPanel.postMsg(event, true)
             }
-            FXGUIWebPanel.currentPanel.postMsg(event, true)
-          }
             break
 
-          case InteractionEventType.webToExt_assets_run: {
-            try {
-              const json = JSON.parse(data.data)
-              project.runGenerator(data.type, json)
-            } catch (error) {
-
+          case InteractionEventType.webToExt_assets_run:
+            {
+              try {
+                const json = JSON.parse(data.data)
+                project.runGenerator(data.type, json)
+              } catch (error) {}
             }
-          }
             break
 
-          case InteractionEventType.webToExt_assets_read_config: {
-            project.readAssetsGeneratorConfig(data.type)
-          }
+          case InteractionEventType.webToExt_assets_read_config:
+            {
+              project.readAssetsGeneratorConfig(data.type)
+            }
             break
 
-          case InteractionEventType.webToExt_assets_save_config: {
-            project.saveFlutterPubspecYamlConfig(data.type, data.config)
-          }
+          case InteractionEventType.webToExt_assets_save_config:
+            {
+              project.saveFlutterPubspecYamlConfig(data.type, data.config)
+            }
             break
 
           case InteractionEventType.webToExt_intl_watcher_enable:
           case InteractionEventType.webToExt_assets_watcher_cr1992_enable:
-          case InteractionEventType.webToExt_assets_watcher_flutter_gen_enable: {
-            if (typeof data !== 'boolean' || project === null) {
-              return
+          case InteractionEventType.webToExt_assets_watcher_flutter_gen_enable:
+            {
+              if (typeof data !== 'boolean' || project === null) {
+                return
+              }
+              const enable: boolean = data
+              if (eventType === InteractionEventType.webToExt_intl_watcher_enable) {
+                project.setWatcherEnable(enable, FXGWatcherType.l10n)
+              } else if (eventType === InteractionEventType.webToExt_assets_watcher_cr1992_enable) {
+                project.setWatcherEnable(enable, FXGWatcherType.assets_cr1992)
+              } else if (eventType === InteractionEventType.webToExt_assets_watcher_flutter_gen_enable) {
+                project.setWatcherEnable(enable, FXGWatcherType.assets_flutter_gen)
+              }
             }
-            const enable: boolean = data
-            if (eventType === InteractionEventType.webToExt_intl_watcher_enable) {
-              project.setWatcherEnable(enable, FXGWatcherType.l10n)
-            } else if (eventType === InteractionEventType.webToExt_assets_watcher_cr1992_enable) {
-              project.setWatcherEnable(enable, FXGWatcherType.assets_cr1992)
-            } else if (eventType === InteractionEventType.webToExt_assets_watcher_flutter_gen_enable) {
-              project.setWatcherEnable(enable, FXGWatcherType.assets_flutter_gen)
+            break
+
+          case InteractionEventType.webToExt_intl_run:
+            {
+              project.runGenerator(data.type, data.config, data.data)
             }
-          }
             break
 
-
-          case InteractionEventType.webToExt_intl_run: {
-            project.runGenerator(data.type, data.config, data.data)
-          }
+          case InteractionEventType.webToExt_intl_read_config:
+            {
+              project.readAssetsGeneratorConfig(data.type)
+            }
             break
 
-          case InteractionEventType.webToExt_intl_read_config: {
-            project.readAssetsGeneratorConfig(data.type)
-          }
-            break
-
-          case InteractionEventType.webToExt_intl_save_config: {
-            project.saveFlutterPubspecYamlConfig(data.type, data.config)
-          }
+          case InteractionEventType.webToExt_intl_save_config:
+            {
+              project.saveFlutterPubspecYamlConfig(data.type, data.config)
+            }
             break
         }
       },

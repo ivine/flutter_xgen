@@ -11,7 +11,6 @@ export interface FlutterAssetsGeneratorConfigByCr1992 {
   leading_with_package_name?: boolean
 }
 
-
 // MARK: - Flutter Gen
 export interface FlutterGenConfig {
   // https://github.com/FlutterGen/flutter_gen/blob/main/packages/core/lib/settings/config_default.dart
@@ -30,7 +29,6 @@ export interface FlutterGenIntegrationsConfig {
   rive: boolean
   lottie: boolean
 }
-
 
 export interface FlutterGenAssetsConfig {
   enabled: boolean

@@ -1,5 +1,5 @@
-import { getExtensionContext } from "../extension"
-import { FXGWatcherType } from "../webview/const"
+import { getExtensionContext } from '../extension'
+import { FXGWatcherType } from '../webview/const'
 
 interface FXGStore {
   projectMap: any
@@ -11,13 +11,13 @@ interface FXGStoreProject {
 
 export default class StoreManager {
   private static instance: StoreManager | null = null
-  private rootPath: string = ""
-  private storeKey: string = "FXGLocalStoreKey"
+  private rootPath: string = ''
+  private storeKey: string = 'FXGLocalStoreKey'
   private store: FXGStore = {
     projectMap: {}
   }
 
-  private constructor() { }
+  private constructor() {}
 
   static getInstance(): StoreManager {
     if (!StoreManager.instance) {
@@ -39,7 +39,6 @@ export default class StoreManager {
         console.log('StoreManager - setup, completed')
       } catch (error) {
         console.error(`Failed to parse store JSON: ${error}`)
-
       }
     }
   }

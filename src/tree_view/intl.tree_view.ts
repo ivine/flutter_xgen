@@ -12,7 +12,9 @@ import { InteractionEvent, InteractionEventType, ProjectInfoMsgInterface } from 
 import { EventBusType, eventBus } from '../manager/event.manager'
 
 export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
-  private _onDidChangeTreeData: vscode.EventEmitter<IntlTreeNode | undefined | null | void> = new vscode.EventEmitter<IntlTreeNode | undefined | null | void>()
+  private _onDidChangeTreeData: vscode.EventEmitter<IntlTreeNode | undefined | null | void> = new vscode.EventEmitter<
+    IntlTreeNode | undefined | null | void
+  >()
   readonly onDidChangeTreeData: vscode.Event<IntlTreeNode | undefined | null | void> = this._onDidChangeTreeData.event
 
   public id: string
@@ -34,10 +36,7 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
   }
 
   get allProjects(): FXGProject[] {
-    const projectList: FXGProject[] = [
-      WorkspaceManager.getInstance().mainProject,
-      ...WorkspaceManager.getInstance().subProjectList,
-    ]
+    const projectList: FXGProject[] = [WorkspaceManager.getInstance().mainProject, ...WorkspaceManager.getInstance().subProjectList]
     return projectList
   }
 
@@ -65,7 +64,7 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
       return Promise.resolve([])
     }
     if (this.treeNodes.length === 0) {
-      console.log("intl.tree_view, treeNodes is empty")
+      console.log('intl.tree_view, treeNodes is empty')
       return Promise.resolve([])
     }
     if (element && element !== undefined && element.nodeType === TreeNodeType.folder) {
@@ -97,8 +96,8 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
       project.dir,
       project.projectName,
       [configsNode, generatedNode, assetsNode],
-      "",
-      null,
+      '',
+      null
     )
     return Promise.resolve(treeNode)
   }
@@ -117,23 +116,17 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
     }
 
     const node = new IntlTreeNode(
-      "生成器配置",
+      '生成器配置',
       vscode.TreeItemCollapsibleState.None,
 
       TreeNodeType.configs,
       project.dir,
       project.projectName,
       [],
-      "",
-      Object.assign(
-        {},
-        getFXGCommandData(FXGCommandType.openFXGUIWeb),
-        {
-          arguments: [
-            args
-          ]
-        }
-      ),
+      '',
+      Object.assign({}, getFXGCommandData(FXGCommandType.openFXGUIWeb), {
+        arguments: [args]
+      })
     )
     return node
   }
@@ -143,7 +136,7 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
     const projectName = project.projectName
 
     let l10nNode: IntlTreeNode = new IntlTreeNode(
-      "l10n.dart",
+      'l10n.dart',
       vscode.TreeItemCollapsibleState.None,
 
       TreeNodeType.file,
@@ -154,8 +147,8 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
       {
         title: FXGCommandType.openFile,
         command: FXGCommandType.openFile,
-        arguments: [`${projectDir}/lib/generated/l10n.dart`],
-      },
+        arguments: [`${projectDir}/lib/generated/l10n.dart`]
+      }
     )
 
     // intl node
@@ -164,7 +157,7 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
     if (FileUtil.pathExists(generatedIntlDir)) {
       const filePaths: string[] = FileUtil.getDirAllFiles(generatedIntlDir) // 全部文件
       for (const path of filePaths) {
-        if (!path.endsWith(".dart")) {
+        if (!path.endsWith('.dart')) {
           continue
         }
         const node: IntlTreeNode | null = new IntlTreeNode(
@@ -175,12 +168,12 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
           projectDir,
           projectName,
           [],
-          "",
+          '',
           {
             title: FXGCommandType.openFile,
             command: FXGCommandType.openFile,
-            arguments: [path],
-          },
+            arguments: [path]
+          }
         )
         subNodes.push(node)
       }
@@ -189,28 +182,28 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
       console.log(`assembleGeneratedDirTreeNode, generatedIntlDir: ${generatedIntlDir} is not exist`)
     }
     const intlNode: IntlTreeNode = new IntlTreeNode(
-      "intl",
+      'intl',
       vscode.TreeItemCollapsibleState.Expanded,
 
       TreeNodeType.folder,
       projectDir,
       projectName,
       subNodes,
-      "",
-      null,
+      '',
+      null
     )
 
     // root node
     let node: IntlTreeNode = new IntlTreeNode(
-      "generated",
+      'generated',
       vscode.TreeItemCollapsibleState.Collapsed,
 
       TreeNodeType.folder,
       projectDir,
       projectName,
       [l10nNode, intlNode],
-      "",
-      null,
+      '',
+      null
     )
     return node
   }
@@ -225,7 +218,7 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
     if (FileUtil.pathExists(assetsDir)) {
       const filePaths: string[] = FileUtil.getDirAllFiles(assetsDir) // 全部文件
       for (const path of filePaths) {
-        if (!path.endsWith(".arb")) {
+        if (!path.endsWith('.arb')) {
           continue
         }
         const node: IntlTreeNode | null = new IntlTreeNode(
@@ -236,12 +229,12 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
           projectDir,
           projectName,
           [],
-          "",
+          '',
           {
             title: FXGCommandType.openFile,
             command: FXGCommandType.openFile,
-            arguments: [path],
-          },
+            arguments: [path]
+          }
         )
         subNodes.push(node)
       }
@@ -251,15 +244,15 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
     }
 
     const node: IntlTreeNode = new IntlTreeNode(
-      "l10n",
+      'l10n',
       vscode.TreeItemCollapsibleState.Collapsed,
 
       TreeNodeType.folder,
       projectDir,
       projectName,
       subNodes,
-      "",
-      null,
+      '',
+      null
     )
     return node
   }

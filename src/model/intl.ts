@@ -1,13 +1,11 @@
-import { FileUtil } from "../util/file.util"
-import { FXGFile } from "./base"
+import { FileUtil } from '../util/file.util'
+import { FXGFile } from './base'
 
 export class IntlArbFile extends FXGFile {
   rowItems: IntlArbRowItem[] = []
   json: any = null
 
-  constructor(
-    path: string,
-  ) {
+  constructor(path: string) {
     super(path)
 
     this.setup()
@@ -16,7 +14,7 @@ export class IntlArbFile extends FXGFile {
   async setup() {
     let data = await FileUtil.readFile(this.path)
     if (!data) {
-      return;
+      return
     }
     let tmpRowItems: IntlArbRowItem[] = []
     try {
@@ -28,7 +26,7 @@ export class IntlArbFile extends FXGFile {
       }
       this.rowItems = tmpRowItems
     } catch (error) {
-      console.log("IntlArbFile - setup, error: ", error)
+      console.log('IntlArbFile - setup, error: ', error)
     }
   }
 }
@@ -37,10 +35,7 @@ export class IntlArbRowItem {
   key: string
   value: string
 
-  constructor(
-    key: string,
-    value: string,
-  ) {
+  constructor(key: string, value: string) {
     this.key = key
     this.value = value
   }

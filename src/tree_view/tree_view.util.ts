@@ -1,13 +1,12 @@
 import * as vscode from 'vscode'
 
-import { FileUtil } from "../util/file.util"
-import { TreeNode, TreeNodeType } from "./tree_node"
+import { FileUtil } from '../util/file.util'
+import { TreeNode, TreeNodeType } from './tree_node'
 import { FXGCommandData, FXGCommandType, getFXGCommandData } from '../manager/command.manager'
 import { InteractionEvent, InteractionEventType, ProjectInfoMsgInterface } from '../webview/const'
 import WorkspaceManager from '../manager/workspace.manager'
 
 export default class TreeViewUtil {
-
   static sortTreeNodeList<T extends TreeNode>(list: T[]): T[] {
     return list.sort((a, b) => {
       let aIsFolder = a.nodeType === TreeNodeType.folder
@@ -28,14 +27,14 @@ export default class TreeViewUtil {
 
   static getIconPathForFilePath(filePath: string): string {
     let ext: string = FileUtil.getFileExtension(filePath)
-    return ""
+    return ''
   }
 
   static async getTreeNodeCommand(
     projectDir: string,
     projectName: string,
     filePath: string,
-    eventType: InteractionEventType,
+    eventType: InteractionEventType
   ): Promise<vscode.Command> {
     let resultCommand: vscode.Command | null = null
     let canTextDocPreview = await FileUtil.isFileSuitableForTextDocument(filePath)
@@ -58,15 +57,9 @@ export default class TreeViewUtil {
         projectInfo: projectInfo,
         data: filePath
       }
-      resultCommand = Object.assign(
-        {},
-        getFXGCommandData(FXGCommandType.openFXGUIWeb),
-        {
-          arguments: [
-            event,
-          ]
-        }
-      )
+      resultCommand = Object.assign({}, getFXGCommandData(FXGCommandType.openFXGUIWeb), {
+        arguments: [event]
+      })
     }
     return Promise.resolve(resultCommand)
   }

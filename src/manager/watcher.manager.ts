@@ -8,20 +8,20 @@ import { generateRandomString } from '../util/string.util'
 export type WatcherEventCallback = (eventType: WatcherEventType, uri: vscode.Uri) => void
 
 export enum WatcherEventType {
-  onCreated = "onCreated",
-  onChanged = "onChanged",
-  onDeleted = "onDeleted",
+  onCreated = 'onCreated',
+  onChanged = 'onChanged',
+  onDeleted = 'onDeleted'
 }
 
 // TODO: 在项目打开后开始自动监听
 export default class WatcherManager {
   private static instance: WatcherManager | null = null
-  private rootPath: string = ""
+  private rootPath: string = ''
 
   // Watcher list
   private watcherList: FileWatcher[] = []
 
-  private constructor() { }
+  private constructor() {}
 
   static getInstance(): WatcherManager {
     // TODO: 在vscode窗口打开的时候开启
@@ -43,13 +43,11 @@ export default class WatcherManager {
     this.watcherList = []
   }
 
-  public createWatch(
-    projectDir: string,
-    targetDir: string,
-    callback: (eventType: WatcherEventType, uri: vscode.Uri) => void
-  ): FileWatcher {
+  public createWatch(projectDir: string, targetDir: string, callback: (eventType: WatcherEventType, uri: vscode.Uri) => void): FileWatcher {
     let watcher = new FileWatcher(projectDir, targetDir)
-    let result = find(this.watcherList, function (o) { return o.id === watcher.id })
+    let result = find(this.watcherList, function (o) {
+      return o.id === watcher.id
+    })
     if (result) {
       watcher = result
     } else {
@@ -64,9 +62,11 @@ export default class WatcherManager {
     if (!watcher) {
       return
     }
-    let result = find(this.watcherList, function (o) { return o.id < watcher.id })
+    let result = find(this.watcherList, function (o) {
+      return o.id < watcher.id
+    })
     if (!result) {
-      console.info("WatcherManager - stopWatch, can not find watcher")
+      console.info('WatcherManager - stopWatch, can not find watcher')
       return
     }
     watcher.stop()
@@ -131,7 +131,7 @@ export class FileWatcher {
         cb(event, uri)
       } catch (error) {
         //
-        console.log("onWatchingEvent, error: ", error)
+        console.log('onWatchingEvent, error: ', error)
       }
     }
   }

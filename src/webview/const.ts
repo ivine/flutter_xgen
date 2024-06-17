@@ -16,11 +16,11 @@ export function getWebViewTypeData(type: WebViewType): WebViewTypeData | null {
   let typeData: WebViewTypeData | null = null
   switch (type) {
     case WebViewType.fxg:
-      typeData = { type: WebViewType.fxg, viewType: "FXGUIWebPanel", title: "Flutter XGen", viewColumn: vscode.ViewColumn.One };
-      break;
+      typeData = { type: WebViewType.fxg, viewType: 'FXGUIWebPanel', title: 'Flutter XGen', viewColumn: vscode.ViewColumn.One }
+      break
 
     default:
-      break;
+      break
   }
   return typeData
 }
@@ -28,22 +28,22 @@ export function getWebViewTypeData(type: WebViewType): WebViewTypeData | null {
 export enum FXGWatcherType {
   l10n = 100,
   assets_cr1992 = 200,
-  assets_flutter_gen = 201,
+  assets_flutter_gen = 201
 }
 
 export enum FlutterPubspecYamlConfigType {
   flutter_gen = 1,
   flutter_assets_generator_cr1992 = 2,
-  flutter_intl = 3,
+  flutter_intl = 3
 }
 
 export const FlutterAssetsConfigCr1992Constants = {
-  output_dir: "generated",
+  output_dir: 'generated',
   auto_detection: false,
   named_with_parent: true,
-  output_filename: "assets",
-  class_name: "Assets",
-  filename_split_pattern: "[-_]",
+  output_filename: 'assets',
+  class_name: 'Assets',
+  filename_split_pattern: '[-_]',
   path_ignore: [],
   leading_with_package_name: false
 }
@@ -86,7 +86,6 @@ export interface InteractionEvent {
 
 // 事件类型
 export enum InteractionEventType {
-
   // sync
   sync = 100000,
   sync_asset = 100001,
@@ -122,5 +121,5 @@ export enum InteractionEventType {
   // preview
   webToExt_preview = 600900,
   webToExt_preview_previousItem = 600910,
-  webToExt_preview_nextItem = 600911,
+  webToExt_preview_nextItem = 600911
 }

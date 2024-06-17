@@ -12,7 +12,9 @@ import { InteractionEvent, InteractionEventType, ProjectInfoMsgInterface } from 
 import { EventBusType, eventBus } from '../manager/event.manager'
 
 export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
-  private _onDidChangeTreeData: vscode.EventEmitter<AssetsTreeNode | undefined | null | void> = new vscode.EventEmitter<AssetsTreeNode | undefined | null | void>()
+  private _onDidChangeTreeData: vscode.EventEmitter<AssetsTreeNode | undefined | null | void> = new vscode.EventEmitter<
+    AssetsTreeNode | undefined | null | void
+  >()
   readonly onDidChangeTreeData: vscode.Event<AssetsTreeNode | undefined | null | void> = this._onDidChangeTreeData.event
 
   public id: string
@@ -34,10 +36,7 @@ export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
   }
 
   get allProjects(): FXGProject[] {
-    const projectList: FXGProject[] = [
-      WorkspaceManager.getInstance().mainProject,
-      ...WorkspaceManager.getInstance().subProjectList,
-    ]
+    const projectList: FXGProject[] = [WorkspaceManager.getInstance().mainProject, ...WorkspaceManager.getInstance().subProjectList]
     return projectList
   }
 
@@ -65,7 +64,7 @@ export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
       return Promise.resolve([])
     }
     if (this.treeNodes.length === 0) {
-      console.log("getChildren, treeNodes is empty")
+      console.log('getChildren, treeNodes is empty')
       return Promise.resolve([])
     }
     if (element && element !== undefined && element.nodeType === TreeNodeType.folder) {
@@ -104,10 +103,10 @@ export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
       projectDir,
       projectName,
       [configsNode, generatedNode, assetsNode],
-      "",
+      '',
       null,
 
-      true,
+      true
     )
     return Promise.resolve(rootNode)
   }
@@ -125,25 +124,19 @@ export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
       data: null
     }
     const node: AssetsTreeNode = new AssetsTreeNode(
-      "生成器配置",
+      '生成器配置',
       vscode.TreeItemCollapsibleState.None,
 
       TreeNodeType.configs,
       projectDir,
       projectName,
       [],
-      "",
-      Object.assign(
-        {},
-        getFXGCommandData(FXGCommandType.openFXGUIWeb),
-        {
-          arguments: [
-            args
-          ]
-        }
-      ),
+      '',
+      Object.assign({}, getFXGCommandData(FXGCommandType.openFXGUIWeb), {
+        arguments: [args]
+      }),
 
-      true,
+      true
     )
     return node
   }
@@ -153,41 +146,36 @@ export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
     const dir = `${project.dir}/${relativePath}`
 
     const node: AssetsTreeNode = new AssetsTreeNode(
-      "assets",
+      'assets',
       vscode.TreeItemCollapsibleState.Collapsed,
 
       TreeNodeType.folder,
       dir,
       project.projectName,
       project.assetNodes,
-      "",
+      '',
       null,
 
-      true,
+      true
     )
     return node
   }
 
-  private async assembleDirTreeNode_Generated(projectDir: string, projectName: string,): Promise<AssetsTreeNode | null> {
+  private async assembleDirTreeNode_Generated(projectDir: string, projectName: string): Promise<AssetsTreeNode | null> {
     const fileRelativePath = `lib/generated/assets.dart` // TODO: 根据配置读取
-    let fileNode: AssetsTreeNode = await this.assembleAssetsTreeNode(
-      projectDir,
-      projectName,
-      `${projectDir}/${fileRelativePath}`,
-      [],
-    )
+    let fileNode: AssetsTreeNode = await this.assembleAssetsTreeNode(projectDir, projectName, `${projectDir}/${fileRelativePath}`, [])
     let node: AssetsTreeNode = new AssetsTreeNode(
-      "generated",
+      'generated',
       vscode.TreeItemCollapsibleState.Collapsed,
 
       TreeNodeType.folder,
       projectDir,
       projectName,
       [fileNode],
-      "",
+      '',
       null,
 
-      true,
+      true
     )
     return node
   }
@@ -196,12 +184,12 @@ export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
     projectDir: string,
     projectName: string,
     itemPath: string,
-    validAssetsRelativePaths: string[],
+    validAssetsRelativePaths: string[]
   ): Promise<AssetsTreeNode> {
     let rootNode: AssetsTreeNode | null = null
     try {
       let itemName = FileUtil.getFileName(itemPath)
-      let itemRelativePath: string = itemPath.replaceAll(`${projectDir}/`, "")
+      let itemRelativePath: string = itemPath.replaceAll(`${projectDir}/`, '')
       let isDir: boolean = await FileUtil.pathIsDir(itemPath)
       let validPath: boolean = true
       let subTreeNodes: AssetsTreeNode[] = []
@@ -249,21 +237,17 @@ export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
         itemPath,
         command,
 
-        validPath,
+        validPath
       )
     } catch (error) {
-      console.log("assembleTreeItem, error: ", error)
+      console.log('assembleTreeItem, error: ', error)
     }
 
     return Promise.resolve(rootNode)
   }
 
   // MARK: - Command
-  async getTreeNodeCommand(
-    projectDir: string,
-    projectName: string,
-    filePath: string,
-  ): Promise<vscode.Command> {
+  async getTreeNodeCommand(projectDir: string, projectName: string, filePath: string): Promise<vscode.Command> {
     let resultCommand: vscode.Command | null = null
     let canTextDocPreview = await FileUtil.isFileSuitableForTextDocument(filePath)
     if (canTextDocPreview) {
@@ -286,15 +270,9 @@ export class AssetsTreeView implements vscode.TreeDataProvider<AssetsTreeNode> {
         data: filePath
       }
 
-      resultCommand = Object.assign(
-        {},
-        getFXGCommandData(FXGCommandType.openFXGUIWeb),
-        {
-          arguments: [
-            args,
-          ]
-        }
-      )
+      resultCommand = Object.assign({}, getFXGCommandData(FXGCommandType.openFXGUIWeb), {
+        arguments: [args]
+      })
     }
     return Promise.resolve(resultCommand)
   }

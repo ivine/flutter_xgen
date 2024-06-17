@@ -1,11 +1,9 @@
-import { FileUtil } from "../util/file.util"
+import { FileUtil } from '../util/file.util'
 
 export class PreviewItem {
   path: string
 
-  constructor(
-    path: string,
-  ) {
+  constructor(path: string) {
     this.path = path
   }
 

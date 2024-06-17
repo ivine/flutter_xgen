@@ -47,7 +47,7 @@ export function getFXGCommandData(type: FXGCommandType): FXGCommandData | null {
 
 export default class CommandManager {
   private static instance: CommandManager | null = null
-  private constructor() { }
+  private constructor() {}
   static getInstance(): CommandManager {
     if (!CommandManager.instance) {
       CommandManager.instance = new CommandManager()
@@ -147,7 +147,7 @@ export default class CommandManager {
         let value = this.pkgCommands.get(key)
         let disposable = vscode.commands.registerCommand(value.command, (data: any) => {
           if (value.command === FXGCommandType.openFlutterXGenPanel) {
-            vscode.commands.executeCommand("FXG_Assets.focus")
+            vscode.commands.executeCommand('FXG_Assets.focus')
           } else {
             // 暂时只有主项目
             const project = WorkspaceManager.getInstance().mainProject

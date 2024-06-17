@@ -9,11 +9,7 @@ export class FileUtil {
    * @param excludePatterns 附加的要排除的文件模式数组。
    * @returns 匹配的文件路径数组。
    */
-  public static getDirAllFiles(
-    dir: string,
-    includeSubDirs: boolean = false,
-    excludePatterns: RegExp[] = []
-  ): string[] {
+  public static getDirAllFiles(dir: string, includeSubDirs: boolean = false, excludePatterns: RegExp[] = []): string[] {
     let arrayOfFiles: string[] = []
 
     // 添加默认排除规则：排除 .DS_Store 文件
@@ -26,7 +22,7 @@ export class FileUtil {
         const fullPath = path.join(currentDir, entry.name)
         if (entry.isDirectory() && includeSubDirs) {
           readDirRecursively(fullPath)
-        } else if (!allExcludePatterns.some(pattern => pattern.test(entry.name))) {
+        } else if (!allExcludePatterns.some((pattern) => pattern.test(entry.name))) {
           arrayOfFiles.push(fullPath)
         }
       })
@@ -100,7 +96,7 @@ export class FileUtil {
       const data = parseDocument(fileContents)
       return data
     } catch (error) {
-      console.log("file.util - readYamlFile, error: ", error)
+      console.log('file.util - readYamlFile, error: ', error)
     }
     return null
   }
@@ -118,20 +114,65 @@ export class FileUtil {
 
   public static isFileSuitableForTextDocument(filePath: string): boolean {
     const textFileExtensions: string[] = [
-      "txt", "md", "html", "css", "scss", "less", "js", "jsx", "ts", "tsx",
-      "json", "xml", "yaml", "yml", "csv", "log", "ini", "cfg", "conf",
-      "bat", "sh", "cmd", "ps1", "py", "rb", "java", "cpp", "c", "h", "hpp",
-      "cs", "go", "php", "pl", "perl", "lua", "sql", "swift", "coffee", "dart",
-      "r", "rs", "hs", "elm", "f", "fs", "fsharp", "fsx", "clj", "cljs", "cljc",
-      "arb"
+      'txt',
+      'md',
+      'html',
+      'css',
+      'scss',
+      'less',
+      'js',
+      'jsx',
+      'ts',
+      'tsx',
+      'json',
+      'xml',
+      'yaml',
+      'yml',
+      'csv',
+      'log',
+      'ini',
+      'cfg',
+      'conf',
+      'bat',
+      'sh',
+      'cmd',
+      'ps1',
+      'py',
+      'rb',
+      'java',
+      'cpp',
+      'c',
+      'h',
+      'hpp',
+      'cs',
+      'go',
+      'php',
+      'pl',
+      'perl',
+      'lua',
+      'sql',
+      'swift',
+      'coffee',
+      'dart',
+      'r',
+      'rs',
+      'hs',
+      'elm',
+      'f',
+      'fs',
+      'fsharp',
+      'fsx',
+      'clj',
+      'cljs',
+      'cljc',
+      'arb'
     ]
-    const fileExtension: string = FileUtil.getFileExtension(filePath).replaceAll('.', "")
+    const fileExtension: string = FileUtil.getFileExtension(filePath).replaceAll('.', '')
     return textFileExtensions.includes(fileExtension)
   }
 
   static sortFiles(list: string[]): string[] {
     return list.sort((a, b) => {
-
       let aIsFolder = FileUtil.pathIsDir(a)
       let bIsFolder = FileUtil.pathIsDir(b)
 
@@ -139,12 +180,12 @@ export class FileUtil {
       let bFileName = FileUtil.getFileName(b)
 
       if (aIsFolder && !bIsFolder) {
-        return -1; // 文件夹排在前面
+        return -1 // 文件夹排在前面
       } else if (!aIsFolder && bIsFolder) {
-        return 1; // 文件排在后面
+        return 1 // 文件排在后面
       } else {
-        return aFileName.localeCompare(bFileName); // 相同类型按名称排序
+        return aFileName.localeCompare(bFileName) // 相同类型按名称排序
       }
-    });
+    })
   }
 }

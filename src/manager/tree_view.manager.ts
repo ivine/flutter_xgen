@@ -1,44 +1,44 @@
 import * as vscode from 'vscode'
-import { IntlTreeView } from '../tree_view/intl.tree_view';
-import { AssetsTreeView } from '../tree_view/assets.tree_view';
-import { TreeNode } from '../tree_view/tree_node';
+import { IntlTreeView } from '../tree_view/intl.tree_view'
+import { AssetsTreeView } from '../tree_view/assets.tree_view'
+import { TreeNode } from '../tree_view/tree_node'
 
 export enum TreeViewType {
   assets,
-  localizations,
+  localizations
 }
 
 class TreeViewUtil {
   public static getDisplayName(type: TreeViewType): string {
-    let result = ""
+    let result = ''
     switch (type) {
       case TreeViewType.assets:
-        result = "Assets"
-        break;
+        result = 'Assets'
+        break
 
       case TreeViewType.localizations:
-        result = "Localizations"
-        break;
+        result = 'Localizations'
+        break
 
       default:
-        break;
+        break
     }
     return result
   }
 
   public static getTreeViewId(type: TreeViewType): string {
-    let result = ""
+    let result = ''
     switch (type) {
       case TreeViewType.assets:
-        result = "FXG_Assets"
-        break;
+        result = 'FXG_Assets'
+        break
 
       case TreeViewType.localizations:
-        result = "FXG_Intl"
-        break;
+        result = 'FXG_Intl'
+        break
 
       default:
-        break;
+        break
     }
     return result
   }
@@ -46,10 +46,10 @@ class TreeViewUtil {
 
 export default class TreeViewManager {
   private static instance: TreeViewManager | null = null
-  private rootPath: string = ""
+  private rootPath: string = ''
   private treeViewTypes: TreeViewType[] = [TreeViewType.assets, TreeViewType.localizations]
   public treeViews: vscode.TreeDataProvider<TreeNode>[] = []
-  private constructor() { }
+  private constructor() {}
   static getInstance(): TreeViewManager {
     if (!TreeViewManager.instance) {
       TreeViewManager.instance = new TreeViewManager()
