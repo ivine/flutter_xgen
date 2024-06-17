@@ -104,15 +104,15 @@
       },
       {
         "command": "FXG.generateIntl",
-        "title": "Flutter XGen: 生成 arb 本地化文件"
+        "title": "Flutter XGen: 生成 l10n 本地化文件"
       },
       {
         "command": "FXG.startWatchIntl",
-        "title": "Flutter XGen: 开始监听 arb 文件夹"
+        "title": "Flutter XGen: 开始监听 l10n 文件夹"
       },
       {
         "command": "FXG.stopWatchIntl",
-        "title": "Flutter XGen: 停止监听 arb 文件夹"
+        "title": "Flutter XGen: 停止监听 l10n 文件夹"
       }
     ],
     "viewsContainers": {

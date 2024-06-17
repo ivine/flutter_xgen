@@ -436,36 +436,25 @@ export default class FXGProject {
     }
     switch (type) {
       case FlutterPubspecYamlConfigType.flutter_assets_generator_cr1992:
-        try {
-          await AssetsGenerator.getInstance().runCr1992Generator(projectInfo, config)
-        } catch (error) {
-          console.log('runCr1992Generator - error: ', error)
-        }
+        await AssetsGenerator.getInstance().runCr1992Generator(projectInfo, config)
         break
 
       case FlutterPubspecYamlConfigType.flutter_gen:
-        {
-          try {
-            await AssetsGenerator.getInstance().runFlutterGen(projectInfo, config)
-          } catch (error) {
-            console.log('runFlutterGen - error: ', error)
-          }
-        }
+        await AssetsGenerator.getInstance().runFlutterGen(projectInfo, config)
         break
 
       case FlutterPubspecYamlConfigType.flutter_intl:
         {
-          if (data === null) {
-            return
-          }
           try {
-            const jsonMap = JSON.parse(data) as object
-            // 保存到本地
-            for (let arbFileName of Object.keys(jsonMap)) {
-              const json = jsonMap[arbFileName]
-              const tmpJsonStr = JSON.stringify(json, null, 2)
-              const filePath = `${this.l10nsDirPath}/${arbFileName}`
-              await FileUtil.writeFile(filePath, tmpJsonStr)
+            if (data !== null) {
+              const jsonMap = JSON.parse(data) as object
+              // 保存到本地
+              for (let arbFileName of Object.keys(jsonMap)) {
+                const json = jsonMap[arbFileName]
+                const tmpJsonStr = JSON.stringify(json, null, 2)
+                const filePath = `${this.l10nsDirPath}/${arbFileName}`
+                await FileUtil.writeFile(filePath, tmpJsonStr)
+              }
             }
 
             // 执行

@@ -15,6 +15,32 @@ class IntlGenerator {
   }
 
   public async run(projectInfo: ProjectInfoMsgInterface, config: FlutterIntlConfig) {
+    vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: 'Flutter XGen: FlutterIntl 运行中...',
+        cancellable: true
+      },
+      async (progress, token) => {
+        token.onCancellationRequested(() => {
+          console.log('User canceled the long running operation')
+        })
+
+        progress.report({ increment: 0 })
+
+        try {
+          await this._runFlutterIntl(projectInfo, config)
+          progress.report({ increment: 100 })
+          await new Promise((resolve) => setTimeout(resolve, 500))
+          vscode.window.showInformationMessage(`Flutter XGen: FlutterIntl l10n 生成成功`)
+        } catch (error) {
+          vscode.window.showErrorMessage(`Flutter XGen: FlutterIntl l10n 生成失败`)
+        }
+      }
+    )
+  }
+
+  private async _runFlutterIntl(projectInfo: ProjectInfoMsgInterface, config: FlutterIntlConfig) {
     const packageName = 'intl_utils'
     const isInstalled_pub_global = await checkIfDartPackageInstalled(packageName)
     if (!isInstalled_pub_global) {

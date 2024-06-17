@@ -24,22 +24,54 @@ class AssetsGenerator {
 
   // MARK: - Flutter Gen
   public async runFlutterGen(projectInfo: ProjectInfoMsgInterface, config: FlutterGenConfig) {
-    // TODO: 检查 Flutter Gen 安装方式
+    vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: 'Flutter XGen: FlutterGen 运行中...',
+        cancellable: true
+      },
+      async (progress, token) => {
+        token.onCancellationRequested(() => {
+          console.log('User canceled the long running operation')
+        })
 
+        progress.report({ increment: 0 })
+
+        try {
+          await this._runFlutterGen(projectInfo, config)
+          progress.report({ increment: 100 })
+          await new Promise((resolve) => setTimeout(resolve, 500))
+          vscode.window.showInformationMessage('Flutter XGen: FlutterGen 生成成功')
+        } catch (error) {
+          vscode.window.showErrorMessage('Flutter XGen: FlutterGen 生成失败')
+        }
+        // Simulate a long running task
+        // for (let i = 0; i <= 100; i++) {
+        //   if (token.isCancellationRequested) {
+        //     break;
+        //   }
+        //   progress.report({ increment: 1, message: `Step ${i}/100` });
+        //   await new Promise(resolve => setTimeout(resolve, 100));
+        // }
+      }
+    )
+  }
+
+  private async _runFlutterGen(projectInfo: ProjectInfoMsgInterface, config: FlutterGenConfig) {
+    // TODO: 检查 Flutter Gen 安装方式
     // 当前默认用户使用 dart pub global
     // TODO: /bin/sh: dart: command not found
-    try {
-      const packageName = 'flutter_gen'
-      const isInstalled_pub_global = await checkIfDartPackageInstalled(packageName)
-      if (!isInstalled_pub_global) {
-        // 安装
-        const suc = await installDartPubGlobalPackage(packageName)
-        if (suc) {
-          await runTerminalCommand(packageName)
-        }
+    const packageName = 'flutter_gen'
+    const isInstalled_pub_global = await checkIfDartPackageInstalled(packageName)
+    if (!isInstalled_pub_global) {
+      // 安装
+      const suc = await installDartPubGlobalPackage(packageName)
+      if (suc) {
+        await runTerminalCommand(packageName)
       }
+    }
 
-      const commandString = `
+    const commandString = `
       export PATH="$PATH:$HOME/.pub-cache/bin"
       export PATH="$PATH:/usr/local/opt/dart/libexec/bin"
       export PATH="$PATH:$HOME/fvm/default/bin"
@@ -47,16 +79,41 @@ class AssetsGenerator {
       fluttergen
       ` // TODO: 优化一下
 
-      const result = await runTerminalCommand(commandString)
-      vscode.window.setStatusBarMessage('Flutter XGen: FlutterGen 生成成功', 3000)
-      console.log('runFlutterGen, result: ', result.stdout)
-    } catch (error) {
-      vscode.window.setStatusBarMessage('Flutter XGen: FlutterGen 生成失败', 3000)
-    }
+    const result = await runTerminalCommand(commandString)
+
+    console.log('runFlutterGen, result: ', result.stdout)
   }
 
   // MARK: - FlutterAssetsGenerator - cr1992
   public async runCr1992Generator(projectInfo: ProjectInfoMsgInterface, config: FlutterAssetsGeneratorConfigByCr1992) {
+    vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: 'Flutter XGen: Cr1992 运行中...',
+        cancellable: true
+      },
+      async (progress, token) => {
+        token.onCancellationRequested(() => {
+          console.log('User canceled the long running operation')
+        })
+
+        progress.report({ increment: 0 })
+
+        try {
+          await this._runCr1992Generator(projectInfo, config)
+          progress.report({ increment: 100 })
+          await new Promise((resolve) => setTimeout(resolve, 500))
+          vscode.window.showInformationMessage(`Flutter XGen: Cr1992 assets 生成成功`)
+        } catch (error) {
+          if (error.message !== 'User canceled the operation') {
+            vscode.window.showErrorMessage(`Flutter XGen: Cr1992 assets 生成失败`)
+          }
+        }
+      }
+    )
+  }
+
+  private async _runCr1992Generator(projectInfo: ProjectInfoMsgInterface, config: FlutterAssetsGeneratorConfigByCr1992) {
     // 用户自定义配置
     const path_ignore = config.path_ignore ?? FlutterAssetsConfigCr1992Constants.path_ignore
     const output_dir = config.output_dir ?? FlutterAssetsConfigCr1992Constants.output_dir
@@ -120,8 +177,6 @@ class AssetsGenerator {
       fs.mkdirSync(p.dirname(output_file_path), { recursive: true })
     }
     fs.writeFileSync(output_file_path, fileContent)
-
-    vscode.window.showInformationMessage(`Flutter XGen: Cr1992 ${file_relative_path} 生成成功`)
   }
 
   private generateAssetsDotDartFileContent(config: FlutterAssetsGeneratorConfigByCr1992, assets: AssetFileByCr1992[]): string {
