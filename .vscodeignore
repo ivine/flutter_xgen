@@ -16,6 +16,7 @@ vsc-extension-quickstart.md
 
 esbuild.js
 webview_ui
-shell_build_webview.sh
+*.sh
 flutter-xgen-*
 *.vsix
+*.org
