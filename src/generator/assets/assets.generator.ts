@@ -14,7 +14,7 @@ import { checkIfDartPackageInstalled, installDartPubGlobalPackage, runTerminalCo
 
 class AssetsGenerator {
   private static instance: AssetsGenerator | null = null
-  private constructor() {}
+  private constructor() { }
   static getInstance(): AssetsGenerator {
     if (!AssetsGenerator.instance) {
       AssetsGenerator.instance = new AssetsGenerator()
@@ -75,6 +75,7 @@ class AssetsGenerator {
       export PATH="$PATH:$HOME/.pub-cache/bin"
       export PATH="$PATH:/usr/local/opt/dart/libexec/bin"
       export PATH="$PATH:$HOME/fvm/default/bin"
+      export PATH="$PATH:${WorkspaceManager.getInstance().dartPath}"
       cd ${projectInfo.dir}
       fluttergen
       ` // TODO: 优化一下
