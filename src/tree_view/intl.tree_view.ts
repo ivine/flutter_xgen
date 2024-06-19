@@ -115,6 +115,7 @@ export class IntlTreeView implements vscode.TreeDataProvider<IntlTreeNode> {
       data: null
     }
 
+    // TODO: 点击后，数据被清除
     const node = new IntlTreeNode(
       '生成器配置',
       vscode.TreeItemCollapsibleState.None,

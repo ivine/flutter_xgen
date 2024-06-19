@@ -48,7 +48,6 @@ function LocalizationPage(props: MsgInterface) {
       const currentStr = JSON.stringify(rows)
       const originHash = await hashString(originStr)
       const currentHash = await hashString(currentStr)
-      const tmpModified1 = originStr !== currentStr
       const tmpModified = originHash !== currentHash
       setModified(tmpModified)
     } catch (error) {

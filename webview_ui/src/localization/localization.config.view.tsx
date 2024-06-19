@@ -7,15 +7,10 @@ import { getStringOrEmpty, isEmptyString } from "../util/string.util"
 import InteractionManager from "../interaction/interaction.manager"
 import FXGCheckBox from "../component/check_box"
 import FXGButton from "../component/button"
-import FXGSpacer from "../component/spacer"
 import FXGContainer from "../component/container"
 
 export const LocalizationConfigViewCollapsedHeight = 40
 export const LocalizationConfigViewExpandedHeight = 220
-
-const defaultFlutterIntlConfig: any = {
-  enabled: true,
-}
 
 const checkedFlutterIntlConfig: FlutterIntlConfig = {
   enabled: true,
