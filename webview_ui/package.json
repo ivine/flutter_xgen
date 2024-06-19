@@ -4,15 +4,17 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
+    "format": "prettier --write ./src",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "dev": "vite",
     "build": "tsc && vite build",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@handsontable/react": "^14.4.0",
     "@vscode/webview-ui-toolkit": "^1.4.0",
+    "handsontable": "^14.4.0",
     "react": "^18.2.0",
-    "react-datasheet-grid": "^4.11.4",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {

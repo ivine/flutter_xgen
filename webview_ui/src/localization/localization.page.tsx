@@ -1,23 +1,21 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
-import {
-  Column,
-  DynamicDataSheetGrid,
-  textColumn,
-  keyColumn,
-} from 'react-datasheet-grid'
-import { Operation } from "react-datasheet-grid/dist/types"
-import 'react-datasheet-grid/dist/style.css'
+import Handsontable from "handsontable";
+import { HotTable, HotTableClass } from '@handsontable/react';
+import { registerAllModules } from 'handsontable/registry';
+import 'handsontable/dist/handsontable.full.min.css';
 
 import './localization.page.css'
 
 import { MsgInterface } from "../enum/vscode_extension.type"
-import { getRandomString, hashString, isEmptyString } from "../util/string.util"
+import { hashString, isEmptyString } from "../util/string.util"
 import LocalizationConfigView, {
   LocalizationConfigViewCollapsedHeight,
 } from "./localization.config.view"
 
 import FXGProjectInfoPanel from '../component/project_info_panel'
+
+registerAllModules();
 
 function LocalizationPage(props: MsgInterface) {
   const data = props.data
@@ -27,15 +25,22 @@ function LocalizationPage(props: MsgInterface) {
 
   const [height, setHeight] = useState(0)
   const [configsBarHeight, setConfigsBarHeight] = useState(LocalizationConfigViewCollapsedHeight)
-  const containerRef = useRef(null)
 
-  const [columns, setColumns] = useState<Column[]>([])
+  // ref
+  const containerRef = useRef(null)
+  const hotTableRef = useRef<HotTableClass | null>(null)
+
+  const [colHeaders, setColHeaders] = useState<any[]>([])
+  const [rowDatas, setRowDatas] = useState<any[]>([])
+
   const [modidfied, setModified] = useState<boolean>(false)
   const originRowsRef = useRef<any[]>() // 用于比较
-  const [rows, setRows] = useState<any[]>([])
-  const createRow = useCallback(() => {
-    return { id: getRandomString(20) }
-  }, [])
+
+  const [gridVisible, setGridVisible] = useState<boolean>(false)
+
+  const getHotInstance = (): Handsontable | null => {
+    return hotTableRef.current ? hotTableRef.current.hotInstance : null;
+  }
 
   function vscodeRightClickEvent(e) {
     e.preventDefault()
@@ -45,7 +50,7 @@ function LocalizationPage(props: MsgInterface) {
   const currentCurrentDataModified = async () => {
     try {
       const originStr = JSON.stringify(originRowsRef.current)
-      const currentStr = JSON.stringify(rows)
+      const currentStr = JSON.stringify(rowDatas)
       const originHash = await hashString(originStr)
       const currentHash = await hashString(currentStr)
       const tmpModified = originHash !== currentHash
@@ -57,16 +62,19 @@ function LocalizationPage(props: MsgInterface) {
 
   useEffect(() => {
     // 高度
-    setHeight(containerRef.current.clientHeight - (120 + configsBarHeight + 60))
+    setHeight(containerRef.current.clientHeight - (120 + configsBarHeight + 20))
 
     // 默认的右键事件
-    window.addEventListener('contextmenu', vscodeRightClickEvent, true)
     window.addEventListener('resize', () => {
-      setHeight(containerRef.current.clientHeight - (120 + configsBarHeight + 60))
+      setHeight(containerRef.current.clientHeight - (120 + configsBarHeight + 20))
     });
 
+    setTimeout(() => {
+      setGridVisible(true)
+    }, 5000);
+
     return () => {
-      window.removeEventListener('contextmenu', vscodeRightClickEvent)
+      // hotTableRef.current?.hotInstance?.destroy()
     }
   }, [])
 
@@ -90,45 +98,55 @@ function LocalizationPage(props: MsgInterface) {
     }
 
     // 初始化数据
-
-    // columns
-    const keysString = 'key'
-    const arbNames: string[] = Object.keys(arbs)
-    const tmpColumns: Column[] = [{ ...keyColumn('key', textColumn), title: "Key" }]
-    for (const arbName of arbNames) {
-      tmpColumns.push({ ...keyColumn(arbName, textColumn), title: arbName })
+    // column headers
+    const const_KeyString = "Key"
+    const tmpColHeaders = [
+      {
+        title: const_KeyString,
+        type: 'text',
+        data: const_KeyString, // 用于去对应 row 的 key，例如 data = intl_en.arb, row={"Key": "123", "intl_en.arb": "xzv", ...}
+      }
+    ]
+    for (const key of Object.keys(arbs)) {
+      const tmpData = {
+        title: key,
+        type: 'text',
+        data: key,
+      }
+      tmpColHeaders.push(tmpData)
     }
+    setColHeaders(tmpColHeaders)
 
     // rows
-    const tmpRows: any[] = []
-    for (const key of mainLocaleKeys) {
-      const tmpItem = {}
-      for (const c of tmpColumns) {
+    const tmpRowDatas: any[] = []
+    for (const localeKey of mainLocaleKeys) {
+      const rowData = {}
+      for (const c of tmpColHeaders) {
         let value = ""
-        if (c.id === keysString) {
-          value = key
+        if (c.title === const_KeyString) {
+          value = localeKey
         } else {
-          value = arbs[c.id][key]
+          value = arbs[c.title][localeKey]
         }
-        tmpItem[c.id] = value
+        const colTitle = c.title
+        rowData[colTitle] = value
       }
-      tmpRows.push(tmpItem)
+      tmpRowDatas.push(rowData)
     }
+    setRowDatas(tmpRowDatas)
+    originRowsRef.current = rowDatas
 
-    originRowsRef.current = tmpRows
-    setColumns(tmpColumns)
-    setRows(tmpRows)
     setTimeout(() => {
       currentCurrentDataModified()
     }, 100);
   }, [arbs])
 
   useEffect(() => {
-    if (rows.length === 0 || originRowsRef.current.length === 0) {
+    if (rowDatas.length === 0 || originRowsRef.current.length === 0) {
       return
     }
     currentCurrentDataModified()
-  }, [rows])
+  }, [rowDatas])
 
   const renderL10nConfigsBar = () => {
     return (
@@ -146,7 +164,7 @@ function LocalizationPage(props: MsgInterface) {
             setConfigsBarHeight(height)
           }}
           onGetGridData={() => {
-            return rows
+            return rowDatas
           }}
         />
       </div>
@@ -160,27 +178,55 @@ function LocalizationPage(props: MsgInterface) {
       return <div>正在加载中...</div>
     }
     return (
-      <DynamicDataSheetGrid
+      <div
         style={{
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'scroll',
           width: '100%',
-          height: '100%',
+          height: height,
         }}
-        className='grid_root'
-        rowClassName={'grid_row'}
-        cellClassName={'grid_cell'}
-        height={height}
-        headerRowHeight={50}
-        rowHeight={40}
-        columns={columns}
-        value={rows}
-        createRow={createRow}
-        onChange={(value: any[], operations: Operation[]) => {
-          setRows(value)
-        }}
-        onFocus={(opts: any) => {
-          console.log('opts --> ', opts)
-        }}
-      />
+      >
+        <HotTable
+          id={'l10n_grid'}
+          ref={hotTableRef}
+          data={rowDatas}
+          columns={colHeaders}
+          style={{
+            width: '100%',
+            height: '100%',
+          }}
+          filters={true}
+          contextMenu={true}
+          dropdownMenu={
+            [
+              "filter_by_value",
+              "filter_operators",
+              "filter_action_bar",
+              "filter_by_condition",
+              "col_left",
+              "col_right",
+              "remove_col",
+              "clear_column",
+              "make_read_only",
+              "---------",
+              "undo",
+              "redo"
+            ]
+          }
+          autoWrapRow={true}
+          autoWrapCol={true}
+          rowHeaders={true}
+          manualColumnMove={true}
+          manualRowMove={true}
+          colWidths={150}
+          rowHeights={40}
+          selectionMode={'multiple'}
+          // language={'zh-CN'}
+          // beforeRefreshDimensions={() => false}
+          licenseKey="non-commercial-and-evaluation"
+        />
+      </div>
     )
   }
 
@@ -209,7 +255,7 @@ function LocalizationPage(props: MsgInterface) {
           width: '100%',
         }}
       >
-        {renderGrid()}
+        {gridVisible ? renderGrid() : null}
       </div>
     </div>
   )

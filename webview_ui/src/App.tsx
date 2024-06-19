@@ -25,7 +25,7 @@ function App() {
         document.body.style.color = "#ffffff"
         document.body.style.backgroundColor = "#24262f"
         try {
-          onReceiveMsg(AssetsTestMsg as MsgInterface)
+          onReceiveMsg(L10nTestMsg as MsgInterface)
         } catch (error) {
           console.log("debug, parse JSON error: ", error)
         }

@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => {
         }
       },
       chunkSizeWarningLimit: 1024,
-      sourcemap: false, // TODO: 区分生产和开发
+      sourcemap: true, // TODO: 区分生产和开发
     },
   }
 })
