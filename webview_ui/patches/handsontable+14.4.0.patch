@@ -1,0 +1,80 @@
+diff --git a/node_modules/handsontable/helpers/dom/element.js b/node_modules/handsontable/helpers/dom/element.js
+index 9254e16..abe2c41 100644
+--- a/node_modules/handsontable/helpers/dom/element.js
++++ b/node_modules/handsontable/helpers/dom/element.js
+@@ -101,6 +101,7 @@ function isThisHotChild(element, thisHotContainer) {
+   return !!closestHandsontableContainer && (closestHandsontableContainer.parentNode === thisHotContainer || closestHandsontableContainer === thisHotContainer);
+ }
+ 
++/**
+ /**
+  * Gets `frameElement` of the specified frame. Returns null if it is a top frame or if script has no access to read property.
+  *
+@@ -108,6 +109,9 @@ function isThisHotChild(element, thisHotContainer) {
+  * @returns {HTMLIFrameElement|null}
+  */
+ function getFrameElement(frame) {
++  if (!frame.parent || !frame.frameElement) {
++    return null;
++  }
+   return Object.getPrototypeOf(frame.parent) && frame.frameElement;
+ }
+ 
+@@ -118,6 +122,9 @@ function getFrameElement(frame) {
+  * @returns {Window|null}
+  */
+ function getParentWindow(frame) {
++  if (!frame.parent) {
++    return null;
++  }
+   return getFrameElement(frame) && frame.parent;
+ }
+ 
+@@ -128,9 +135,13 @@ function getParentWindow(frame) {
+  * @returns {boolean}
+  */
+ function hasAccessToParentWindow(frame) {
++  if (!frame.parent) {
++    return false;
++  }
+   return !!Object.getPrototypeOf(frame.parent);
+ }
+ 
++
+ /**
+  * Goes up the DOM tree (including given element) until it finds an parent element that matches the nodes or nodes name.
+  * This method goes up through web components.
+diff --git a/node_modules/handsontable/helpers/dom/element.mjs b/node_modules/handsontable/helpers/dom/element.mjs
+index 7abd634..4bad546 100644
+--- a/node_modules/handsontable/helpers/dom/element.mjs
++++ b/node_modules/handsontable/helpers/dom/element.mjs
+@@ -48,6 +48,9 @@ export function isThisHotChild(element, thisHotContainer) {
+  * @returns {HTMLIFrameElement|null}
+  */
+ export function getFrameElement(frame) {
++  if (!frame.parent || !frame.frameElement) {
++    return null;
++  }
+   return Object.getPrototypeOf(frame.parent) && frame.frameElement;
+ }
+ 
+@@ -58,6 +61,9 @@ export function getFrameElement(frame) {
+  * @returns {Window|null}
+  */
+ export function getParentWindow(frame) {
++  if (!frame.parent) {
++    return null;
++  }
+   return getFrameElement(frame) && frame.parent;
+ }
+ 
+@@ -68,6 +74,9 @@ export function getParentWindow(frame) {
+  * @returns {boolean}
+  */
+ export function hasAccessToParentWindow(frame) {
++  if (!frame.parent) {
++    return false;
++  }
+   return !!Object.getPrototypeOf(frame.parent);
+ }
+ 

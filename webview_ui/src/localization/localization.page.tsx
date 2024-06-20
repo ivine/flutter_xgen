@@ -36,8 +36,6 @@ function LocalizationPage(props: MsgInterface) {
   const [modidfied, setModified] = useState<boolean>(false)
   const originRowsRef = useRef<any[]>() // 用于比较
 
-  const [gridVisible, setGridVisible] = useState<boolean>(false)
-
   const getHotInstance = (): Handsontable | null => {
     return hotTableRef.current ? hotTableRef.current.hotInstance : null;
   }
@@ -68,10 +66,6 @@ function LocalizationPage(props: MsgInterface) {
     window.addEventListener('resize', () => {
       setHeight(containerRef.current.clientHeight - (120 + configsBarHeight + 20))
     });
-
-    setTimeout(() => {
-      setGridVisible(true)
-    }, 5000);
 
     return () => {
       // hotTableRef.current?.hotInstance?.destroy()
@@ -255,7 +249,7 @@ function LocalizationPage(props: MsgInterface) {
           width: '100%',
         }}
       >
-        {gridVisible ? renderGrid() : null}
+        {renderGrid()}
       </div>
     </div>
   )
