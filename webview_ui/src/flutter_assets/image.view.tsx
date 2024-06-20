@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react"
+import React, { useEffect, useRef } from 'react'
 
 function ImageView(props: any) {
   const { uri } = props
@@ -10,7 +10,7 @@ function ImageView(props: any) {
       try {
         wzoomRef.current?.destroy()
       } catch (error) {
-        console.log("ImageView dispose, error: ", error)
+        console.log('ImageView dispose, error: ', error)
       }
     }
   }, [])
@@ -24,7 +24,7 @@ function ImageView(props: any) {
         justifyContent: 'center',
         width: '100vw',
         height: 500,
-        backgroundColor: '#2c2c2c80',
+        backgroundColor: '#2c2c2c80'
       }}
     >
       <img
@@ -35,7 +35,7 @@ function ImageView(props: any) {
           minWidth: 200,
           minHeight: 200,
           maxWidth: '100%',
-          maxHeight: '100%',
+          maxHeight: '100%'
         }}
         onLoad={() => {
           if (wzoomRef.current !== null) {
@@ -47,7 +47,7 @@ function ImageView(props: any) {
             height: 600,
             maxScale: 20,
             speed: 1.05,
-            smoothTime: 0.15,
+            smoothTime: 0.15
           })
         }}
       />

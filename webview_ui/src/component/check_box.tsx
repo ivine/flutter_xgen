@@ -1,6 +1,6 @@
-import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
-import FXGContainer from "./container"
-import FXGSpacer from "./spacer"
+import { VSCodeCheckbox } from '@vscode/webview-ui-toolkit/react'
+import FXGContainer from './container'
+import FXGSpacer from './spacer'
 
 interface FXGCheckBoxInterface {
   checked: boolean
@@ -35,18 +35,24 @@ function FXGCheckBox(props: FXGCheckBoxInterface) {
         display: 'flex',
         flexDirection: 'row',
         opacity: enabled ? 1 : '0.5',
-        pointerEvents: enabled ? 'auto' : 'none',
+        pointerEvents: enabled ? 'auto' : 'none'
       }}
     >
       <div style={{ width: leftS }} />
       <div
         style={{
           display: 'flex',
-          flexDirection: 'column',
+          flexDirection: 'column'
         }}
       >
         <div style={{ height: topS }} />
-        <FXGContainer height={30} flexDirection="row" onClick={() => { props.onChange(!props.checked) }}>
+        <FXGContainer
+          height={30}
+          flexDirection="row"
+          onClick={() => {
+            props.onChange(!props.checked)
+          }}
+        >
           <input
             style={{ width: 16, height: 16 }}
             type={'checkbox'}

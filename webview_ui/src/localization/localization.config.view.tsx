@@ -1,23 +1,29 @@
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { VSCodeTextField } from '@vscode/webview-ui-toolkit/react'
 
-import { FXGWatcherType, FlutterPubspecYamlConfigType, FlutterIntlConfig, InteractionEventType, MsgInterface } from "../enum/vscode_extension.type"
-import { isObjectEqual } from "../util/object.util"
-import { getStringOrEmpty, isEmptyString } from "../util/string.util"
-import InteractionManager from "../interaction/interaction.manager"
-import FXGCheckBox from "../component/check_box"
-import FXGButton from "../component/button"
-import FXGContainer from "../component/container"
+import {
+  FXGWatcherType,
+  FlutterPubspecYamlConfigType,
+  FlutterIntlConfig,
+  InteractionEventType,
+  MsgInterface
+} from '../enum/vscode_extension.type'
+import { isObjectEqual } from '../util/object.util'
+import { getStringOrEmpty, isEmptyString } from '../util/string.util'
+import InteractionManager from '../interaction/interaction.manager'
+import FXGCheckBox from '../component/check_box'
+import FXGButton from '../component/button'
+import FXGContainer from '../component/container'
 
 export const LocalizationConfigViewCollapsedHeight = 40
 export const LocalizationConfigViewExpandedHeight = 220
 
 const checkedFlutterIntlConfig: FlutterIntlConfig = {
   enabled: true,
-  class_name: "",
-  main_locale: "",
-  arb_dir: "",
-  output_dir: "",
+  class_name: '',
+  main_locale: '',
+  arb_dir: '',
+  output_dir: '',
   use_deferred_loading: false,
   localizely: undefined
 }
@@ -122,13 +128,13 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
     const obj = Object.fromEntries(
       Array.from(map.entries()).map(([key, value]) => {
         if (value instanceof Map) {
-          return [key, mapToObject(value)]; // 递归转换内部 Map
+          return [key, mapToObject(value)] // 递归转换内部 Map
         } else {
-          return [key, value];
+          return [key, value]
         }
       })
-    );
-    return obj;
+    )
+    return obj
   }
 
   const renderFunctionButtons = () => {
@@ -138,13 +144,13 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
         style={{
           display: 'flex',
           flexDirection: 'row',
-          width: '100%',
+          width: '100%'
         }}
       >
         <FXGContainer
           style={{
             flexDirection: 'column',
-            alignItems: 'flex-start',
+            alignItems: 'flex-start'
           }}
         >
           <FXGCheckBox
@@ -158,21 +164,17 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
           {props.msg.data.l10n.localizelyFlutterIntlInstalled ? <div style={{ marginTop: 2 }}>localizely.flutter-intl 已安装</div> : null}
         </FXGContainer>
         <FXGButton
-          title={"立即生成"}
+          title={'立即生成'}
           leftSpacing={16}
           onClick={() => {
             const newJSON = gridDataToJSON(props.onGetGridData())
             if (typeof newJSON === 'object') {
               try {
                 const newJSONString = JSON.stringify(mapToObject(newJSON), null, 2)
-                InteractionManager.getInstance().postMsg(
-                  InteractionEventType.webToExt_intl_run,
-                  props.msg.projectInfo,
-                  {
-                    type: FlutterPubspecYamlConfigType.flutter_intl,
-                    data: newJSONString
-                  },
-                )
+                InteractionManager.getInstance().postMsg(InteractionEventType.webToExt_intl_run, props.msg.projectInfo, {
+                  type: FlutterPubspecYamlConfigType.flutter_intl,
+                  data: newJSONString
+                })
               } catch (error) {
                 //
               }
@@ -180,30 +182,22 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
           }}
         />
         <FXGButton
-          title={"从 arb 文件同步"}
+          title={'从 arb 文件同步'}
           leftSpacing={16}
           onClick={() => {
-            InteractionManager.getInstance().postMsg(
-              InteractionEventType.sync_intl,
-              props.msg.projectInfo,
-              {
-                type: FlutterPubspecYamlConfigType.flutter_intl,
-              },
-            )
+            InteractionManager.getInstance().postMsg(InteractionEventType.sync_intl, props.msg.projectInfo, {
+              type: FlutterPubspecYamlConfigType.flutter_intl
+            })
           }}
         />
         <FXGButton
           title="读取配置"
           leftSpacing={16}
           onClick={() => {
-            InteractionManager.getInstance().postMsg(
-              InteractionEventType.webToExt_intl_read_config,
-              props.msg.projectInfo,
-              {
-                type: FlutterPubspecYamlConfigType.flutter_intl,
-                config: flutterIntlConfigRef.current,
-              },
-            )
+            InteractionManager.getInstance().postMsg(InteractionEventType.webToExt_intl_read_config, props.msg.projectInfo, {
+              type: FlutterPubspecYamlConfigType.flutter_intl,
+              config: flutterIntlConfigRef.current
+            })
           }}
         />
         <FXGButton
@@ -211,14 +205,10 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
           disabled={!isModifiedConfigRef.current}
           leftSpacing={16}
           onClick={() => {
-            InteractionManager.getInstance().postMsg(
-              InteractionEventType.webToExt_intl_save_config,
-              props.msg.projectInfo,
-              {
-                type: FlutterPubspecYamlConfigType.flutter_intl,
-                config: flutterIntlConfigRef.current,
-              },
-            )
+            InteractionManager.getInstance().postMsg(InteractionEventType.webToExt_intl_save_config, props.msg.projectInfo, {
+              type: FlutterPubspecYamlConfigType.flutter_intl,
+              config: flutterIntlConfigRef.current
+            })
           }}
         />
         <FXGButton
@@ -254,14 +244,14 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
           display: 'flex',
           flexDirection: 'row',
           width: '100%',
-          height: containerH,
+          height: containerH
         }}
       >
         <div
           style={{
             display: 'flex',
             flex: 1,
-            flexDirection: 'column',
+            flexDirection: 'column'
           }}
         >
           <div style={{ height: 20 }} />
@@ -305,7 +295,7 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
           style={{
             display: 'flex',
             flex: 1,
-            flexDirection: 'column',
+            flexDirection: 'column'
           }}
         >
           <div style={{ height: 20 }} />
@@ -356,7 +346,7 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
         display: 'flex',
         flexDirection: 'column',
         width: '100%',
-        height: '100%',
+        height: '100%'
       }}
     >
       {renderFunctionButtons()}

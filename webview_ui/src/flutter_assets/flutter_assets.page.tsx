@@ -1,7 +1,7 @@
-import { AssetsMsgInterface, MsgInterface } from "../enum/vscode_extension.type"
-import ImageView from "./image.view"
-import MediaView from "./media.view"
-import SVGAView from "./svga.view"
+import { AssetsMsgInterface, MsgInterface } from '../enum/vscode_extension.type'
+import ImageView from './image.view'
+import MediaView from './media.view'
+import SVGAView from './svga.view'
 
 function FlutterAssetsPage(props: MsgInterface) {
   const assetsMsg = props.data.assets
@@ -10,16 +10,26 @@ function FlutterAssetsPage(props: MsgInterface) {
 
   function isMediaFile(url: string, fileExt: string): boolean {
     const mediaExtensions = [
-      '.mp3', '.wav', '.flac', '.aac', '.ogg', '.m4a', '.wma', // 音频格式
-      '.mp4', '.mkv', '.avi', '.mov', '.wmv', '.flv', '.webm'  // 视频格式
+      '.mp3',
+      '.wav',
+      '.flac',
+      '.aac',
+      '.ogg',
+      '.m4a',
+      '.wma', // 音频格式
+      '.mp4',
+      '.mkv',
+      '.avi',
+      '.mov',
+      '.wmv',
+      '.flv',
+      '.webm' // 视频格式
     ]
     return mediaExtensions.includes(fileExt)
   }
 
   function isImageFile(url: string, fileExt: string): boolean {
-    const imageExtensions = [
-      '.jpg', '.jpeg', '.png', '.bmp', '.webp', '.svg', '.tiff', '.ico', '.gif'
-    ]
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.bmp', '.webp', '.svg', '.tiff', '.ico', '.gif']
     return imageExtensions.includes(fileExt)
   }
 
@@ -33,17 +43,11 @@ function FlutterAssetsPage(props: MsgInterface) {
     const src = `${previewItem.scheme}://${previewItem.authority}${previewItem.path}` // 不在 VSCode 的项目内，需要这样拼接的
 
     if (fileExt === '.svga') {
-      return (
-        <SVGAView uri={src} />
-      )
+      return <SVGAView uri={src} />
     } else if (isImageFile(src, fileExt)) {
-      return (
-        <ImageView uri={src} />
-      )
+      return <ImageView uri={src} />
     } else if (isMediaFile(src, fileExt)) {
-      return (
-        <MediaView uri={src} />
-      )
+      return <MediaView uri={src} />
     }
     return (
       <>

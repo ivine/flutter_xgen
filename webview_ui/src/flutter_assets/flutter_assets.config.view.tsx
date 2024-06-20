@@ -1,5 +1,5 @@
-import { isEqual } from "lodash"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { isEqual } from 'lodash'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { VSCodeDropdown, VSCodeOption } from '@vscode/webview-ui-toolkit/react'
 import {
   FXGWatcherType,
@@ -8,27 +8,27 @@ import {
   FlutterGenConfig,
   InteractionEventType,
   MsgInterface
-} from "../enum/vscode_extension.type"
-import FXGTextField from "../component/text_field"
-import FXGCheckBox from "../component/check_box"
-import FXGButton from "../component/button"
-import { isObjectEqual } from "../util/object.util"
-import FXGProjectInfoPanel from "../component/project_info_panel"
-import InteractionManager from "../interaction/interaction.manager"
-import FXGContainer from "../component/container"
+} from '../enum/vscode_extension.type'
+import FXGTextField from '../component/text_field'
+import FXGCheckBox from '../component/check_box'
+import FXGButton from '../component/button'
+import { isObjectEqual } from '../util/object.util'
+import FXGProjectInfoPanel from '../component/project_info_panel'
+import InteractionManager from '../interaction/interaction.manager'
+import FXGContainer from '../component/container'
 
 const defaultFlutterAssetsGeneratorConfigByCr1992: any = {}
 
 // 占位，用于检查传入的参数是否包含某个字段。TODO: 这里要优化的
 const checkedFlutterAssetsGeneratorConfigByCr1992: FlutterAssetsGeneratorConfigByCr1992 = {
-  output_dir: "",
+  output_dir: '',
   auto_detection: false,
   named_with_parent: true,
-  output_filename: "",
-  class_name: "",
-  filename_split_pattern: "",
+  output_filename: '',
+  class_name: '',
+  filename_split_pattern: '',
   path_ignore: [],
-  leading_with_package_name: false,
+  leading_with_package_name: false
 }
 
 const FlutterPubspecYamlConfigTypeToString = (type: FlutterPubspecYamlConfigType): string => {
@@ -36,12 +36,12 @@ const FlutterPubspecYamlConfigTypeToString = (type: FlutterPubspecYamlConfigType
   switch (type) {
     case FlutterPubspecYamlConfigType.flutter_assets_generator_cr1992:
       result = 'Flutter Assets Generator'
-      break;
+      break
     case FlutterPubspecYamlConfigType.flutter_gen:
       result = 'Flutter Gen'
-      break;
+      break
     default:
-      break;
+      break
   }
   return result
 }
@@ -51,12 +51,12 @@ const flutterAssetsConfigStringToType = (type: string): FlutterPubspecYamlConfig
   switch (type) {
     case 'Flutter Assets Generator':
       result = FlutterPubspecYamlConfigType.flutter_assets_generator_cr1992
-      break;
+      break
     case 'Flutter Gen':
       result = FlutterPubspecYamlConfigType.flutter_gen
-      break;
+      break
     default:
-      break;
+      break
   }
   return result
 }
@@ -64,14 +64,20 @@ const flutterAssetsConfigStringToType = (type: string): FlutterPubspecYamlConfig
 function FlutterAssetsConfigView(props: MsgInterface) {
   const assetsMsg = props.data.assets
   const watcherTypes = props.projectInfo.watcherTypes ?? []
-  const [currentConfigType, setCurrentConfigType] = useState<FlutterPubspecYamlConfigType>(FlutterPubspecYamlConfigType.flutter_assets_generator_cr1992)
+  const [currentConfigType, setCurrentConfigType] = useState<FlutterPubspecYamlConfigType>(
+    FlutterPubspecYamlConfigType.flutter_assets_generator_cr1992
+  )
   const flutterAssetsGeneratorConfigByCr1992 = useRef<FlutterAssetsGeneratorConfigByCr1992 | null>(null) // 配置引用
   const flutterGenConfig = useRef<FlutterGenConfig | null>(null) // 配置引用
   const configsModified = useRef<any>({}) // 已修改的配置列表 {Flutter Assets Generator: false, Flutter Gen: false}
   const [updateCounter, setUpdateCounter] = useState<number>(0)
 
   useEffect(() => {
-    flutterAssetsGeneratorConfigByCr1992.current = Object.assign({}, defaultFlutterAssetsGeneratorConfigByCr1992, assetsMsg.flutterAssetsGeneratorConfigByCr1992 ?? {})
+    flutterAssetsGeneratorConfigByCr1992.current = Object.assign(
+      {},
+      defaultFlutterAssetsGeneratorConfigByCr1992,
+      assetsMsg.flutterAssetsGeneratorConfigByCr1992 ?? {}
+    )
     flutterGenConfig.current = Object.assign({}, assetsMsg.flutterGenConfig)
     const tmpConfigsModified = {}
     tmpConfigsModified[FlutterPubspecYamlConfigTypeToString(FlutterPubspecYamlConfigType.flutter_assets_generator_cr1992)] = false
@@ -135,12 +141,7 @@ function FlutterAssetsConfigView(props: MsgInterface) {
   }
 
   const updateFlutterAssetsGeneratorByCr1992ConfigValue = (key: string, value) => {
-    updateConfigValue(
-      flutterAssetsGeneratorConfigByCr1992,
-      checkedFlutterAssetsGeneratorConfigByCr1992,
-      key,
-      value,
-    )
+    updateConfigValue(flutterAssetsGeneratorConfigByCr1992, checkedFlutterAssetsGeneratorConfigByCr1992, key, value)
   }
 
   const updateFlutterGenConfigValue = (key: string, value) => {
@@ -177,7 +178,7 @@ function FlutterAssetsConfigView(props: MsgInterface) {
   const renderTopBar = () => {
     const types: FlutterPubspecYamlConfigType[] = [
       FlutterPubspecYamlConfigType.flutter_assets_generator_cr1992,
-      FlutterPubspecYamlConfigType.flutter_gen,
+      FlutterPubspecYamlConfigType.flutter_gen
     ]
 
     const saveConfigButtonDisabled = !configsModified.current[FlutterPubspecYamlConfigTypeToString(currentConfigType)]
@@ -187,7 +188,7 @@ function FlutterAssetsConfigView(props: MsgInterface) {
           display: 'flex',
           flexDirection: 'column',
           boxSizing: 'border-box',
-          width: '100%',
+          width: '100%'
         }}
       >
         <div
@@ -195,19 +196,19 @@ function FlutterAssetsConfigView(props: MsgInterface) {
             display: 'flex',
             flexDirection: 'row',
             boxSizing: 'border-box',
-            width: '100%',
+            width: '100%'
           }}
         >
           <div
             style={{
-              width: 300,
+              width: 300
             }}
           >
             <div
               style={{
                 color: '#fff',
                 fontSize: 14,
-                marginLeft: 8,
+                marginLeft: 8
               }}
             >
               生成器类型
@@ -229,7 +230,7 @@ function FlutterAssetsConfigView(props: MsgInterface) {
               display: 'flex',
               flex: 1,
               flexDirection: 'row',
-              alignItems: 'center',
+              alignItems: 'center'
             }}
           >
             <FXGCheckBox
@@ -244,14 +245,10 @@ function FlutterAssetsConfigView(props: MsgInterface) {
               leftSpacing={40}
               rightSpacing={10}
               onClick={() => {
-                InteractionManager.getInstance().postMsg(
-                  InteractionEventType.webToExt_assets_run,
-                  props.projectInfo,
-                  {
-                    type: currentConfigType,
-                    config: getCurrentGeneratorConfig(),
-                  },
-                );
+                InteractionManager.getInstance().postMsg(InteractionEventType.webToExt_assets_run, props.projectInfo, {
+                  type: currentConfigType,
+                  config: getCurrentGeneratorConfig()
+                })
               }}
             />
             <FXGButton
@@ -259,13 +256,9 @@ function FlutterAssetsConfigView(props: MsgInterface) {
               leftSpacing={10}
               rightSpacing={10}
               onClick={() => {
-                InteractionManager.getInstance().postMsg(
-                  InteractionEventType.webToExt_assets_read_config,
-                  props.projectInfo,
-                  {
-                    type: currentConfigType,
-                  },
-                );
+                InteractionManager.getInstance().postMsg(InteractionEventType.webToExt_assets_read_config, props.projectInfo, {
+                  type: currentConfigType
+                })
               }}
             />
             <FXGButton
@@ -274,14 +267,10 @@ function FlutterAssetsConfigView(props: MsgInterface) {
               leftSpacing={10}
               rightSpacing={10}
               onClick={() => {
-                InteractionManager.getInstance().postMsg(
-                  InteractionEventType.webToExt_assets_save_config,
-                  props.projectInfo,
-                  {
-                    type: currentConfigType,
-                    config: getCurrentGeneratorConfig(),
-                  },
-                );
+                InteractionManager.getInstance().postMsg(InteractionEventType.webToExt_assets_save_config, props.projectInfo, {
+                  type: currentConfigType,
+                  config: getCurrentGeneratorConfig()
+                })
               }}
             />
           </div>
@@ -295,34 +284,30 @@ function FlutterAssetsConfigView(props: MsgInterface) {
 
   const renderCr1992ConfigView = () => {
     if (flutterAssetsGeneratorConfigByCr1992.current === null) {
-      return (
-        <div>暂无配置</div>
-      )
+      return <div>暂无配置</div>
     }
     return (
       <div
         style={{
           display: 'flex',
           flex: 1,
-          flexDirection: 'column',
+          flexDirection: 'column'
         }}
       >
         <div
           style={{
             display: 'flex',
             flexDirection: 'row',
-            alignItems: 'center',
+            alignItems: 'center'
           }}
         >
-          <div
-            style={{ fontSize: 18, fontWeight: '500', }}
-          >
-            Flutter Assets Generator
-          </div>
+          <div style={{ fontSize: 18, fontWeight: '500' }}>Flutter Assets Generator</div>
           <div style={{ width: 20 }} />
           <a
             style={{
-              fontSize: 12, color: '#fff', opacity: 0.5
+              fontSize: 12,
+              color: '#fff',
+              opacity: 0.5
             }}
             href="https://github.com/cr1992/FlutterAssetsGenerator"
           >
@@ -330,7 +315,8 @@ function FlutterAssetsConfigView(props: MsgInterface) {
           </a>
         </div>
         <div style={{ height: 20 }} />
-        <FXGCheckBox title="auto_detection 当前插件的自动监听, 与 FXG 无关"
+        <FXGCheckBox
+          title="auto_detection 当前插件的自动监听, 与 FXG 无关"
           checked={flutterAssetsGeneratorConfigByCr1992.current.auto_detection}
           onChange={(value) => {
             updateFlutterAssetsGeneratorByCr1992ConfigValue('auto_detection', value)
@@ -354,42 +340,52 @@ function FlutterAssetsConfigView(props: MsgInterface) {
             updateFlutterAssetsGeneratorByCr1992ConfigValue('leading_with_package_name', value)
           }}
         />
-        <FXGTextField title="output_dir"
+        <FXGTextField
+          title="output_dir"
           value={flutterAssetsGeneratorConfigByCr1992.current.output_dir}
-          tfType={"text"}
-          placeholder={"generated"}
+          tfType={'text'}
+          placeholder={'generated'}
           onChange={(value) => {
             updateFlutterAssetsGeneratorByCr1992ConfigValue('output_dir', value)
           }}
         />
-        <FXGTextField title="output_filename"
+        <FXGTextField
+          title="output_filename"
           value={flutterAssetsGeneratorConfigByCr1992.current.output_filename}
-          tfType={"text"}
-          placeholder={"assets"}
+          tfType={'text'}
+          placeholder={'assets'}
           onChange={(value) => {
             updateFlutterAssetsGeneratorByCr1992ConfigValue('output_filename', value)
           }}
         />
-        <FXGTextField title="class_name"
+        <FXGTextField
+          title="class_name"
           value={flutterAssetsGeneratorConfigByCr1992.current.class_name}
-          tfType={"text"}
-          placeholder={"Assets"}
+          tfType={'text'}
+          placeholder={'Assets'}
           onChange={(value) => {
             updateFlutterAssetsGeneratorByCr1992ConfigValue('class_name', value)
           }}
         />
-        <FXGTextField title="filename_split_pattern"
+        <FXGTextField
+          title="filename_split_pattern"
           value={flutterAssetsGeneratorConfigByCr1992.current.filename_split_pattern}
-          tfType={"text"}
-          placeholder={"\"[-_]\""}
+          tfType={'text'}
+          placeholder={'"[-_]"'}
           onChange={(value) => {
             updateFlutterAssetsGeneratorByCr1992ConfigValue('filename_split_pattern', value)
           }}
         />
-        <FXGTextField title={"path_ignore, 用 , 分割，例如: assets/fonts, assets/images/dark, ..."}
-          value={Array.isArray(flutterAssetsGeneratorConfigByCr1992.current.path_ignore) && flutterAssetsGeneratorConfigByCr1992.current.path_ignore.length > 0 ? flutterAssetsGeneratorConfigByCr1992.current.path_ignore.join(',') : ''}
-          tfType={"text"}
-          placeholder={"\"[-_]\""}
+        <FXGTextField
+          title={'path_ignore, 用 , 分割，例如: assets/fonts, assets/images/dark, ...'}
+          value={
+            Array.isArray(flutterAssetsGeneratorConfigByCr1992.current.path_ignore) &&
+            flutterAssetsGeneratorConfigByCr1992.current.path_ignore.length > 0
+              ? flutterAssetsGeneratorConfigByCr1992.current.path_ignore.join(',')
+              : ''
+          }
+          tfType={'text'}
+          placeholder={'"[-_]"'}
           onChange={(value) => {
             let result: string[] = []
             try {
@@ -407,38 +403,32 @@ function FlutterAssetsConfigView(props: MsgInterface) {
   const renderFlutterGenConfigView = () => {
     const config: FlutterGenConfig | null = flutterGenConfig.current
     if (config === null) {
-      return (
-        <div>暂无配置</div>
-      )
+      return <div>暂无配置</div>
     }
     return (
       <div
         style={{
           display: 'flex',
           flex: 1,
-          flexDirection: 'column',
+          flexDirection: 'column'
         }}
       >
-        <div
-          style={{ fontSize: 18, fontWeight: '500', }}
-        >
-          Flutter Gen
-        </div>
+        <div style={{ fontSize: 18, fontWeight: '500' }}>Flutter Gen</div>
         {/* base */}
         <FXGTextField
           title="output"
           value={config?.output}
-          tfType={"text"}
-          placeholder={"lib/gen/"}
+          tfType={'text'}
+          placeholder={'lib/gen/'}
           onChange={(value) => {
             updateFlutterGenConfigValue('output', value)
           }}
         />
         <FXGTextField
           title="line_length"
-          value={`${config?.line_length ?? ""}`}
-          tfType={"text"}
-          placeholder={"80"}
+          value={`${config?.line_length ?? ''}`}
+          tfType={'text'}
+          placeholder={'80'}
           onChange={(value) => {
             let len: number = 80
             try {
@@ -446,9 +436,7 @@ function FlutterAssetsConfigView(props: MsgInterface) {
               if (typeof len !== 'number') {
                 len = 80
               }
-            } catch (error) {
-
-            }
+            } catch (error) {}
             updateFlutterGenConfigValue('line_length', len)
           }}
         />
@@ -563,9 +551,9 @@ function FlutterAssetsConfigView(props: MsgInterface) {
           />
           <FXGTextField
             title="outputs.style, 可选值: camel-case/snake-case/dot-delimiter"
-            value={config?.assets?.outputs?.style ?? ""}
-            tfType={"text"}
-            placeholder={"dot-delimiter"}
+            value={config?.assets?.outputs?.style ?? ''}
+            tfType={'text'}
+            placeholder={'dot-delimiter'}
             onChange={(value) => {
               let obj: any = config.assets
               if (typeof obj !== 'object') {
@@ -580,9 +568,9 @@ function FlutterAssetsConfigView(props: MsgInterface) {
           />
           <FXGTextField
             title="outputs.class_name"
-            value={config?.assets?.outputs?.class_name ?? ""}
-            tfType={"text"}
-            placeholder={"Assets"}
+            value={config?.assets?.outputs?.class_name ?? ''}
+            tfType={'text'}
+            placeholder={'Assets'}
             onChange={(value) => {
               let obj: any = config?.assets
               if (typeof obj !== 'object') {
@@ -596,10 +584,10 @@ function FlutterAssetsConfigView(props: MsgInterface) {
             }}
           />
           <FXGTextField
-            title={"exclude, 用 , 分割，例如: assets/fonts, assets/images/dark, ..."}
+            title={'exclude, 用 , 分割，例如: assets/fonts, assets/images/dark, ...'}
             value={Array.isArray(config?.assets?.exclude) && config?.assets?.exclude?.length > 0 ? config?.assets?.exclude?.join(', ') : ''}
-            tfType={"text"}
-            placeholder={""}
+            tfType={'text'}
+            placeholder={''}
             onChange={(value) => {
               let result: string[] = []
               try {
@@ -644,9 +632,9 @@ function FlutterAssetsConfigView(props: MsgInterface) {
           />
           <FXGTextField
             title="outputs.class_name"
-            value={config?.fonts?.outputs?.class_name ?? ""}
-            tfType={"text"}
-            placeholder={"FontFamily"}
+            value={config?.fonts?.outputs?.class_name ?? ''}
+            tfType={'text'}
+            placeholder={'FontFamily'}
             onChange={(value) => {
               let obj: any = config?.fonts
               if (typeof obj !== 'object') {
@@ -688,9 +676,9 @@ function FlutterAssetsConfigView(props: MsgInterface) {
           />
           <FXGTextField
             title="outputs.class_name"
-            value={config?.colors?.outputs?.class_name ?? ""}
-            tfType={"text"}
-            placeholder={"Assets"}
+            value={config?.colors?.outputs?.class_name ?? ''}
+            tfType={'text'}
+            placeholder={'Assets'}
             onChange={(value) => {
               let obj: any = config?.colors
               if (typeof obj !== 'object') {
@@ -704,10 +692,10 @@ function FlutterAssetsConfigView(props: MsgInterface) {
             }}
           />
           <FXGTextField
-            title={"inputs, 用 , 分割，例如: assets/color/colorsA.xml, assets/color/colorsB.xml, ..."}
+            title={'inputs, 用 , 分割，例如: assets/color/colorsA.xml, assets/color/colorsB.xml, ...'}
             value={Array.isArray(config?.colors?.inputs) && config?.colors?.inputs?.length > 0 ? config?.colors?.inputs?.join(', ') : ''}
-            tfType={"text"}
-            placeholder={""}
+            tfType={'text'}
+            placeholder={''}
             onChange={(value) => {
               let result: string[] = []
               try {
@@ -736,7 +724,7 @@ function FlutterAssetsConfigView(props: MsgInterface) {
         boxSizing: 'border-box',
         padding: 20,
         width: '100%',
-        height: '100%',
+        height: '100%'
       }}
     >
       <FXGProjectInfoPanel {...props.projectInfo} />

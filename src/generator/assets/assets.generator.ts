@@ -14,7 +14,7 @@ import { checkIfDartPackageInstalled, installDartPubGlobalPackage, runTerminalCo
 
 class AssetsGenerator {
   private static instance: AssetsGenerator | null = null
-  private constructor() { }
+  private constructor() {}
   static getInstance(): AssetsGenerator {
     if (!AssetsGenerator.instance) {
       AssetsGenerator.instance = new AssetsGenerator()

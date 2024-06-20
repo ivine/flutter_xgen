@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react"
+import React, { useEffect, useRef } from 'react'
 
 function SVGAView(props: any) {
   const { uri } = props
@@ -32,7 +32,7 @@ function SVGAView(props: any) {
         height: 600,
         maxScale: 20,
         speed: 1.05,
-        smoothTime: 0.15,
+        smoothTime: 0.15
       })
     } else {
     }
@@ -47,7 +47,7 @@ function SVGAView(props: any) {
         player.destroy()
       }
     } catch (error) {
-      console.log("SVGAView dispose, error: ", error)
+      console.log('SVGAView dispose, error: ', error)
     }
   }
 
@@ -59,7 +59,7 @@ function SVGAView(props: any) {
         justifyContent: 'center',
         width: '100vw',
         height: 500,
-        backgroundColor: '#2c2c2c80',
+        backgroundColor: '#2c2c2c80'
       }}
     >
       <canvas id="canvas" ref={canvasRef}></canvas>

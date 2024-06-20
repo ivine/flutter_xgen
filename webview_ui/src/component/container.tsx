@@ -1,4 +1,4 @@
-import React, { CSSProperties, ReactNode } from "react";
+import React, { CSSProperties, ReactNode } from 'react'
 
 interface FXGContainerInterface {
   children?: React.ReactNode
@@ -21,7 +21,7 @@ const FXGContainer = (props: FXGContainerInterface) => {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    boxSizing: 'border-box',
+    boxSizing: 'border-box'
   }
   let style = Object.assign({}, defaultStyle)
 

@@ -1,22 +1,20 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from 'react'
 
-import Handsontable from "handsontable";
-import { HotTable, HotTableClass } from '@handsontable/react';
-import { registerAllModules } from 'handsontable/registry';
-import 'handsontable/dist/handsontable.full.min.css';
+import Handsontable from 'handsontable'
+import { HotTable, HotTableClass } from '@handsontable/react'
+import { registerAllModules } from 'handsontable/registry'
+import 'handsontable/dist/handsontable.full.min.css'
 
 import './localization.page.css'
 
-import { MsgInterface } from "../enum/vscode_extension.type"
-import { hashString, isEmptyString } from "../util/string.util"
-import LocalizationConfigView, {
-  LocalizationConfigViewCollapsedHeight,
-} from "./localization.config.view"
+import { MsgInterface } from '../enum/vscode_extension.type'
+import { hashString, isEmptyString } from '../util/string.util'
+import LocalizationConfigView, { LocalizationConfigViewCollapsedHeight } from './localization.config.view'
 
 import FXGProjectInfoPanel from '../component/project_info_panel'
-import { ContextMenu } from "handsontable/plugins";
+import { ContextMenu } from 'handsontable/plugins'
 
-registerAllModules();
+registerAllModules()
 
 function LocalizationPage(props: MsgInterface) {
   const data = props.data
@@ -38,7 +36,7 @@ function LocalizationPage(props: MsgInterface) {
   const originRowsRef = useRef<any[]>() // 用于比较
 
   const getHotInstance = (): Handsontable | null => {
-    return hotTableRef.current ? hotTableRef.current.hotInstance : null;
+    return hotTableRef.current ? hotTableRef.current.hotInstance : null
   }
 
   function vscodeRightClickEvent(e) {
@@ -61,18 +59,18 @@ function LocalizationPage(props: MsgInterface) {
 
   const handleExportCsv = () => {
     function formatDate(): string {
-      const date = new Date();
+      const date = new Date()
 
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      const hours = String(date.getHours()).padStart(2, '0');
-      const minutes = String(date.getMinutes()).padStart(2, '0');
-      const seconds = String(date.getSeconds()).padStart(2, '0');
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const day = String(date.getDate()).padStart(2, '0')
+      const hours = String(date.getHours()).padStart(2, '0')
+      const minutes = String(date.getMinutes()).padStart(2, '0')
+      const seconds = String(date.getSeconds()).padStart(2, '0')
 
-      return `${year}${month}${day}_${hours}_${minutes}_${seconds}`;
+      return `${year}${month}${day}_${hours}_${minutes}_${seconds}`
     }
-    const exportPlugin = getHotInstance().getPlugin('exportFile');
+    const exportPlugin = getHotInstance().getPlugin('exportFile')
     exportPlugin.downloadFile('csv', {
       bom: false,
       columnDelimiter: ',',
@@ -94,7 +92,7 @@ function LocalizationPage(props: MsgInterface) {
     // 默认的 resize 事件
     window.addEventListener('resize', () => {
       setHeight(containerRef.current.clientHeight - (120 + configsBarHeight + 20))
-    });
+    })
 
     return () => {
       // hotTableRef.current?.hotInstance?.destroy()
@@ -122,19 +120,19 @@ function LocalizationPage(props: MsgInterface) {
 
     // 初始化数据
     // column headers
-    const const_KeyString = "Key"
+    const const_KeyString = 'Key'
     const tmpColHeaders = [
       {
         title: const_KeyString,
         type: 'text',
-        data: const_KeyString, // 用于去对应 row 的 key，例如 data = intl_en.arb, row={"Key": "123", "intl_en.arb": "xzv", ...}
+        data: const_KeyString // 用于去对应 row 的 key，例如 data = intl_en.arb, row={"Key": "123", "intl_en.arb": "xzv", ...}
       }
     ]
     for (const key of Object.keys(arbs)) {
       const tmpData = {
         title: key,
         type: 'text',
-        data: key,
+        data: key
       }
       tmpColHeaders.push(tmpData)
     }
@@ -145,7 +143,7 @@ function LocalizationPage(props: MsgInterface) {
     for (const localeKey of mainLocaleKeys) {
       const rowData = {}
       for (const c of tmpColHeaders) {
-        let value = ""
+        let value = ''
         if (c.title === const_KeyString) {
           value = localeKey
         } else {
@@ -161,7 +159,7 @@ function LocalizationPage(props: MsgInterface) {
 
     setTimeout(() => {
       currentCurrentDataModified()
-    }, 100);
+    }, 100)
   }, [arbs])
 
   useEffect(() => {
@@ -178,7 +176,7 @@ function LocalizationPage(props: MsgInterface) {
           display: 'flex',
           flexDirection: 'column',
           width: '100%',
-          height: configsBarHeight,
+          height: configsBarHeight
         }}
       >
         <LocalizationConfigView
@@ -210,7 +208,7 @@ function LocalizationPage(props: MsgInterface) {
           flexDirection: 'column',
           overflow: 'scroll',
           width: '100%',
-          height: height,
+          height: height
         }}
       >
         <HotTable
@@ -220,7 +218,7 @@ function LocalizationPage(props: MsgInterface) {
           columns={colHeaders}
           style={{
             width: '100%',
-            height: '100%',
+            height: '100%'
           }}
           filters={true}
           autoWrapRow={true}
@@ -231,32 +229,30 @@ function LocalizationPage(props: MsgInterface) {
           colWidths={150}
           rowHeights={40}
           selectionMode={'multiple'}
-          dropdownMenu={
-            [
-              "filter_by_value",
-              "filter_operators",
-              "filter_action_bar",
-              "filter_by_condition",
-              "col_left",
-              "col_right",
-              "remove_col",
-              "clear_column",
-              "make_read_only",
-              "---------",
-              "undo",
-              "redo"
-            ]
-          }
+          dropdownMenu={[
+            'filter_by_value',
+            'filter_operators',
+            'filter_action_bar',
+            'filter_by_condition',
+            'col_left',
+            'col_right',
+            'remove_col',
+            'clear_column',
+            'make_read_only',
+            '---------',
+            'undo',
+            'redo'
+          ]}
           contextMenu={{
             items: {
-              'copy': {},
-              'cut': {},
-              'undo': {},
-              'redo': {},
-              'separator': ContextMenu.SEPARATOR,
-              'row_above': {},
-              'row_below': {},
-              'remove_row': {},
+              copy: {},
+              cut: {},
+              undo: {},
+              redo: {},
+              separator: ContextMenu.SEPARATOR,
+              row_above: {},
+              row_below: {},
+              remove_row: {}
             }
           }}
           cells={(row, col, prop) => {
@@ -276,14 +272,14 @@ function LocalizationPage(props: MsgInterface) {
       style={{
         display: 'flex',
         flex: 1,
-        flexDirection: 'column',
+        flexDirection: 'column'
       }}
     >
       <div
         style={{
           display: 'flex',
           flexDirection: 'column',
-          padding: 20,
+          padding: 20
         }}
       >
         <FXGProjectInfoPanel {...props.projectInfo} />
@@ -292,7 +288,7 @@ function LocalizationPage(props: MsgInterface) {
       <div
         style={{
           display: 'flex',
-          width: '100%',
+          width: '100%'
         }}
       >
         {renderGrid()}

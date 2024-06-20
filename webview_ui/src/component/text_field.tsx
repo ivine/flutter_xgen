@@ -1,6 +1,6 @@
-import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
-import { TextFieldType } from "@vscode/webview-ui-toolkit"
-import { getStringOrEmpty } from "../util/string.util"
+import { VSCodeTextField } from '@vscode/webview-ui-toolkit/react'
+import { TextFieldType } from '@vscode/webview-ui-toolkit'
+import { getStringOrEmpty } from '../util/string.util'
 
 interface FXGTextFieldInterface {
   title?: string

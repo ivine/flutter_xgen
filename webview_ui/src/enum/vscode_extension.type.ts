@@ -1,13 +1,13 @@
 export enum FXGWatcherType {
   l10n = 100,
   assets_cr1992 = 200,
-  assets_flutter_gen = 201,
+  assets_flutter_gen = 201
 }
 
 export enum FlutterPubspecYamlConfigType {
   flutter_gen = 1,
   flutter_assets_generator_cr1992 = 2,
-  flutter_intl = 3,
+  flutter_intl = 3
 }
 
 export interface InteractionEvent {
@@ -18,7 +18,6 @@ export interface InteractionEvent {
 }
 
 export enum InteractionEventType {
-
   // sync
   sync = 100000,
   sync_asset = 100001,
@@ -54,7 +53,7 @@ export enum InteractionEventType {
   // preview
   webToExt_preview = 600900,
   webToExt_preview_previousItem = 600910,
-  webToExt_preview_nextItem = 600911,
+  webToExt_preview_nextItem = 600911
 }
 
 export interface AssetsMsgInterface {

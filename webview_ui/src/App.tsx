@@ -10,7 +10,7 @@ import { ScreenType } from './enum/screent.type'
 import L10nTestMsg from './test/l10_msg.json'
 import AssetsTestMsg from './test/assets_msg.json'
 
-import "./App.css"
+import './App.css'
 
 function App() {
   const screenTypeRef = useRef<ScreenType>(ScreenType.none)
@@ -22,12 +22,12 @@ function App() {
 
     if (import.meta.env.MODE === 'development') {
       setTimeout(() => {
-        document.body.style.color = "#ffffff"
-        document.body.style.backgroundColor = "#24262f"
+        document.body.style.color = '#ffffff'
+        document.body.style.backgroundColor = '#24262f'
         try {
           onReceiveMsg(L10nTestMsg as MsgInterface)
         } catch (error) {
-          console.log("debug, parse JSON error: ", error)
+          console.log('debug, parse JSON error: ', error)
         }
       }, 1000)
     } else {
@@ -65,9 +65,7 @@ function App() {
 
   const onReceiveMsg = async (receiveMsg: MsgInterface) => {
     let tmpScreentType: ScreenType = ScreenType.none
-    if (
-      receiveMsg.type === InteractionEventType.extToWeb_preview_assets
-    ) {
+    if (receiveMsg.type === InteractionEventType.extToWeb_preview_assets) {
       tmpScreentType = ScreenType.assets
     } else if (receiveMsg.type === InteractionEventType.extToWeb_configs_assets) {
       tmpScreentType = ScreenType.assetsConfigs
@@ -90,21 +88,9 @@ function App() {
   return (
     <main>
       {screenTypeRef.current === ScreenType.none ? <div>正在加载中</div> : <></>}
-      {
-        screenTypeRef.current === ScreenType.localizations ?
-          <LocalizationPage {...msg} /> :
-          <></>
-      }
-      {
-        screenTypeRef.current === ScreenType.assets ?
-          <FlutterAssetsPage {...msg} /> :
-          <></>
-      }
-      {
-        screenTypeRef.current === ScreenType.assetsConfigs ?
-          <FlutterAssetsConfigView {...msg} /> :
-          <></>
-      }
+      {screenTypeRef.current === ScreenType.localizations ? <LocalizationPage {...msg} /> : <></>}
+      {screenTypeRef.current === ScreenType.assets ? <FlutterAssetsPage {...msg} /> : <></>}
+      {screenTypeRef.current === ScreenType.assetsConfigs ? <FlutterAssetsConfigView {...msg} /> : <></>}
     </main>
   )
 }

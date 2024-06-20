@@ -1,4 +1,4 @@
-import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeButton } from '@vscode/webview-ui-toolkit/react'
 
 interface FXGButtonInterface {
   title: string
@@ -16,7 +16,7 @@ function FXGButton(props: FXGButtonInterface) {
       style={{
         display: 'flex',
         flexDirection: 'column',
-        boxSizing: 'border-box',
+        boxSizing: 'border-box'
       }}
     >
       <div style={{ height: props.topSpacing ?? 0 }} />
@@ -24,11 +24,13 @@ function FXGButton(props: FXGButtonInterface) {
         style={{
           display: 'flex',
           flexDirection: 'row',
-          boxSizing: 'border-box',
+          boxSizing: 'border-box'
         }}
       >
         <div style={{ width: props.leftSpacing ?? 0 }} />
-        <VSCodeButton disabled={props.disabled ?? false} onClick={props.onClick}>{props.title}</VSCodeButton>
+        <VSCodeButton disabled={props.disabled ?? false} onClick={props.onClick}>
+          {props.title}
+        </VSCodeButton>
         <div style={{ width: props.rightSpacing ?? 0 }} />
       </div>
       <div style={{ height: props.bottomSpacing ?? 0 }} />

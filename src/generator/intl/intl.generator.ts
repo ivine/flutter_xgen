@@ -7,7 +7,7 @@ import WorkspaceManager from '../../manager/workspace.manager'
 
 class IntlGenerator {
   private static instance: IntlGenerator | null = null
-  private constructor() { }
+  private constructor() {}
   static getInstance(): IntlGenerator {
     if (!IntlGenerator.instance) {
       IntlGenerator.instance = new IntlGenerator()

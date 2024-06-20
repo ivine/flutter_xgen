@@ -3,10 +3,7 @@
   "projectInfo": {
     "name": "pokalive_flutter",
     "dir": "/Users/xxx/Downloads/abc",
-    "watcherTypes": [
-      200,
-      100
-    ]
+    "watcherTypes": [200, 100]
   },
   "data": {
     "assets": {
@@ -27,11 +24,7 @@
             "style": "dot-delimiter",
             "class_name": "Assets"
           },
-          "exclude": [
-            "assets/images/chip3/chip3.jpg",
-            "pictures/chip5.jpg",
-            "assets/flare/"
-          ]
+          "exclude": ["assets/images/chip3/chip3.jpg", "pictures/chip5.jpg", "assets/flare/"]
         },
         "fonts": {
           "enabled": true,
@@ -41,10 +34,7 @@
         },
         "colors": {
           "enabled": true,
-          "inputs": [
-            "assets/color/colorsA.xml",
-            "assets/color/colorsB.xml"
-          ],
+          "inputs": ["assets/color/colorsA.xml", "assets/color/colorsB.xml"],
           "outputs": {
             "class_name": "ColorName"
           }
