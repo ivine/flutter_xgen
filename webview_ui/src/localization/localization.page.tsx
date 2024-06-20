@@ -14,6 +14,7 @@ import LocalizationConfigView, {
 } from "./localization.config.view"
 
 import FXGProjectInfoPanel from '../component/project_info_panel'
+import { ContextMenu } from "handsontable/plugins";
 
 registerAllModules();
 
@@ -58,11 +59,39 @@ function LocalizationPage(props: MsgInterface) {
     }
   }
 
+  const handleExportCsv = () => {
+    function formatDate(): string {
+      const date = new Date();
+
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      const seconds = String(date.getSeconds()).padStart(2, '0');
+
+      return `${year}${month}${day}_${hours}_${minutes}_${seconds}`;
+    }
+    const exportPlugin = getHotInstance().getPlugin('exportFile');
+    exportPlugin.downloadFile('csv', {
+      bom: false,
+      columnDelimiter: ',',
+      columnHeaders: true,
+      exportHiddenColumns: false,
+      exportHiddenRows: true,
+      fileExtension: 'csv',
+      filename: `FlutteXGen_l10n_${formatDate()}`,
+      mimeType: 'text/csv',
+      rowDelimiter: '\r\n',
+      rowHeaders: true
+    })
+  }
+
   useEffect(() => {
     // 高度
     setHeight(containerRef.current.clientHeight - (120 + configsBarHeight + 20))
 
-    // 默认的右键事件
+    // 默认的 resize 事件
     window.addEventListener('resize', () => {
       setHeight(containerRef.current.clientHeight - (120 + configsBarHeight + 20))
     });
@@ -160,6 +189,9 @@ function LocalizationPage(props: MsgInterface) {
           onGetGridData={() => {
             return rowDatas
           }}
+          onClickExportCsvButton={() => {
+            handleExportCsv()
+          }}
         />
       </div>
     )
@@ -191,7 +223,14 @@ function LocalizationPage(props: MsgInterface) {
             height: '100%',
           }}
           filters={true}
-          contextMenu={true}
+          autoWrapRow={true}
+          autoWrapCol={true}
+          rowHeaders={true}
+          manualColumnMove={true}
+          manualRowMove={true}
+          colWidths={150}
+          rowHeights={40}
+          selectionMode={'multiple'}
           dropdownMenu={
             [
               "filter_by_value",
@@ -208,16 +247,23 @@ function LocalizationPage(props: MsgInterface) {
               "redo"
             ]
           }
-          autoWrapRow={true}
-          autoWrapCol={true}
-          rowHeaders={true}
-          manualColumnMove={true}
-          manualRowMove={true}
-          colWidths={150}
-          rowHeights={40}
-          selectionMode={'multiple'}
-          // language={'zh-CN'}
-          // beforeRefreshDimensions={() => false}
+          contextMenu={{
+            items: {
+              'copy': {},
+              'cut': {},
+              'undo': {},
+              'redo': {},
+              'separator': ContextMenu.SEPARATOR,
+              'row_above': {},
+              'row_below': {},
+              'remove_row': {},
+            }
+          }}
+          cells={(row, col, prop) => {
+            var cellProperties: any = {}
+            cellProperties.className = 'htMiddle'
+            return cellProperties
+          }}
           licenseKey="non-commercial-and-evaluation"
         />
       </div>

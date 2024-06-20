@@ -26,6 +26,7 @@ export interface LocalizationConfigViewInterface {
   msg: MsgInterface
   onUpdateHeight: (height: number) => void
   onGetGridData: () => any[]
+  onClickExportCsvButton: () => void
 }
 
 function LocalizationConfigView(props: LocalizationConfigViewInterface) {
@@ -227,6 +228,13 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
             let value = !expand
             props.onUpdateHeight(value ? LocalizationConfigViewExpandedHeight : LocalizationConfigViewCollapsedHeight)
             setExpand(value)
+          }}
+        />
+        <FXGButton
+          title={'导出 csv'}
+          leftSpacing={16}
+          onClick={() => {
+            props.onClickExportCsvButton()
           }}
         />
       </div>
