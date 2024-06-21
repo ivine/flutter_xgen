@@ -30,6 +30,14 @@ function LocalizationPage(props: MsgInterface) {
   const hotTableRef = useRef<HotTableClass | null>(null)
 
   const [colHeaders, setColHeaders] = useState<any[]>([])
+
+  /**
+   * 数据结构
+   * [
+       {A: 1, B: 2, C: 3, D: 4, E: 5, F: 6},
+       {A: 1, B: 2, C: 3, D: 4, E: 5, F: 6},
+   * ]
+  */
   const [rowDatas, setRowDatas] = useState<any[]>([])
 
   const [modidfied, setModified] = useState<boolean>(false)
@@ -37,11 +45,6 @@ function LocalizationPage(props: MsgInterface) {
 
   const getHotInstance = (): Handsontable | null => {
     return hotTableRef.current ? hotTableRef.current.hotInstance : null
-  }
-
-  function vscodeRightClickEvent(e) {
-    e.preventDefault()
-    e.stopImmediatePropagation()
   }
 
   const currentCurrentDataModified = async () => {
@@ -81,7 +84,7 @@ function LocalizationPage(props: MsgInterface) {
       filename: `FlutteXGen_l10n_${formatDate()}`,
       mimeType: 'text/csv',
       rowDelimiter: '\r\n',
-      rowHeaders: true
+      rowHeaders: false
     })
   }
 
@@ -259,6 +262,23 @@ function LocalizationPage(props: MsgInterface) {
             var cellProperties: any = {}
             cellProperties.className = 'htMiddle'
             return cellProperties
+          }}
+          afterChange={(changes: Handsontable.CellChange[] | null, source: Handsontable.ChangeSource) => {
+            if (Array.isArray(changes)) {
+              // c = [row, column, prevValue, nextValue]
+              for (let c of changes) {
+                let row = c[0]
+                let column = c[1]
+                let preValue = c[2]
+                let nextValue = c[3]
+                if (typeof column === 'string') {
+                  let tmpRowDatas = [...rowDatas]
+                  tmpRowDatas[row][column] = nextValue
+                  setRowDatas(tmpRowDatas)
+                }
+              }
+            }
+            // console.log(`afterChange, changes: ${changes}, source: ${source}`)
           }}
           licenseKey="non-commercial-and-evaluation"
         />
