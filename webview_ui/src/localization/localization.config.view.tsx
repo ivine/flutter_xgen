@@ -63,23 +63,42 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
     return result
   }
 
-  const gridDataToJSON = (data: any[]): Map<string, Map<string, string>> => {
+  const gridDataToJSON = (rowDatas: object[]): Map<string, Map<string, string>> => {
+    // {intl_en.arb: { key1: value1, key2: value2, ...}, ...}
     const jsonMap: Map<string, Map<string, string>> = new Map()
-    for (let tmpData of data) {
-      const allKeys = Object.keys(tmpData)
-      const targetKey = tmpData['key']
-      for (let arbFileName of allKeys) {
-        if (arbFileName === 'key') {
+    const arbFileJson: Map<string, string> = new Map()
+    for (let tmpRow of rowDatas) {
+      /**
+       tmpRow:
+       {
+        "Key": "exit_app_tip",
+        "intl_en.arb": "Press again to exit the app",
+        "intl_es_ES.arb": "Presione nuevamente para salir de la aplicación.",
+        "intl_pt_PT.arb": "Pressione novamente para sair do aplicativo",
+        "intl_ru.arb": "Нажмите еще раз, чтобы выйти из приложения",
+        "intl_tr.arb": "Uygulamadan çıkmak için tekrar basın",
+        "intl_vi.arb": "Nhấn lần nữa để thoát ứng dụng",
+        "intl_zh_TW.arb": "再次按下退出應用程式",
+        "intl_zh.arb": "再次按下退出应用程序"
+        }
+      */
+      const rowsAllKeys = Object.keys(tmpRow)
+      const constKeyName = "Key"
+      let targetKey = "" // 对应的 key
+      for (let tmpKey of rowsAllKeys) {
+        if (tmpKey === constKeyName) {
+          targetKey = tmpRow[tmpKey];
           continue
         }
-        let arbJSONMap = new Map<string, string>()
+        let arbFileName = tmpKey
+        let oneArbJSONMap: Map<string, string> = new Map()
         if (jsonMap.has(arbFileName)) {
-          arbJSONMap = jsonMap.get(arbFileName)
-        } else {
-          jsonMap.set(arbFileName, arbJSONMap)
+          // 已经存在
+          oneArbJSONMap = jsonMap.get(arbFileName)
         }
-        arbJSONMap.set(targetKey, tmpData[arbFileName])
-        jsonMap.set(arbFileName, arbJSONMap)
+        let targetValue = tmpRow[arbFileName]
+        oneArbJSONMap.set(targetKey, targetValue)
+        jsonMap.set(arbFileName, oneArbJSONMap)
       }
     }
     return jsonMap

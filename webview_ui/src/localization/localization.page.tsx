@@ -40,24 +40,8 @@ function LocalizationPage(props: MsgInterface) {
   */
   const [rowDatas, setRowDatas] = useState<any[]>([])
 
-  const [modidfied, setModified] = useState<boolean>(false)
-  const originRowsRef = useRef<any[]>() // 用于比较
-
   const getHotInstance = (): Handsontable | null => {
     return hotTableRef.current ? hotTableRef.current.hotInstance : null
-  }
-
-  const currentCurrentDataModified = async () => {
-    try {
-      const originStr = JSON.stringify(originRowsRef.current)
-      const currentStr = JSON.stringify(rowDatas)
-      const originHash = await hashString(originStr)
-      const currentHash = await hashString(currentStr)
-      const tmpModified = originHash !== currentHash
-      setModified(tmpModified)
-    } catch (error) {
-      //
-    }
   }
 
   const handleExportCsv = () => {
@@ -158,19 +142,7 @@ function LocalizationPage(props: MsgInterface) {
       tmpRowDatas.push(rowData)
     }
     setRowDatas(tmpRowDatas)
-    originRowsRef.current = rowDatas
-
-    setTimeout(() => {
-      currentCurrentDataModified()
-    }, 100)
   }, [arbs])
-
-  useEffect(() => {
-    if (rowDatas.length === 0 || originRowsRef.current.length === 0) {
-      return
-    }
-    currentCurrentDataModified()
-  }, [rowDatas])
 
   const renderL10nConfigsBar = () => {
     return (
