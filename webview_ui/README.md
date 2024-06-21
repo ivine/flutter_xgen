@@ -6,3 +6,6 @@
 
 ### handsontable patch
 npx patch-package handsontable
+
+### Chrome 调试
+open -n -a /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --args --user-data-dir="/tmp/chrome_dev_test" --disable-web-security --remote-debugging-port=9222
