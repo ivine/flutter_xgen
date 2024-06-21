@@ -1,8 +1,10 @@
+import { cloneDeep } from 'lodash'
 import { useEffect, useRef, useState } from 'react'
 
 import Handsontable from 'handsontable'
-import { HotTable, HotTableClass } from '@handsontable/react'
+import { ContextMenu } from 'handsontable/plugins'
 import { registerAllModules } from 'handsontable/registry'
+import { HotTable, HotTableClass } from '@handsontable/react'
 import 'handsontable/dist/handsontable.full.min.css'
 
 import './localization.page.css'
@@ -12,7 +14,6 @@ import { hashString, isEmptyString } from '../util/string.util'
 import LocalizationConfigView, { LocalizationConfigViewCollapsedHeight } from './localization.config.view'
 
 import FXGProjectInfoPanel from '../component/project_info_panel'
-import { ContextMenu } from 'handsontable/plugins'
 
 registerAllModules()
 
@@ -189,7 +190,7 @@ function LocalizationPage(props: MsgInterface) {
         <HotTable
           id={'l10n_grid'}
           ref={hotTableRef}
-          data={rowDatas}
+          data={cloneDeep(rowDatas)}
           columns={colHeaders}
           style={{
             width: '100%',
@@ -221,7 +222,6 @@ function LocalizationPage(props: MsgInterface) {
           contextMenu={{
             items: {
               copy: {},
-              cut: {},
               undo: {},
               redo: {},
               separator: ContextMenu.SEPARATOR,
@@ -245,8 +245,13 @@ function LocalizationPage(props: MsgInterface) {
                 let nextValue = c[3]
                 if (typeof column === 'string') {
                   let tmpRowDatas = [...rowDatas]
-                  tmpRowDatas[row][column] = nextValue
-                  setRowDatas(tmpRowDatas)
+                  if (preValue === undefined && nextValue.length === 0) {
+                    // TODO: 待优化。当前是为了解决双击 cell 后，数据被置空的问题。
+                    setRowDatas(tmpRowDatas)
+                  } else {
+                    tmpRowDatas[row][column] = nextValue
+                    setRowDatas(tmpRowDatas)
+                  }
                 }
               }
             }
