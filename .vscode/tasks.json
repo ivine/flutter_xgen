@@ -20,6 +20,40 @@
 				"isDefault": true
 			},
 		},
+		{
+			"label": "watch:webview",
+			"type": "shell",
+			"command": "cd webview_ui && yarn dev",
+			"problemMatcher": [
+				{
+					"owner": "typescript",
+					"source": "typescript",
+					"applyTo": "closedDocuments",
+					"fileLocation": [
+						"relative",
+						"${workspaceFolder}"
+					],
+					"pattern": "$tsc",
+					"background": {
+						"activeOnStart": true,
+						"beginsPattern": {
+							"regexp": "(.*?)"
+						},
+						"endsPattern": {
+							"regexp": "ready in" // 暂时理解输出了包含 ready in 的字符串后，执行下一个 task
+						}
+					}
+				}
+			],
+			"isBackground": true,
+			"presentation": {
+				"group": "watch",
+				"reveal": "never"
+			},
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
 		}
 	]
 }
