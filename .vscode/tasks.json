@@ -2,7 +2,7 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "watch:extension",
+			"label": "dev:extension",
 			"type": "shell",
 			"command": "source ~/.zshrc && which node && yarn dev",
 			"problemMatcher": [
@@ -21,7 +21,7 @@
 			},
 		},
 		{
-			"label": "watch:webview",
+			"label": "dev:webview",
 			"type": "shell",
 			"command": "cd webview_ui && yarn dev",
 			"problemMatcher": [

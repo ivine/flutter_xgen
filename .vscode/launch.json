@@ -15,7 +15,7 @@
 			"outFiles": [
 				"${workspaceFolder}/dist/**/*.js"
 			],
-			"preLaunchTask": "watch:extension"
+			"preLaunchTask": "dev:extension"
 		},
 		{
 			"type": "chrome",
