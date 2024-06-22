@@ -14,6 +14,7 @@ import InteractionManager from '../interaction/interaction.manager'
 import FXGCheckBox from '../component/check_box'
 import FXGButton from '../component/button'
 import FXGContainer from '../component/container'
+import { l10n_local_key_name } from './localization.page'
 
 export const LocalizationConfigViewCollapsedHeight = 40
 export const LocalizationConfigViewExpandedHeight = 220
@@ -28,10 +29,15 @@ const checkedFlutterIntlConfig: FlutterIntlConfig = {
   localizely: undefined
 }
 
+export interface LocalizationGridData {
+  arbFileNames: string[]
+  data: string[][]
+}
+
 export interface LocalizationConfigViewInterface {
   msg: MsgInterface
   onUpdateHeight: (height: number) => void
-  onGetGridData: () => any[]
+  onGetGridData: () => LocalizationGridData
   onClickExportCsvButton: () => void
 }
 
@@ -63,44 +69,32 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
     return result
   }
 
-  const gridDataToJSON = (rowDatas: object[]): Map<string, Map<string, string>> => {
-    // {intl_en.arb: { key1: value1, key2: value2, ...}, ...}
+  // return: {intl_en.arb: { key1: value1, key2: value2, ...}, ...}
+  const gridDataToJSON = (inputData: LocalizationGridData): Map<string, Map<string, string>> => {
+    const arbFileNames: string[] = inputData.arbFileNames
+    const gridData: string[][] = inputData.data
+    const keyColumnIndex: number = arbFileNames.indexOf(l10n_local_key_name)
+
     const jsonMap: Map<string, Map<string, string>> = new Map()
-    const arbFileJson: Map<string, string> = new Map()
-    for (let tmpRow of rowDatas) {
-      /**
-       tmpRow:
-       {
-        "Key": "exit_app_tip",
-        "intl_en.arb": "Press again to exit the app",
-        "intl_es_ES.arb": "Presione nuevamente para salir de la aplicación.",
-        "intl_pt_PT.arb": "Pressione novamente para sair do aplicativo",
-        "intl_ru.arb": "Нажмите еще раз, чтобы выйти из приложения",
-        "intl_tr.arb": "Uygulamadan çıkmak için tekrar basın",
-        "intl_vi.arb": "Nhấn lần nữa để thoát ứng dụng",
-        "intl_zh_TW.arb": "再次按下退出應用程式",
-        "intl_zh.arb": "再次按下退出应用程序"
-        }
-      */
-      const rowsAllKeys = Object.keys(tmpRow)
-      const constKeyName = "Key"
-      let targetKey = "" // 对应的 key
-      for (let tmpKey of rowsAllKeys) {
-        if (tmpKey === constKeyName) {
-          targetKey = tmpRow[tmpKey];
+    for (let i = 0; i < gridData.length; i++) {
+      let row = gridData[i]
+      let key = row[keyColumnIndex]
+      for (let j = 0; j < row.length; j++) {
+        if (j === keyColumnIndex) {
           continue
         }
-        let arbFileName = tmpKey
-        let oneArbJSONMap: Map<string, string> = new Map()
+        let arbFileName = arbFileNames[j]
+        let value = row[j]
+        let arbFileDataMap: Map<string, string> = new Map()
         if (jsonMap.has(arbFileName)) {
-          // 已经存在
-          oneArbJSONMap = jsonMap.get(arbFileName)
+          arbFileDataMap = jsonMap.get(arbFileName)
+        } else {
+          jsonMap.set(arbFileName, arbFileDataMap)
         }
-        let targetValue = tmpRow[arbFileName]
-        oneArbJSONMap.set(targetKey, targetValue)
-        jsonMap.set(arbFileName, oneArbJSONMap)
+        arbFileDataMap.set(key, value)
       }
     }
+    console.log(jsonMap)
     return jsonMap
   }
 

@@ -1,10 +1,7 @@
-import { cloneDeep, templateSettings } from 'lodash'
 import { useEffect, useRef, useState } from 'react'
 
-import Papa from 'papaparse'
 import Handsontable from 'handsontable'
 import { ContextMenu } from 'handsontable/plugins'
-import { RangeType } from 'handsontable/plugins/copyPaste'
 import { registerAllModules } from 'handsontable/registry'
 import { HotTable, HotTableClass } from '@handsontable/react'
 import 'handsontable/dist/handsontable.full.min.css'
@@ -12,10 +9,12 @@ import 'handsontable/dist/handsontable.full.min.css'
 import './localization.page.css'
 
 import { MsgInterface } from '../enum/vscode_extension.type'
-import { hashString, isEmptyString } from '../util/string.util'
-import LocalizationConfigView, { LocalizationConfigViewCollapsedHeight } from './localization.config.view'
+import { isEmptyString } from '../util/string.util'
+import LocalizationConfigView, { LocalizationConfigViewCollapsedHeight, LocalizationGridData } from './localization.config.view'
 
 import FXGProjectInfoPanel from '../component/project_info_panel'
+
+export const l10n_local_key_name = "key"
 
 registerAllModules()
 
@@ -44,113 +43,6 @@ function LocalizationPage(props: MsgInterface) {
   */
   const [colHeaders, setColHeaders] = useState<any[]>([])
   const [data, setData] = useState<any[]>([])
-
-  const getHotInstance = (): Handsontable | null => {
-    return hotTableRef.current ? hotTableRef.current.hotInstance : null
-  }
-
-  const updateRowDatasFromGrid = () => {
-    // const currentTime = Date.now()
-    // const csvString: string = exportCSVString()
-    // const dataArray: any[] | null = csvStringToDataArray(csvString)
-    // if (!Array.isArray(dataArray)) {
-    //   return
-    // }
-    // if (dataArray.length === 0) {
-    //   setRowDatas([])
-    // }
-    // // 初始化数据
-    // // column headers
-    // const tmpColHeaders = []
-    // for (const key of dataArray[0]) {
-    //   const tmpData = {
-    //     title: key,
-    //     type: 'text',
-    //     data: key
-    //   }
-    //   tmpColHeaders.push(tmpData)
-    // }
-    // setColHeaders(tmpColHeaders)
-
-    // // rows
-    // const tmpRowDatas: any[] = []
-    // const const_KeyString: string = 'Key'
-    // for (let i = 1; i < dataArray.length; i++) {
-    //   const rowData = {}
-    //   const oldRowDatas = dataArray[i]
-    //   for (let m = 0; m < oldRowDatas.length; m++) {
-    //     const value = oldRowDatas[m]
-    //     if (value === const_KeyString) {
-    //       continue
-    //     }
-    //     const intlFileName = dataArray[0][m]
-    //     rowData[intlFileName] = value
-    //   }
-    //   tmpRowDatas.push(rowData)
-    // }
-    // rowDatasRef.current = cloneDeep(tmpRowDatas)
-    // setRowDatas(tmpRowDatas)
-    // console.log(`updateRowDatasFromGrid, duration: ${(Date.now() - currentTime) / 1000} seconds`)
-  }
-
-  const csvStringToDataArray = (csvString: string): any[] | null => {
-    let result: any[] | null = null
-    try {
-      let tmpResult = Papa.parse(csvString, {}).data
-      if (Array.isArray(tmpResult)) {
-        result = tmpResult
-      }
-    } catch (error) {
-      console.log(`csvStringToJSON, error: ${error}`)
-    }
-    return result
-  }
-
-  const exportCSVString = (): string => {
-    const currentTime = Date.now()
-    const exportPlugin = getHotInstance().getPlugin('exportFile')
-    const string = exportPlugin.exportAsString('csv', {
-      bom: false,
-      columnDelimiter: ',',
-      columnHeaders: true,
-      exportHiddenColumns: false,
-      exportHiddenRows: true,
-      fileExtension: 'csv',
-      mimeType: 'text/csv',
-      rowDelimiter: '\r\n',
-      rowHeaders: false
-    })
-    console.log(`exportCSVString, duration: ${(Date.now() - currentTime) / 1000} seconds`)
-    return string
-  }
-
-  const handleExportCSVFile = () => {
-    function formatDate(): string {
-      const date = new Date()
-
-      const year = date.getFullYear()
-      const month = String(date.getMonth() + 1).padStart(2, '0')
-      const day = String(date.getDate()).padStart(2, '0')
-      const hours = String(date.getHours()).padStart(2, '0')
-      const minutes = String(date.getMinutes()).padStart(2, '0')
-      const seconds = String(date.getSeconds()).padStart(2, '0')
-
-      return `${year}${month}${day}_${hours}_${minutes}_${seconds}`
-    }
-    const exportPlugin = getHotInstance().getPlugin('exportFile')
-    exportPlugin.downloadFile('csv', {
-      bom: false,
-      columnDelimiter: ',',
-      columnHeaders: true,
-      exportHiddenColumns: false,
-      exportHiddenRows: true,
-      fileExtension: 'csv',
-      filename: `FlutteXGen_l10n_${formatDate()}`,
-      mimeType: 'text/csv',
-      rowDelimiter: '\r\n',
-      rowHeaders: false
-    })
-  }
 
   useEffect(() => {
     // 高度
@@ -188,7 +80,7 @@ function LocalizationPage(props: MsgInterface) {
     // 初始化数据
 
     // column headers
-    const tmpColHeaders: any[] = ["", ...Object.keys(arbs)];
+    const tmpColHeaders: any[] = [l10n_local_key_name, ...Object.keys(arbs)];
     setColHeaders(tmpColHeaders)
 
     // rows
@@ -197,8 +89,7 @@ function LocalizationPage(props: MsgInterface) {
       const tmpRow = []
       for (const c of tmpColHeaders) {
         let value = ''
-        let index = tmpColHeaders.indexOf(c)
-        if (index === 0) {
+        if (c === l10n_local_key_name) {
           value = localeKey
         } else {
           value = arbs[c][localeKey]
@@ -209,6 +100,45 @@ function LocalizationPage(props: MsgInterface) {
     }
     setData(tmpData)
   }, [arbs])
+
+  const getHotInstance = (): Handsontable | null => {
+    return hotTableRef.current ? hotTableRef.current.hotInstance : null
+  }
+
+  const handleExportCSVFile = () => {
+    function formatDate(): string {
+      const date = new Date()
+
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const day = String(date.getDate()).padStart(2, '0')
+      const hours = String(date.getHours()).padStart(2, '0')
+      const minutes = String(date.getMinutes()).padStart(2, '0')
+      const seconds = String(date.getSeconds()).padStart(2, '0')
+
+      return `${year}${month}${day}_${hours}_${minutes}_${seconds}`
+    }
+    const exportPlugin = getHotInstance().getPlugin('exportFile')
+    exportPlugin.downloadFile('csv', {
+      bom: false,
+      columnDelimiter: ',',
+      columnHeaders: true,
+      exportHiddenColumns: false,
+      exportHiddenRows: true,
+      fileExtension: 'csv',
+      filename: `FlutteXGen_l10n_${formatDate()}`,
+      mimeType: 'text/csv',
+      rowDelimiter: '\r\n',
+      rowHeaders: false
+    })
+  }
+
+  const updateDataFromGridData = () => {
+    // const colHeader = getHotInstance().getColHeader()
+    // const data = getHotInstance().getData()
+    // setData(data)
+    // setColHeaders(colHeader)
+  }
 
   const renderL10nConfigsBar = () => {
     return (
@@ -226,7 +156,13 @@ function LocalizationPage(props: MsgInterface) {
             setConfigsBarHeight(height)
           }}
           onGetGridData={() => {
-            return data
+            const res_colHeader = getHotInstance().getColHeader() as string[]
+            const res_data = getHotInstance().getData()
+            const res: LocalizationGridData = {
+              arbFileNames: res_colHeader,
+              data: res_data,
+            }
+            return res
           }}
           onClickExportCsvButton={() => {
             handleExportCSVFile()
@@ -242,7 +178,6 @@ function LocalizationPage(props: MsgInterface) {
     } else if (arbs === null) {
       return <div>正在加载中...</div>
     }
-    console.log('renderGrid')
     return (
       <div
         style={{
@@ -345,24 +280,28 @@ function LocalizationPage(props: MsgInterface) {
           //     setRowDatas(tmpRowDatas)
           //   }
           // }}
-          // afterRowMove={(movedRows, finalIndex, dropIndex, movePossible, orderChanged) => {
-          //   console.log(`afterRowMove, movedRows: ${movedRows}, finalIndex: ${finalIndex}, dropIndex: ${dropIndex}, movePossible: ${movePossible}, orderChanged: ${orderChanged}`)
-          //   updateRowDatasFromGrid()
-          // }}
-          // afterCreateCol={(index: number, amount: number, source?: Handsontable.ChangeSource) => {
-          //   console.log(`afterRowMove, index: ${index}, amount: ${amount}, source: ${source}`)
-          //   updateRowDatasFromGrid()
-          // }}
-          // afterCreateRow={(index: number, amount: number, source?: Handsontable.ChangeSource) => {
-          //   console.log(`afterCreateRow, index: ${index}, amount: ${amount}, source: ${source}`)
-          //   updateRowDatasFromGrid()
-          // }}
+          afterColumnMove={(movedColumns: number[], finalIndex: number, dropIndex: number | undefined, movePossible: boolean, orderChanged: boolean) => {
+            console.log(`afterColumnMove, movedColumns: ${movedColumns}, finalIndex: ${finalIndex}, dropIndex: ${dropIndex}, movePossible: ${movePossible}, orderChanged: ${orderChanged}`)
+            updateDataFromGridData()
+          }}
+          afterRowMove={(movedRows, finalIndex, dropIndex, movePossible, orderChanged) => {
+            console.log(`afterRowMove, movedRows: ${movedRows}, finalIndex: ${finalIndex}, dropIndex: ${dropIndex}, movePossible: ${movePossible}, orderChanged: ${orderChanged}`)
+            updateDataFromGridData()
+          }}
+          afterCreateCol={(index: number, amount: number, source?: Handsontable.ChangeSource) => {
+            console.log(`afterRowMove, index: ${index}, amount: ${amount}, source: ${source}`)
+            updateDataFromGridData()
+          }}
+          afterCreateRow={(index: number, amount: number, source?: Handsontable.ChangeSource) => {
+            console.log(`afterCreateRow, index: ${index}, amount: ${amount}, source: ${source}`)
+            updateDataFromGridData()
+          }}
           // afterUpdateData={(sourceData, initialLoad, source) => {
           //   console.log(`afterUpdateData, sourceData.length: ${sourceData.length}, initialLoad: ${initialLoad}, source: ${source}`)
           //   if (source === 'updateSettings') {
 
           //   } else {
-          //     updateRowDatasFromGrid()
+          //     updateDataFromGridData()
           //   }
           // }}
           // afterPaste={(data: Handsontable.CellValue[][], coords: RangeType[]) => {
