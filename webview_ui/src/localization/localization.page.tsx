@@ -20,8 +20,7 @@ import FXGProjectInfoPanel from '../component/project_info_panel'
 registerAllModules()
 
 function LocalizationPage(props: MsgInterface) {
-  const data = props.data
-  const l10n = data.l10n
+  const l10n = props.data.l10n
   const flutterIntlConfig = l10n.flutterIntlConfig
   const arbs = l10n.arbs
 
@@ -32,64 +31,66 @@ function LocalizationPage(props: MsgInterface) {
   const containerRef = useRef(null)
   const hotTableRef = useRef<HotTableClass | null>(null)
 
-  const [colHeaders, setColHeaders] = useState<any[]>([])
 
   /**
    * 数据结构
-   * [
-       {A: 1, B: 2, C: 3, D: 4, E: 5, F: 6},
-       {A: 1, B: 2, C: 3, D: 4, E: 5, F: 6},
-   * ]
+    colHeader: [
+      [Key, intl_en.arb, intl_zh.arb, ...],
+    ],
+    data: [
+      [back, back, 返回, ...]
+      [ok, ok, 好的, ...]
+    ],
   */
-  const [rowDatas, setRowDatas] = useState<any[]>([])
-  const rowDatasRef = useRef<any[]>([])
+  const [colHeaders, setColHeaders] = useState<any[]>([])
+  const [data, setData] = useState<any[]>([])
 
   const getHotInstance = (): Handsontable | null => {
     return hotTableRef.current ? hotTableRef.current.hotInstance : null
   }
 
   const updateRowDatasFromGrid = () => {
-    const currentTime = Date.now()
-    const csvString: string = exportCSVString()
-    const dataArray: any[] | null = csvStringToDataArray(csvString)
-    if (!Array.isArray(dataArray)) {
-      return
-    }
-    if (dataArray.length === 0) {
-      setRowDatas([])
-    }
-    // 初始化数据
-    // column headers
-    const tmpColHeaders = []
-    for (const key of dataArray[0]) {
-      const tmpData = {
-        title: key,
-        type: 'text',
-        data: key
-      }
-      tmpColHeaders.push(tmpData)
-    }
-    setColHeaders(tmpColHeaders)
+    // const currentTime = Date.now()
+    // const csvString: string = exportCSVString()
+    // const dataArray: any[] | null = csvStringToDataArray(csvString)
+    // if (!Array.isArray(dataArray)) {
+    //   return
+    // }
+    // if (dataArray.length === 0) {
+    //   setRowDatas([])
+    // }
+    // // 初始化数据
+    // // column headers
+    // const tmpColHeaders = []
+    // for (const key of dataArray[0]) {
+    //   const tmpData = {
+    //     title: key,
+    //     type: 'text',
+    //     data: key
+    //   }
+    //   tmpColHeaders.push(tmpData)
+    // }
+    // setColHeaders(tmpColHeaders)
 
-    // rows
-    const tmpRowDatas: any[] = []
-    const const_KeyString: string = 'Key'
-    for (let i = 1; i < dataArray.length; i++) {
-      const rowData = {}
-      const oldRowDatas = dataArray[i]
-      for (let m = 0; m < oldRowDatas.length; m++) {
-        const value = oldRowDatas[m]
-        if (value === const_KeyString) {
-          continue
-        }
-        const intlFileName = dataArray[0][m]
-        rowData[intlFileName] = value
-      }
-      tmpRowDatas.push(rowData)
-    }
-    rowDatasRef.current = cloneDeep(tmpRowDatas)
-    setRowDatas(tmpRowDatas)
-    console.log(`updateRowDatasFromGrid, duration: ${(Date.now() - currentTime) / 1000} seconds`)
+    // // rows
+    // const tmpRowDatas: any[] = []
+    // const const_KeyString: string = 'Key'
+    // for (let i = 1; i < dataArray.length; i++) {
+    //   const rowData = {}
+    //   const oldRowDatas = dataArray[i]
+    //   for (let m = 0; m < oldRowDatas.length; m++) {
+    //     const value = oldRowDatas[m]
+    //     if (value === const_KeyString) {
+    //       continue
+    //     }
+    //     const intlFileName = dataArray[0][m]
+    //     rowData[intlFileName] = value
+    //   }
+    //   tmpRowDatas.push(rowData)
+    // }
+    // rowDatasRef.current = cloneDeep(tmpRowDatas)
+    // setRowDatas(tmpRowDatas)
+    // console.log(`updateRowDatasFromGrid, duration: ${(Date.now() - currentTime) / 1000} seconds`)
   }
 
   const csvStringToDataArray = (csvString: string): any[] | null => {
@@ -171,7 +172,7 @@ function LocalizationPage(props: MsgInterface) {
     }
 
     // 国际化主键 keys
-    let mainLocaleKeys: string[] = []
+    let mainLocaleKeyValueArray: string[] = []
     const fileNames: string[] = []
     const mainLocale = isEmptyString(flutterIntlConfig.main_locale) ? 'en' : flutterIntlConfig.main_locale
     for (const key of Object.keys(arbs)) {
@@ -179,49 +180,34 @@ function LocalizationPage(props: MsgInterface) {
       if (!key.endsWith(`_${mainLocale}.arb`)) {
         continue
       }
-      mainLocaleKeys = []
+      mainLocaleKeyValueArray = []
       const valueJson = arbs[key]
-      mainLocaleKeys = Object.keys(valueJson)
+      mainLocaleKeyValueArray = Object.keys(valueJson)
     }
 
     // 初始化数据
+
     // column headers
-    const const_KeyString = 'Key'
-    const tmpColHeaders = [
-      {
-        title: const_KeyString,
-        type: 'text',
-        data: const_KeyString // 用于去对应 row 的 key，例如 data = intl_en.arb, row={"Key": "123", "intl_en.arb": "xzv", ...}
-      }
-    ]
-    for (const key of Object.keys(arbs)) {
-      const tmpData = {
-        title: key,
-        type: 'text',
-        data: key
-      }
-      tmpColHeaders.push(tmpData)
-    }
+    const tmpColHeaders: any[] = ["", ...Object.keys(arbs)];
     setColHeaders(tmpColHeaders)
 
     // rows
-    const tmpRowDatas: any[] = []
-    for (const localeKey of mainLocaleKeys) {
-      const rowData = {}
+    const tmpData: string[][] = []
+    for (const localeKey of mainLocaleKeyValueArray) {
+      const tmpRow = []
       for (const c of tmpColHeaders) {
         let value = ''
-        if (c.title === const_KeyString) {
+        let index = tmpColHeaders.indexOf(c)
+        if (index === 0) {
           value = localeKey
         } else {
-          value = arbs[c.title][localeKey]
+          value = arbs[c][localeKey]
         }
-        const colTitle = c.title
-        rowData[colTitle] = value
+        tmpRow.push(value)
       }
-      tmpRowDatas.push(rowData)
+      tmpData.push(tmpRow)
     }
-    setRowDatas(tmpRowDatas)
-    rowDatasRef.current = cloneDeep(tmpRowDatas)
+    setData(tmpData)
   }, [arbs])
 
   const renderL10nConfigsBar = () => {
@@ -240,7 +226,7 @@ function LocalizationPage(props: MsgInterface) {
             setConfigsBarHeight(height)
           }}
           onGetGridData={() => {
-            return rowDatas
+            return data
           }}
           onClickExportCsvButton={() => {
             handleExportCSVFile()
@@ -270,29 +256,34 @@ function LocalizationPage(props: MsgInterface) {
         <HotTable
           id={'l10n_grid'}
           ref={hotTableRef}
-          data={rowDatasRef.current}
-          columns={colHeaders}
           style={{
             width: '100%',
             height: '100%'
           }}
+          colHeaders={colHeaders}
+          data={data}
           filters={true}
+          rowHeaders={true}
+          allowEmpty={true}
           autoWrapRow={true}
           autoWrapCol={true}
-          rowHeaders={true}
+          allowInsertRow={true}
+          allowInsertColumn={true}
           manualColumnMove={true}
           manualRowMove={true}
-          allowInsertRow={true}
+          manualRowResize={true}
           manualColumnResize={true}
-          allowInsertColumn={true}
           colWidths={150}
           rowHeights={40}
+          afterGetColHeader={(column: number, TH: HTMLTableHeaderCellElement, headerLevel: number) => {
+            TH.style.paddingTop = '8px'
+          }}
           selectionMode={'multiple'}
           dropdownMenu={[
-            // 'filter_by_value',
-            // 'filter_operators',
-            // 'filter_action_bar',
-            // 'filter_by_condition',
+            'filter_by_value',
+            'filter_operators',
+            'filter_action_bar',
+            'filter_by_condition',
             'col_left',
             'col_right',
             'remove_col',
@@ -317,23 +308,43 @@ function LocalizationPage(props: MsgInterface) {
             cellProperties.className = 'htMiddle'
             return cellProperties
           }}
-          afterChange={(changes: Handsontable.CellChange[] | null, source: Handsontable.ChangeSource) => {
-            console.log(`afterChange, changes.length: ${Array.isArray(changes) ? changes.length : changes}, source: ${source}`)
-            if (source === 'edit') {
-              updateRowDatasFromGrid()
-            } else if (source === 'ContextMenu.clearColumn') {
-              //
-              const arbFileName = changes[0][1]
-              if (typeof arbFileName !== 'string') {
-                return
-              }
-              const tmpRowDatas = [...rowDatas]
-              for (let rowData of tmpRowDatas) {
-                rowData[arbFileName] = ''
-              }
-              setRowDatas(tmpRowDatas)
-            }
-          }}
+          // afterChange={(changes: Handsontable.CellChange[] | null, source: Handsontable.ChangeSource) => {
+          //   console.log(rowDatas[0])
+          //   console.log(`afterChange, changes.length: ${changes}, source: ${source}`)
+          //   if (source === 'edit') {
+          //     if (Array.isArray(changes)) {
+          //       // c = [row, column, prevValue, nextValue]
+          //       let tmpRowDatas = [...rowDatas]
+          //       for (let c of changes) {
+          //         let row = c[0]
+          //         let column = c[1]
+          //         let preValue = c[2]
+          //         let nextValue = c[3]
+          //         if (preValue === undefined && nextValue.length === 0) {
+          //           // TODO: 待优化。当前是为了解决双击 cell 后，数据被置空的问题。
+          //         } else {
+          //           if (typeof column === 'string') {
+          //             tmpRowDatas[row][column] = nextValue
+          //           }
+          //         }
+          //       }
+          //       updateRowDatasFromPreviousState(tmpRowDatas)
+          //     } else {
+          //       updateRowDatasFromGrid()
+          //     }
+          //   } else if (source === 'ContextMenu.clearColumn') {
+          //     //
+          //     const arbFileName = changes[0][1]
+          //     if (typeof arbFileName !== 'string') {
+          //       return
+          //     }
+          //     const tmpRowDatas = [...rowDatas]
+          //     for (let rowData of tmpRowDatas) {
+          //       rowData[arbFileName] = ''
+          //     }
+          //     setRowDatas(tmpRowDatas)
+          //   }
+          // }}
           // afterRowMove={(movedRows, finalIndex, dropIndex, movePossible, orderChanged) => {
           //   console.log(`afterRowMove, movedRows: ${movedRows}, finalIndex: ${finalIndex}, dropIndex: ${dropIndex}, movePossible: ${movePossible}, orderChanged: ${orderChanged}`)
           //   updateRowDatasFromGrid()
@@ -360,11 +371,11 @@ function LocalizationPage(props: MsgInterface) {
           // }}
           // afterUndo={(action: any) => {
           //   console.log(`afterUndo, action: ${action}`)
-          //   updateRowDatasFromGrid()
+          //   updateRowDatasFromPreviousState([...rowDatas])
           // }}
           // afterRedo={(action: any) => {
           //   console.log(`afterRedo, action: ${action}`)
-          //   updateRowDatasFromGrid()
+          //   updateRowDatasFromPreviousState([...rowDatas])
           // }}
           licenseKey="non-commercial-and-evaluation"
         />
