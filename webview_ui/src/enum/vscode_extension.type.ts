@@ -53,7 +53,10 @@ export enum InteractionEventType {
   // preview
   webToExt_preview = 600900,
   webToExt_preview_previousItem = 600910,
-  webToExt_preview_nextItem = 600911
+  webToExt_preview_nextItem = 600911,
+
+  // save_data
+  extToWeb_save_data_to_l10n_arb = 700100,
 }
 
 export interface AssetsMsgInterface {

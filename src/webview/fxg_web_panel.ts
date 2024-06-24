@@ -247,7 +247,7 @@ export class FXGUIWebPanel {
               try {
                 const json = JSON.parse(data.data)
                 project.runGenerator(data.type, json)
-              } catch (error) {}
+              } catch (error) { }
             }
             break
 
@@ -296,6 +296,12 @@ export class FXGUIWebPanel {
           case InteractionEventType.webToExt_intl_save_config:
             {
               project.saveFlutterPubspecYamlConfig(data.type, data.config)
+            }
+            break
+
+          case InteractionEventType.extToWeb_save_data_to_l10n_arb:
+            {
+              project.saveData(data.type, data.data)
             }
             break
         }

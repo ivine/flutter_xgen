@@ -197,7 +197,7 @@ export default class FXGProject {
     let result: string = ''
     try {
       result = this.pubspecDoc.get('name') as string
-    } catch (error) {}
+    } catch (error) { }
     return result
   }
 
@@ -425,6 +425,31 @@ export default class FXGProject {
 
     let result: PreviewItem = new PreviewItem(path)
     return result
+  }
+
+  // MARK: - save json
+  public async saveData(type: FlutterPubspecYamlConfigType, data: any | null = null) {
+    switch (type) {
+      case FlutterPubspecYamlConfigType.flutter_intl:
+        try {
+          if (data !== null) {
+            const jsonMap = JSON.parse(data) as object
+            // 保存到本地
+            for (let arbFileName of Object.keys(jsonMap)) {
+              const json = jsonMap[arbFileName]
+              const tmpJsonStr = JSON.stringify(json, null, 2)
+              const filePath = `${this.l10nsDirPath}/${arbFileName}`
+              await FileUtil.writeFile(filePath, tmpJsonStr)
+            }
+          }
+        } catch (error) {
+          console.log('IntlGenerator.getInstance().run - error: ', error)
+        }
+        break;
+
+      default:
+        break;
+    }
   }
 
   // MARK: - generator

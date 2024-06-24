@@ -195,6 +195,24 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
           }}
         />
         <FXGButton
+          title={'保存到 arb 文件'}
+          leftSpacing={16}
+          onClick={() => {
+            const newJSON = gridDataToJSON(props.onGetGridData())
+            if (typeof newJSON === 'object') {
+              try {
+                const newJSONString = JSON.stringify(mapToObject(newJSON), null, 2)
+                InteractionManager.getInstance().postMsg(InteractionEventType.extToWeb_save_data_to_l10n_arb, props.msg.projectInfo, {
+                  type: FlutterPubspecYamlConfigType.flutter_intl,
+                  data: newJSONString
+                })
+              } catch (error) {
+                //
+              }
+            }
+          }}
+        />
+        <FXGButton
           title={'从 arb 文件同步'}
           leftSpacing={16}
           onClick={() => {
