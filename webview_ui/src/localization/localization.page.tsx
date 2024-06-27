@@ -11,7 +11,7 @@ import './localization.page.css'
 import { MsgInterface } from '../enum/vscode_extension.type'
 import { isEmptyString } from '../util/string.util'
 import LocalizationConfigView, { LocalizationConfigViewCollapsedHeight, LocalizationGridData } from './localization.config.view'
-
+import LocalizationSearchBar from './localization.search_bar'
 import FXGProjectInfoPanel from '../component/project_info_panel'
 
 export const l10n_local_key_name = "key"
@@ -349,6 +349,7 @@ function LocalizationPage(props: MsgInterface) {
       >
         {renderGrid()}
       </div>
+      <LocalizationSearchBar data={data} />
     </div>
   )
 }
