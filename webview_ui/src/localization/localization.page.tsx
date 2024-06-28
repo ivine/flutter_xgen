@@ -25,14 +25,15 @@ function LocalizationPage(props: MsgInterface) {
 
   const [height, setHeight] = useState(0)
   const [configsBarHeight, setConfigsBarHeight] = useState(LocalizationConfigViewCollapsedHeight)
-  const [currentSelSearchResIndex, setCurrentSelSearchResIndex] = useState<number>(-1)
-  const [searchMatchMode, setSearchMatchMode] = useState<SearchMatchMode>(SearchMatchMode.ContainsCaseInsensitive)
-  const [searchResults, setSearchResults] = useState<any[]>([])
+  const [searchBarRefreshFlag, setSearchBarRefreshFlag] = useState<number>(0)
 
   // ref
   const containerRef = useRef(null)
   const hotTableRef = useRef<HotTableClass | null>(null)
   const searchBarVisibleRef = useRef<boolean>(false)
+  const searchMatchModeRef = useRef<SearchMatchMode>(SearchMatchMode.ContainsCaseInsensitive)
+  const searchResultsRef = useRef<any[]>([])
+  const searchResIndexRef = useRef<number>(-1)
 
   /**
    * 数据结构
@@ -60,6 +61,14 @@ function LocalizationPage(props: MsgInterface) {
       // hotTableRef.current?.hotInstance?.destroy()
     }
   }, [])
+
+  useEffect(() => {
+    const res = searchResultsRef.current[searchResIndexRef.current]
+    try {
+      const cell = getHotInstance().getCell(res.row, res.col)
+      cell.style.background = 'rgba(50, 196, 124, 0.5)'
+    } catch (error) {}
+  }, [searchResultsRef.current, searchResIndexRef.current])
 
   useEffect(() => {
     if (!flutterIntlConfig) {
@@ -104,47 +113,6 @@ function LocalizationPage(props: MsgInterface) {
     setData(tmpData)
   }, [arbs])
 
-  useEffect(() => {
-    const gridContext = getHotInstance().getShortcutManager().getContext('grid')
-    const groupId = 'group_id_grid_search_bar'
-    gridContext.removeShortcutsByGroup(groupId)
-    if (searchResults.length > 0) {
-      gridContext.addShortcut({
-        group: groupId,
-        position: 'before',
-        relativeToGroup: 'editorManager.handlingEditor',
-        runOnlyIf: () => {
-          return searchBarVisibleRef.current && searchResults.length > 0
-        },
-        keys: [['enter']],
-        callback: () => {
-          console.log('enter, shortcut')
-          if (searchResults.length > 0) {
-            return false
-          }
-          return true
-        }
-      })
-
-      gridContext.addShortcut({
-        group: groupId,
-        position: 'before',
-        relativeToGroup: 'editorManager.handlingEditor',
-        runOnlyIf: () => {
-          return searchBarVisibleRef.current && searchResults.length > 0
-        },
-        keys: [['shift', 'enter']],
-        callback: () => {
-          console.log('shift + enter, shortcut')
-          if (searchResults.length > 0) {
-            return false
-          }
-          return true
-        }
-      })
-    }
-  }, [searchResults])
-
   const getHotInstance = (): Handsontable | null => {
     return hotTableRef.current ? hotTableRef.current.hotInstance : null
   }
@@ -175,6 +143,45 @@ function LocalizationPage(props: MsgInterface) {
       rowDelimiter: '\r\n',
       rowHeaders: false
     })
+  }
+
+  function disableShiftAndEnterKeyWhenSearching() {
+    const gridContext = getHotInstance().getShortcutManager().getContext('grid')
+    const groupId = 'group_id_grid_search_bar'
+    gridContext.removeShortcutsByGroup(groupId)
+    if (searchResultsRef.current.length > 0) {
+      gridContext.addShortcut({
+        group: groupId,
+        position: 'before',
+        relativeToGroup: 'editorManager.handlingEditor',
+        runOnlyIf: () => {
+          return searchBarVisibleRef.current && searchResultsRef.current.length > 0
+        },
+        keys: [['enter']],
+        callback: () => {
+          if (searchResultsRef.current.length > 0) {
+            return false
+          }
+          return true
+        }
+      })
+
+      gridContext.addShortcut({
+        group: groupId,
+        position: 'before',
+        relativeToGroup: 'editorManager.handlingEditor',
+        runOnlyIf: () => {
+          return searchBarVisibleRef.current && searchResultsRef.current.length > 0
+        },
+        keys: [['shift', 'enter']],
+        callback: () => {
+          if (searchResultsRef.current.length > 0) {
+            return false
+          }
+          return true
+        }
+      })
+    }
   }
 
   const renderL10nConfigsBar = () => {
@@ -287,7 +294,7 @@ function LocalizationPage(props: MsgInterface) {
               const value_lowercase = value.toLowerCase()
               let matched = false
 
-              switch (searchMatchMode) {
+              switch (searchMatchModeRef.current) {
                 case SearchMatchMode.ContainsCaseInsensitive:
                   matched = value_lowercase.includes(queryStr_lowercase)
                   break
@@ -313,6 +320,9 @@ function LocalizationPage(props: MsgInterface) {
           cells={(row, col, prop) => {
             var cellProperties: any = {}
             cellProperties.className = 'htMiddle'
+            // if (selectSearchResult && selectSearchResult.row === row && selectSearchResult.col === col) {
+            //   cellProperties.backgroundColor = 'rgba(50, 196, 124, 0.5)'
+            // }
             return cellProperties
           }}
           licenseKey="non-commercial-and-evaluation"
@@ -320,6 +330,73 @@ function LocalizationPage(props: MsgInterface) {
       </div>
     )
   }, [arbs, height, data, colHeaders])
+
+  const renderSearchBar = useMemo(() => {
+    const currentIndex = searchResIndexRef.current
+    const totalCount = searchResultsRef.current.length
+    return (
+      <LocalizationSearchBar
+        matchMode={SearchMatchMode.ContainsCaseInsensitive}
+        currentIndex={currentIndex}
+        totalCount={totalCount}
+        onViewVisible={(visible) => {
+          if (visible) {
+            // 搜索框第一次出现
+            getHotInstance().deselectCell()
+          }
+          searchBarVisibleRef.current = visible
+        }}
+        onMovePrevious={() => {
+          const searchResList = searchResultsRef.current
+          const index = Math.max(0, currentIndex - 1)
+          if (index >= searchResList.length || index < 0) {
+            return
+          }
+          const res = searchResList[index]
+          getHotInstance().scrollViewportTo({
+            row: res.row,
+            col: res.col,
+            verticalSnap: 'top',
+            horizontalSnap: 'end',
+            considerHiddenIndexes: true
+          })
+          getHotInstance().render()
+
+          searchResIndexRef.current = index
+          setSearchBarRefreshFlag(searchBarRefreshFlag + 1)
+        }}
+        onMoveNext={() => {
+          const searchResList = searchResultsRef.current
+          const index = Math.min(searchResList.length - 1, currentIndex + 1)
+          if (index >= searchResList.length || index < 0) {
+            return
+          }
+          const res = searchResList[index]
+          getHotInstance().scrollViewportTo({
+            row: res.row,
+            col: res.col,
+            verticalSnap: 'top',
+            horizontalSnap: 'end'
+          })
+          getHotInstance().render()
+
+          searchResIndexRef.current = index
+          setSearchBarRefreshFlag(searchBarRefreshFlag + 1)
+        }}
+        onSearching={(keyword) => {
+          const search = getHotInstance().getPlugin('search')
+          const queryResult = search.query(keyword)
+          searchResultsRef.current = queryResult
+          disableShiftAndEnterKeyWhenSearching()
+          getHotInstance().deselectCell()
+          getHotInstance().render()
+
+          searchResIndexRef.current = queryResult.length > 0 ? 0 : -1
+          setSearchBarRefreshFlag(searchBarRefreshFlag + 1)
+        }}
+      />
+    )
+  }, [searchBarRefreshFlag])
 
   return (
     <div
@@ -348,59 +425,7 @@ function LocalizationPage(props: MsgInterface) {
       >
         {renderGridWithMemo}
       </div>
-      <LocalizationSearchBar
-        matchMode={SearchMatchMode.ContainsCaseInsensitive}
-        currentIndex={currentSelSearchResIndex}
-        totalCount={searchResults.length}
-        onViewVisible={(visible) => {
-          if (visible) {
-            // 搜索框第一次出现
-            getHotInstance().deselectCell()
-          }
-          searchBarVisibleRef.current = visible
-        }}
-        onMovePrevious={() => {
-          const searchResList = searchResults
-          const index = Math.max(0, currentSelSearchResIndex - 1)
-          console.log('onMovePrevious, index: ', index)
-          if (index >= searchResList.length || index < 0) {
-            return
-          }
-          const searchRes = searchResList[index]
-          getHotInstance().scrollViewportTo({
-            row: searchRes.row,
-            col: searchRes.col,
-            verticalSnap: 'top',
-            horizontalSnap: 'end'
-          })
-          getHotInstance().selectCell(searchRes.row, searchRes.col)
-          setCurrentSelSearchResIndex(index)
-        }}
-        onMoveNext={() => {
-          const searchResList = searchResults
-          const index = Math.min(searchResList.length - 1, currentSelSearchResIndex + 1)
-          if (index >= searchResList.length || index < 0) {
-            return
-          }
-          const searchRes = searchResList[index]
-          getHotInstance().scrollViewportTo({
-            row: searchRes.row,
-            col: searchRes.col,
-            verticalSnap: 'top',
-            horizontalSnap: 'end'
-          })
-          getHotInstance().selectCell(searchRes.row, searchRes.col)
-          setCurrentSelSearchResIndex(index)
-        }}
-        onSearching={(keyword) => {
-          const search = getHotInstance().getPlugin('search')
-          const queryResult = search.query(keyword)
-          setSearchResults(queryResult)
-          setCurrentSelSearchResIndex(queryResult.length > 0 ? 0 : -1)
-          getHotInstance().deselectCell()
-          getHotInstance().render()
-        }}
-      />
+      {renderSearchBar}
     </div>
   )
 }
