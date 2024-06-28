@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import Handsontable from 'handsontable'
 import { ContextMenu } from 'handsontable/plugins'
@@ -11,10 +11,10 @@ import './localization.page.css'
 import { MsgInterface } from '../enum/vscode_extension.type'
 import { isEmptyString } from '../util/string.util'
 import LocalizationConfigView, { LocalizationConfigViewCollapsedHeight, LocalizationGridData } from './localization.config.view'
-import LocalizationSearchBar from './localization.search_bar'
+import LocalizationSearchBar, { SearchMatchMode } from './localization.search_bar'
 import FXGProjectInfoPanel from '../component/project_info_panel'
 
-export const l10n_local_key_name = "key"
+export const l10n_local_key_name = 'key'
 
 registerAllModules()
 
@@ -25,11 +25,14 @@ function LocalizationPage(props: MsgInterface) {
 
   const [height, setHeight] = useState(0)
   const [configsBarHeight, setConfigsBarHeight] = useState(LocalizationConfigViewCollapsedHeight)
+  const [currentSelSearchResIndex, setCurrentSelSearchResIndex] = useState<number>(-1)
+  const [searchMatchMode, setSearchMatchMode] = useState<SearchMatchMode>(SearchMatchMode.ContainsCaseInsensitive)
+  const [searchResults, setSearchResults] = useState<any[]>([])
 
   // ref
   const containerRef = useRef(null)
   const hotTableRef = useRef<HotTableClass | null>(null)
-
+  const searchBarVisibleRef = useRef<boolean>(false)
 
   /**
    * 数据结构
@@ -80,7 +83,7 @@ function LocalizationPage(props: MsgInterface) {
     // 初始化数据
 
     // column headers
-    const tmpColHeaders: any[] = [l10n_local_key_name, ...Object.keys(arbs)];
+    const tmpColHeaders: any[] = [l10n_local_key_name, ...Object.keys(arbs)]
     setColHeaders(tmpColHeaders)
 
     // rows
@@ -100,6 +103,47 @@ function LocalizationPage(props: MsgInterface) {
     }
     setData(tmpData)
   }, [arbs])
+
+  useEffect(() => {
+    const gridContext = getHotInstance().getShortcutManager().getContext('grid')
+    const groupId = 'group_id_grid_search_bar'
+    gridContext.removeShortcutsByGroup(groupId)
+    if (searchResults.length > 0) {
+      gridContext.addShortcut({
+        group: groupId,
+        position: 'before',
+        relativeToGroup: 'editorManager.handlingEditor',
+        runOnlyIf: () => {
+          return searchBarVisibleRef.current && searchResults.length > 0
+        },
+        keys: [['enter']],
+        callback: () => {
+          console.log('enter, shortcut')
+          if (searchResults.length > 0) {
+            return false
+          }
+          return true
+        }
+      })
+
+      gridContext.addShortcut({
+        group: groupId,
+        position: 'before',
+        relativeToGroup: 'editorManager.handlingEditor',
+        runOnlyIf: () => {
+          return searchBarVisibleRef.current && searchResults.length > 0
+        },
+        keys: [['shift', 'enter']],
+        callback: () => {
+          console.log('shift + enter, shortcut')
+          if (searchResults.length > 0) {
+            return false
+          }
+          return true
+        }
+      })
+    }
+  }, [searchResults])
 
   const getHotInstance = (): Handsontable | null => {
     return hotTableRef.current ? hotTableRef.current.hotInstance : null
@@ -133,13 +177,6 @@ function LocalizationPage(props: MsgInterface) {
     })
   }
 
-  const updateDataFromGridData = () => {
-    // const colHeader = getHotInstance().getColHeader()
-    // const data = getHotInstance().getData()
-    // setData(data)
-    // setColHeaders(colHeader)
-  }
-
   const renderL10nConfigsBar = () => {
     return (
       <div
@@ -160,7 +197,7 @@ function LocalizationPage(props: MsgInterface) {
             const res_data = getHotInstance().getData()
             const res: LocalizationGridData = {
               arbFileNames: res_colHeader,
-              data: res_data,
+              data: res_data
             }
             return res
           }}
@@ -172,7 +209,7 @@ function LocalizationPage(props: MsgInterface) {
     )
   }
 
-  const renderGrid = () => {
+  const renderGridWithMemo = useMemo(() => {
     if (typeof arbs !== 'object') {
       return <div>无效数据</div>
     } else if (arbs === null) {
@@ -222,7 +259,7 @@ function LocalizationPage(props: MsgInterface) {
             'col_left',
             'col_right',
             'remove_col',
-            'clear_column',
+            'clear_column'
             // '---------',
             // 'undo',
             // 'redo'
@@ -238,89 +275,51 @@ function LocalizationPage(props: MsgInterface) {
               remove_row: {}
             }
           }}
+          search={{
+            queryMethod(queryStr: string, value: Handsontable.CellValue, cellProperties: Handsontable.CellProperties) {
+              if (typeof value !== 'string') {
+                return false
+              }
+              if (queryStr.length === 0) {
+                return false
+              }
+              const queryStr_lowercase = queryStr.toLowerCase()
+              const value_lowercase = value.toLowerCase()
+              let matched = false
+
+              switch (searchMatchMode) {
+                case SearchMatchMode.ContainsCaseInsensitive:
+                  matched = value_lowercase.includes(queryStr_lowercase)
+                  break
+
+                case SearchMatchMode.ContainsCaseSensitive:
+                  matched = value.includes(queryStr)
+                  break
+
+                case SearchMatchMode.ExactCaseInsensitive:
+                  matched = queryStr_lowercase === value_lowercase
+                  break
+
+                case SearchMatchMode.ExactCaseSensitive:
+                  matched = value === queryStr
+                  break
+
+                default:
+                  break
+              }
+              return matched
+            }
+          }}
           cells={(row, col, prop) => {
             var cellProperties: any = {}
             cellProperties.className = 'htMiddle'
             return cellProperties
           }}
-          // afterChange={(changes: Handsontable.CellChange[] | null, source: Handsontable.ChangeSource) => {
-          //   console.log(rowDatas[0])
-          //   console.log(`afterChange, changes.length: ${changes}, source: ${source}`)
-          //   if (source === 'edit') {
-          //     if (Array.isArray(changes)) {
-          //       // c = [row, column, prevValue, nextValue]
-          //       let tmpRowDatas = [...rowDatas]
-          //       for (let c of changes) {
-          //         let row = c[0]
-          //         let column = c[1]
-          //         let preValue = c[2]
-          //         let nextValue = c[3]
-          //         if (preValue === undefined && nextValue.length === 0) {
-          //           // TODO: 待优化。当前是为了解决双击 cell 后，数据被置空的问题。
-          //         } else {
-          //           if (typeof column === 'string') {
-          //             tmpRowDatas[row][column] = nextValue
-          //           }
-          //         }
-          //       }
-          //       updateRowDatasFromPreviousState(tmpRowDatas)
-          //     } else {
-          //       updateRowDatasFromGrid()
-          //     }
-          //   } else if (source === 'ContextMenu.clearColumn') {
-          //     //
-          //     const arbFileName = changes[0][1]
-          //     if (typeof arbFileName !== 'string') {
-          //       return
-          //     }
-          //     const tmpRowDatas = [...rowDatas]
-          //     for (let rowData of tmpRowDatas) {
-          //       rowData[arbFileName] = ''
-          //     }
-          //     setRowDatas(tmpRowDatas)
-          //   }
-          // }}
-          afterColumnMove={(movedColumns: number[], finalIndex: number, dropIndex: number | undefined, movePossible: boolean, orderChanged: boolean) => {
-            console.log(`afterColumnMove, movedColumns: ${movedColumns}, finalIndex: ${finalIndex}, dropIndex: ${dropIndex}, movePossible: ${movePossible}, orderChanged: ${orderChanged}`)
-            updateDataFromGridData()
-          }}
-          afterRowMove={(movedRows, finalIndex, dropIndex, movePossible, orderChanged) => {
-            console.log(`afterRowMove, movedRows: ${movedRows}, finalIndex: ${finalIndex}, dropIndex: ${dropIndex}, movePossible: ${movePossible}, orderChanged: ${orderChanged}`)
-            updateDataFromGridData()
-          }}
-          afterCreateCol={(index: number, amount: number, source?: Handsontable.ChangeSource) => {
-            console.log(`afterRowMove, index: ${index}, amount: ${amount}, source: ${source}`)
-            updateDataFromGridData()
-          }}
-          afterCreateRow={(index: number, amount: number, source?: Handsontable.ChangeSource) => {
-            console.log(`afterCreateRow, index: ${index}, amount: ${amount}, source: ${source}`)
-            updateDataFromGridData()
-          }}
-          // afterUpdateData={(sourceData, initialLoad, source) => {
-          //   console.log(`afterUpdateData, sourceData.length: ${sourceData.length}, initialLoad: ${initialLoad}, source: ${source}`)
-          //   if (source === 'updateSettings') {
-
-          //   } else {
-          //     updateDataFromGridData()
-          //   }
-          // }}
-          // afterPaste={(data: Handsontable.CellValue[][], coords: RangeType[]) => {
-          //   console.log(`afterPaste, data: ${data}, coords: ${coords}`)
-          //   updateRowDatasFromGrid()
-          // }}
-          // afterUndo={(action: any) => {
-          //   console.log(`afterUndo, action: ${action}`)
-          //   updateRowDatasFromPreviousState([...rowDatas])
-          // }}
-          // afterRedo={(action: any) => {
-          //   console.log(`afterRedo, action: ${action}`)
-          //   updateRowDatasFromPreviousState([...rowDatas])
-          // }}
           licenseKey="non-commercial-and-evaluation"
         />
       </div>
     )
-  }
+  }, [arbs, height, data, colHeaders])
 
   return (
     <div
@@ -347,9 +346,61 @@ function LocalizationPage(props: MsgInterface) {
           width: '100%'
         }}
       >
-        {renderGrid()}
+        {renderGridWithMemo}
       </div>
-      <LocalizationSearchBar data={data} />
+      <LocalizationSearchBar
+        matchMode={SearchMatchMode.ContainsCaseInsensitive}
+        currentIndex={currentSelSearchResIndex}
+        totalCount={searchResults.length}
+        onViewVisible={(visible) => {
+          if (visible) {
+            // 搜索框第一次出现
+            getHotInstance().deselectCell()
+          }
+          searchBarVisibleRef.current = visible
+        }}
+        onMovePrevious={() => {
+          const searchResList = searchResults
+          const index = Math.max(0, currentSelSearchResIndex - 1)
+          console.log('onMovePrevious, index: ', index)
+          if (index >= searchResList.length || index < 0) {
+            return
+          }
+          const searchRes = searchResList[index]
+          getHotInstance().scrollViewportTo({
+            row: searchRes.row,
+            col: searchRes.col,
+            verticalSnap: 'top',
+            horizontalSnap: 'end'
+          })
+          getHotInstance().selectCell(searchRes.row, searchRes.col)
+          setCurrentSelSearchResIndex(index)
+        }}
+        onMoveNext={() => {
+          const searchResList = searchResults
+          const index = Math.min(searchResList.length - 1, currentSelSearchResIndex + 1)
+          if (index >= searchResList.length || index < 0) {
+            return
+          }
+          const searchRes = searchResList[index]
+          getHotInstance().scrollViewportTo({
+            row: searchRes.row,
+            col: searchRes.col,
+            verticalSnap: 'top',
+            horizontalSnap: 'end'
+          })
+          getHotInstance().selectCell(searchRes.row, searchRes.col)
+          setCurrentSelSearchResIndex(index)
+        }}
+        onSearching={(keyword) => {
+          const search = getHotInstance().getPlugin('search')
+          const queryResult = search.query(keyword)
+          setSearchResults(queryResult)
+          setCurrentSelSearchResIndex(queryResult.length > 0 ? 0 : -1)
+          getHotInstance().deselectCell()
+          getHotInstance().render()
+        }}
+      />
     </div>
   )
 }
