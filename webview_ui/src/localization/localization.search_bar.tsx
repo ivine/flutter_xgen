@@ -1,9 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 
+import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
+
 import SouthOutlined from '@mui/icons-material/SouthOutlined'
 import NorthOutlined from '@mui/icons-material/NorthOutlined'
 import CloseIcon from '@mui/icons-material/Close'
-import Input from '@mui/material/Input'
+import CaseSensitive from '../assets/case-sensitive.svg'
+import WholeWord from '../assets/whole-word.svg'
 
 import FXGSpacer from '../component/spacer'
 import FXGContainer from '../component/container'
@@ -19,6 +23,10 @@ export interface LocalizationSearchBarInterface {
   matchMode: SearchMatchMode
   currentIndex: number
   totalCount: number
+  caseSensitiveMatchEnable: boolean
+  wholeWordMatchEnable: boolean
+  onChangeCaseSensitiveMatch: (enable: boolean) => void
+  onChangeWholeWordMatch: (enable: boolean) => void
   onViewVisible: (visible: boolean) => void
   onMovePrevious: () => void
   onMoveNext: () => void
@@ -124,14 +132,68 @@ function LocalizationSearchBar(props: LocalizationSearchBarInterface) {
         }}
       >
         <FXGSpacer width={10} />
-        <Input
-          sx={{
-            maxWidth: 160,
-            userSelect: 'none'
-          }}
-          value={keyword}
+        <TextField
           autoFocus
+          value={keyword}
           placeholder="查找"
+          variant="standard"
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <FXGContainer
+                  style={{
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 30,
+                    height: '100%'
+                  }}
+                  onClick={() => {
+                    props.onChangeCaseSensitiveMatch(!props.caseSensitiveMatchEnable)
+                  }}
+                >
+                  <img
+                    src={CaseSensitive}
+                    style={{
+                      backgroundColor: props.caseSensitiveMatchEnable ? '#f2f2f2' : 'transparent',
+                      borderStyle: props.caseSensitiveMatchEnable ? 'solid' : 'none',
+                      borderWidth: 2,
+                      borderColor: '#d8d8d8',
+                      borderRadius: 4,
+                      color: '#707070',
+                      width: 20,
+                      height: 20,
+                    }}
+                  />
+                </FXGContainer>
+                <FXGSpacer width={6} />
+                <FXGContainer
+                  style={{
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 30,
+                    height: '100%'
+                  }}
+                  onClick={() => {
+                    props.onChangeWholeWordMatch(!props.wholeWordMatchEnable)
+                  }}
+                >
+                  <img
+                    src={WholeWord}
+                    style={{
+                      backgroundColor: props.wholeWordMatchEnable ? '#f2f2f2' : 'transparent',
+                      borderStyle: props.wholeWordMatchEnable ? 'solid' : 'none',
+                      borderWidth: 2,
+                      borderColor: '#d8d8d8',
+                      borderRadius: 4,
+                      color: '#707070',
+                      width: 20,
+                      height: 20,
+                    }}
+                  />
+                </FXGContainer>
+              </InputAdornment>
+            ),
+          }}
           onChange={(e) => {
             if (e.target && typeof e.target.value === 'string') {
               setKeyword(e.target.value)
