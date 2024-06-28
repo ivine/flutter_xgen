@@ -11,7 +11,7 @@ import './localization.page.css'
 import { MsgInterface } from '../enum/vscode_extension.type'
 import { isEmptyString } from '../util/string.util'
 import LocalizationConfigView, { LocalizationConfigViewCollapsedHeight, LocalizationGridData } from './localization.config.view'
-import LocalizationSearchBar, { SearchMatchMode } from './localization.search_bar'
+import LocalizationSearchBar from './localization.search_bar'
 import FXGProjectInfoPanel from '../component/project_info_panel'
 
 export const l10n_local_key_name = 'key'
@@ -31,9 +31,10 @@ function LocalizationPage(props: MsgInterface) {
   const containerRef = useRef(null)
   const hotTableRef = useRef<HotTableClass | null>(null)
   const searchBarVisibleRef = useRef<boolean>(false)
-  const searchMatchModeRef = useRef<SearchMatchMode>(SearchMatchMode.ContainsCaseInsensitive)
   const searchResultsRef = useRef<any[]>([])
   const searchResIndexRef = useRef<number>(-1)
+  const searchCaseSensitiveMatchEnableRef = useRef<boolean>(false)
+  const searchWholeWordMatchEnableRef = useRef<boolean>(false)
 
   /**
    * 数据结构
@@ -293,26 +294,22 @@ function LocalizationPage(props: MsgInterface) {
               const queryStr_lowercase = queryStr.toLowerCase()
               const value_lowercase = value.toLowerCase()
               let matched = false
-
-              switch (searchMatchModeRef.current) {
-                case SearchMatchMode.ContainsCaseInsensitive:
-                  matched = value_lowercase.includes(queryStr_lowercase)
-                  break
-
-                case SearchMatchMode.ContainsCaseSensitive:
-                  matched = value.includes(queryStr)
-                  break
-
-                case SearchMatchMode.ExactCaseInsensitive:
+              if (searchWholeWordMatchEnableRef.current) {
+                // 整个单词匹配
+                if (searchCaseSensitiveMatchEnableRef.current) {
+                  // 大小写敏感
+                  matched = queryStr === value
+                } else {
                   matched = queryStr_lowercase === value_lowercase
-                  break
-
-                case SearchMatchMode.ExactCaseSensitive:
-                  matched = value === queryStr
-                  break
-
-                default:
-                  break
+                }
+              } else {
+                // 包含匹配
+                if (searchCaseSensitiveMatchEnableRef.current) {
+                  matched = value.includes(queryStr)
+                } else {
+                  // 大小写不需要匹配
+                  matched = value_lowercase.includes(queryStr_lowercase)
+                }
               }
               return matched
             }
@@ -336,13 +333,18 @@ function LocalizationPage(props: MsgInterface) {
     const totalCount = searchResultsRef.current.length
     return (
       <LocalizationSearchBar
-        matchMode={SearchMatchMode.ContainsCaseInsensitive}
         currentIndex={currentIndex}
         totalCount={totalCount}
-        caseSensitiveMatchEnable={true}
-        wholeWordMatchEnable={false}
-        onChangeCaseSensitiveMatch={(enable: boolean) => { }}
-        onChangeWholeWordMatch={(enable: boolean) => { }}
+        caseSensitiveMatchEnable={searchCaseSensitiveMatchEnableRef.current}
+        wholeWordMatchEnable={searchWholeWordMatchEnableRef.current}
+        onChangeCaseSensitiveMatch={(enable: boolean) => {
+          searchCaseSensitiveMatchEnableRef.current = enable
+          setSearchBarRefreshFlag(searchBarRefreshFlag + 1)
+        }}
+        onChangeWholeWordMatch={(enable: boolean) => {
+          searchWholeWordMatchEnableRef.current = enable
+          setSearchBarRefreshFlag(searchBarRefreshFlag + 1)
+        }}
         onViewVisible={(visible) => {
           if (visible) {
             // 搜索框第一次出现

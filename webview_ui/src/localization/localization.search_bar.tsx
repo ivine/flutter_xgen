@@ -12,15 +12,7 @@ import WholeWord from '../assets/whole-word.svg'
 import FXGSpacer from '../component/spacer'
 import FXGContainer from '../component/container'
 
-export enum SearchMatchMode {
-  ExactCaseInsensitive = 1, // 全等不区分大小写
-  ExactCaseSensitive = 2, // 全等区分大小写
-  ContainsCaseInsensitive = 3, // 包含不区分大小写
-  ContainsCaseSensitive = 4 // 包含区分大小写
-}
-
 export interface LocalizationSearchBarInterface {
-  matchMode: SearchMatchMode
   currentIndex: number
   totalCount: number
   caseSensitiveMatchEnable: boolean
@@ -37,6 +29,15 @@ function LocalizationSearchBar(props: LocalizationSearchBarInterface) {
   const [visible, setVisible] = useState(false)
   const [keyword, setKeyword] = useState('')
   const keywordRef = useRef<string>('')
+
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (visible && inputRef.current && keywordRef.current.length > 0) {
+      console.log('inputRef.current: ', inputRef.current)
+      inputRef.current.select();
+    }
+  }, [visible]);
 
   useEffect(() => {
     const listenKeydownEvent = (event) => {
@@ -112,9 +113,6 @@ function LocalizationSearchBar(props: LocalizationSearchBarInterface) {
   }
 
   function renderBody() {
-    if (!visible) {
-      return <></>
-    }
     return (
       <FXGContainer
         style={{
@@ -133,7 +131,11 @@ function LocalizationSearchBar(props: LocalizationSearchBarInterface) {
       >
         <FXGSpacer width={10} />
         <TextField
+          inputRef={inputRef}
           autoFocus
+          sx={{
+            userSelect: 'none',
+          }}
           value={keyword}
           placeholder="查找"
           variant="standard"
@@ -142,6 +144,7 @@ function LocalizationSearchBar(props: LocalizationSearchBarInterface) {
               <InputAdornment position="end">
                 <FXGContainer
                   style={{
+                    userSelect: 'none',
                     alignItems: 'center',
                     justifyContent: 'center',
                     width: 30,
@@ -149,6 +152,7 @@ function LocalizationSearchBar(props: LocalizationSearchBarInterface) {
                   }}
                   onClick={() => {
                     props.onChangeCaseSensitiveMatch(!props.caseSensitiveMatchEnable)
+                    props.onSearching(keywordRef.current)
                   }}
                 >
                   <img
@@ -168,6 +172,7 @@ function LocalizationSearchBar(props: LocalizationSearchBarInterface) {
                 <FXGSpacer width={6} />
                 <FXGContainer
                   style={{
+                    userSelect: 'none',
                     alignItems: 'center',
                     justifyContent: 'center',
                     width: 30,
@@ -175,6 +180,7 @@ function LocalizationSearchBar(props: LocalizationSearchBarInterface) {
                   }}
                   onClick={() => {
                     props.onChangeWholeWordMatch(!props.wholeWordMatchEnable)
+                    props.onSearching(keywordRef.current)
                   }}
                 >
                   <img
@@ -254,7 +260,7 @@ function LocalizationSearchBar(props: LocalizationSearchBarInterface) {
     )
   }
 
-  return <>{renderBody()}</>
+  return visible ? <>{renderBody()}</> : null
 }
 
 export default LocalizationSearchBar
