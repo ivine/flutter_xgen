@@ -47,7 +47,6 @@ function SVGAView(props: any) {
         player.destroy()
       }
     } catch (error) {
-      console.log('SVGAView dispose, error: ', error)
     }
   }
 

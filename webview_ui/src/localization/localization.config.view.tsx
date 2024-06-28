@@ -64,7 +64,6 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
     try {
       result = !isObjectEqual(tmpOriginalConfig, targetConfig)
     } catch (error) {
-      // console.log('checkIfConfigModified, error: ', error)
     }
     return result
   }
@@ -94,7 +93,6 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
         arbFileDataMap.set(key, value)
       }
     }
-    console.log(jsonMap)
     return jsonMap
   }
 
@@ -105,7 +103,6 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
 
   const updateUI = () => {
     let value = updateCounter + 1
-    // console.log('updateUI, value: ', value)
     setUpdateCounter(value)
   }
 
@@ -128,7 +125,6 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
     checkIfConfigModified(flutterIntlConfigRef.current, tmpConfig)
     flutterIntlConfigRef.current = tmpConfig
     updateSaveConfigButtonState()
-    // console.log(`updateFlutterIntlConfig, key: ${key}, value: ${value}, shouldRemoveKey: ${shouldRemoveKey}`)
   }
 
   const updateSaveConfigButtonState = () => {

@@ -10,7 +10,6 @@ function ImageView(props: any) {
       try {
         wzoomRef.current?.destroy()
       } catch (error) {
-        console.log('ImageView dispose, error: ', error)
       }
     }
   }, [])

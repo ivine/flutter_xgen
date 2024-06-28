@@ -27,7 +27,6 @@ function App() {
         try {
           onReceiveMsg(L10nTestMsg as MsgInterface)
         } catch (error) {
-          console.log('debug, parse JSON error: ', error)
         }
       }, 1000)
     } else {
@@ -39,15 +38,14 @@ function App() {
   }, [])
 
   const onMsg = (originalMsg: any) => {
-    console.log('app on message: ', originalMsg)
     try {
       const data: MsgInterface = originalMsg.data
 
       // --- log --- //
       const test_string = JSON.stringify(data)
-      console.log('onMsg ----- start -----')
-      console.log(test_string)
-      console.log('onMsg ----- end -----')
+      // console.log('onMsg ----- start -----')
+      // console.log(test_string)
+      // console.log('onMsg ----- end -----')
       // --- log --- //
 
       if (data.type === InteractionEventType.sync_project_info) {

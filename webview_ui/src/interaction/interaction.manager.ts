@@ -8,7 +8,6 @@ export default class InteractionManager {
     try {
       this.vscode = acquireVsCodeApi()
     } catch (error) {
-      console.log('webview, InteractionManager - acquireVsCodeApi error: ', error)
     }
   }
   static getInstance(): InteractionManager {

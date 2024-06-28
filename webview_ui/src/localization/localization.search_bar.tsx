@@ -34,14 +34,12 @@ function LocalizationSearchBar(props: LocalizationSearchBarInterface) {
 
   useEffect(() => {
     if (visible && inputRef.current && keywordRef.current.length > 0) {
-      console.log('inputRef.current: ', inputRef.current)
       inputRef.current.select();
     }
   }, [visible]);
 
   useEffect(() => {
     const listenKeydownEvent = (event) => {
-      // console.log('listenKeydownEvent, event.key: ', event.key)
       if (event.key === 'f' || event.key === 'F') {
         if (visible) {
           return
@@ -102,7 +100,6 @@ function LocalizationSearchBar(props: LocalizationSearchBarInterface) {
   }
 
   function checkCurrentIndexEnable(previous: boolean): boolean {
-    // console.log('checkCurrentIndexEnable', ', previous: ', previous, ', currentIndex: ', currentIndex, ', searchResultsRef.current.length: ', searchResultsRef.current.length)
     const ci = props.currentIndex
     const tc = props.totalCount
     if (previous) {
