@@ -47,6 +47,10 @@
     "vsix": "yarn build && vsce package"
   },
   "dependencies": {
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
+    "@mui/icons-material": "^5.15.21",
+    "@mui/material": "^5.15.21",
     "lodash": "^4.17.21",
     "react-player": "^2.16.0",
     "svga": "^2.1.1",
