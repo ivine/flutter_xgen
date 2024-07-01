@@ -7,8 +7,7 @@ export default class InteractionManager {
   private constructor() {
     try {
       this.vscode = acquireVsCodeApi()
-    } catch (error) {
-    }
+    } catch (error) {}
   }
   static getInstance(): InteractionManager {
     if (!InteractionManager.instance) {

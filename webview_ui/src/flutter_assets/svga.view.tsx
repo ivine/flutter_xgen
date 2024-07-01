@@ -46,8 +46,7 @@ function SVGAView(props: any) {
       if (player) {
         player.destroy()
       }
-    } catch (error) {
-    }
+    } catch (error) {}
   }
 
   return (

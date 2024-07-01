@@ -26,8 +26,7 @@ function App() {
         document.body.style.backgroundColor = '#24262f'
         try {
           onReceiveMsg(L10nTestMsg as MsgInterface)
-        } catch (error) {
-        }
+        } catch (error) {}
       }, 1000)
     } else {
     }

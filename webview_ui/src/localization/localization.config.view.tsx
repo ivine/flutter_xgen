@@ -63,8 +63,7 @@ function LocalizationConfigView(props: LocalizationConfigViewInterface) {
     let result = false
     try {
       result = !isObjectEqual(tmpOriginalConfig, targetConfig)
-    } catch (error) {
-    }
+    } catch (error) {}
     return result
   }
 

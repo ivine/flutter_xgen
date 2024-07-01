@@ -6,14 +6,7 @@ const ReactPlayer = _ReactPlayer as unknown as React.FC<ReactPlayerProps>
 function MediaView(props: any, deprecatedLegacyContext?: any) {
   const { uri } = props
 
-  return (
-    <ReactPlayer
-      url={uri}
-      controls={true}
-      width={500}
-      volume={1}
-    />
-  )
+  return <ReactPlayer url={uri} controls={true} width={500} volume={1} />
 }
 
 export default MediaView

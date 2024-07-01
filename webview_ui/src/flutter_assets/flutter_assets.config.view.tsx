@@ -133,8 +133,7 @@ function FlutterAssetsConfigView(props: MsgInterface) {
     let result = false
     try {
       result = !isObjectEqual(tmpOriginalConfig, targetConfig)
-    } catch (error) {
-    }
+    } catch (error) {}
     return result
   }
 
@@ -378,7 +377,7 @@ function FlutterAssetsConfigView(props: MsgInterface) {
           title={'path_ignore, 用 , 分割，例如: assets/fonts, assets/images/dark, ...'}
           value={
             Array.isArray(flutterAssetsGeneratorConfigByCr1992.current.path_ignore) &&
-              flutterAssetsGeneratorConfigByCr1992.current.path_ignore.length > 0
+            flutterAssetsGeneratorConfigByCr1992.current.path_ignore.length > 0
               ? flutterAssetsGeneratorConfigByCr1992.current.path_ignore.join(',')
               : ''
           }
@@ -434,7 +433,7 @@ function FlutterAssetsConfigView(props: MsgInterface) {
               if (typeof len !== 'number') {
                 len = 80
               }
-            } catch (error) { }
+            } catch (error) {}
             updateFlutterGenConfigValue('line_length', len)
           }}
         />

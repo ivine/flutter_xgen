@@ -9,8 +9,7 @@ function ImageView(props: any) {
     return () => {
       try {
         wzoomRef.current?.destroy()
-      } catch (error) {
-      }
+      } catch (error) {}
     }
   }, [])
 
