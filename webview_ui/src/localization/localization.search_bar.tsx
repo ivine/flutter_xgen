@@ -8,13 +8,10 @@ import NorthOutlined from '@mui/icons-material/NorthOutlined'
 import CloseIcon from '@mui/icons-material/Close'
 import KeyboardArrowRightOutlinedIcon from '@mui/icons-material/KeyboardArrowRightOutlined'
 import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined'
-import CaseSensitive from '../assets/case-sensitive.svg'
-import WholeWord from '../assets/whole-word.svg'
-import ReplaceIcon from '../assets/replace.svg'
-import ReplaceAllIcon from '../assets/replace-all.svg'
 
 import FXGSpacer from '../component/spacer'
 import FXGContainer from '../component/container'
+import { VSCodeIconSVGMap } from '../enum/base64.icon'
 
 export interface LocalizationSearchBarInterface {
   currentIndex: number
@@ -159,8 +156,9 @@ function LocalizationSearchBar(props: LocalizationSearchBarInterface) {
                   }}
                 >
                   <img
-                    src={CaseSensitive}
+                    src={VSCodeIconSVGMap.caseSensitive}
                     style={{
+                      objectFit: 'contain',
                       backgroundColor: props.caseSensitiveMatchEnable ? '#f2f2f2' : 'transparent',
                       borderStyle: props.caseSensitiveMatchEnable ? 'solid' : 'none',
                       borderWidth: 2,
@@ -187,8 +185,9 @@ function LocalizationSearchBar(props: LocalizationSearchBarInterface) {
                   }}
                 >
                   <img
-                    src={WholeWord}
+                    src={VSCodeIconSVGMap.whole_word}
                     style={{
+                      objectFit: 'contain',
                       backgroundColor: props.wholeWordMatchEnable ? '#f2f2f2' : 'transparent',
                       borderStyle: props.wholeWordMatchEnable ? 'solid' : 'none',
                       borderWidth: 2,
@@ -253,13 +252,20 @@ function LocalizationSearchBar(props: LocalizationSearchBarInterface) {
         >
           <SouthOutlined style={{ color: '#707070', width: 20 }} />
         </FXGContainer>
-        <CloseIcon
-          style={{ color: '#707070', width: 30 }}
+        <FXGContainer
+          style={{
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 30,
+            height: '100%'
+          }}
           onClick={() => {
             setVisible(false)
             props.onViewVisible(false)
           }}
-        />
+        >
+          <CloseIcon style={{ color: '#707070', width: 20 }} />
+        </FXGContainer>
       </FXGContainer>
     )
   }
@@ -303,7 +309,7 @@ function LocalizationSearchBar(props: LocalizationSearchBarInterface) {
               }
             }}
           />
-          <FXGSpacer width={20} />
+          <FXGSpacer width={10} />
           <FXGContainer
             style={{
               userSelect: 'none',
@@ -321,8 +327,9 @@ function LocalizationSearchBar(props: LocalizationSearchBarInterface) {
             }}
           >
             <img
-              src={ReplaceIcon}
+              src={VSCodeIconSVGMap.replace}
               style={{
+                objectFit: 'contain',
                 color: '#707070',
                 width: 20,
                 height: 20
@@ -336,7 +343,7 @@ function LocalizationSearchBar(props: LocalizationSearchBarInterface) {
               alignItems: 'center',
               justifyContent: 'center',
               width: 30,
-              height: '100%'
+              height: '100%',
             }}
             onClick={() => {
               if (replaceKeywordRef.current.length === 0) {
@@ -347,12 +354,10 @@ function LocalizationSearchBar(props: LocalizationSearchBarInterface) {
             }}
           >
             <img
-              src={ReplaceAllIcon}
+              src={VSCodeIconSVGMap.replace_all}
               style={{
-                borderWidth: 2,
-                borderColor: '#d8d8d8',
-                borderRadius: 4,
-                color: '#222222',
+                objectFit: 'contain',
+                color: '#707070',
                 width: 20,
                 height: 20
               }}
