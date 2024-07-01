@@ -68,7 +68,7 @@ function LocalizationPage(props: MsgInterface) {
     try {
       const cell = getHotInstance().getCell(res.row, res.col)
       cell.style.background = 'rgba(50, 196, 124, 0.5)'
-    } catch (error) { }
+    } catch (error) {}
   }, [searchResultsRef.current, searchResIndexRef.current])
 
   useEffect(() => {
@@ -346,11 +346,16 @@ function LocalizationPage(props: MsgInterface) {
           setSearchBarRefreshFlag(searchBarRefreshFlag + 1)
         }}
         onViewVisible={(visible) => {
+          searchBarVisibleRef.current = visible
           if (visible) {
             // 搜索框第一次出现
             getHotInstance().deselectCell()
+          } else {
+            const search = getHotInstance().getPlugin('search')
+            search.query('')
+            getHotInstance().render()
+            searchResultsRef.current = []
           }
-          searchBarVisibleRef.current = visible
         }}
         onMovePrevious={() => {
           const searchResList = searchResultsRef.current

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
-import TextField from '@mui/material/TextField';
-import InputAdornment from '@mui/material/InputAdornment';
+import TextField from '@mui/material/TextField'
+import InputAdornment from '@mui/material/InputAdornment'
 
 import SouthOutlined from '@mui/icons-material/SouthOutlined'
 import NorthOutlined from '@mui/icons-material/NorthOutlined'
@@ -30,13 +30,14 @@ function LocalizationSearchBar(props: LocalizationSearchBarInterface) {
   const [keyword, setKeyword] = useState('')
   const keywordRef = useRef<string>('')
 
-  const inputRef = useRef(null);
+  const inputRef = useRef(null)
 
   useEffect(() => {
     if (visible && inputRef.current && keywordRef.current.length > 0) {
-      inputRef.current.select();
+      inputRef.current.select()
+      props.onSearching(keywordRef.current)
     }
-  }, [visible]);
+  }, [visible])
 
   useEffect(() => {
     const listenKeydownEvent = (event) => {
@@ -131,7 +132,7 @@ function LocalizationSearchBar(props: LocalizationSearchBarInterface) {
           inputRef={inputRef}
           autoFocus
           sx={{
-            userSelect: 'none',
+            userSelect: 'none'
           }}
           value={keyword}
           placeholder="查找"
@@ -162,7 +163,7 @@ function LocalizationSearchBar(props: LocalizationSearchBarInterface) {
                       borderRadius: 4,
                       color: '#707070',
                       width: 20,
-                      height: 20,
+                      height: 20
                     }}
                   />
                 </FXGContainer>
@@ -190,12 +191,12 @@ function LocalizationSearchBar(props: LocalizationSearchBarInterface) {
                       borderRadius: 4,
                       color: '#707070',
                       width: 20,
-                      height: 20,
+                      height: 20
                     }}
                   />
                 </FXGContainer>
               </InputAdornment>
-            ),
+            )
           }}
           onChange={(e) => {
             if (e.target && typeof e.target.value === 'string') {
