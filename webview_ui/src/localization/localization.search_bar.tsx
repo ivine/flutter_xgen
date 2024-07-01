@@ -317,6 +317,7 @@ function LocalizationSearchBar(props: LocalizationSearchBarInterface) {
                 return
               }
               props.onReplacingText(keywordRef.current, replaceKeywordRef.current, false)
+              replaceInputRef.current?.blur();
             }}
           >
             <img
@@ -342,6 +343,7 @@ function LocalizationSearchBar(props: LocalizationSearchBarInterface) {
                 return
               }
               props.onReplacingText(keywordRef.current, replaceKeywordRef.current, true)
+              replaceInputRef.current?.blur();
             }}
           >
             <img

@@ -39,6 +39,7 @@ function LocalizationPage(props: MsgInterface) {
   const searchResIndexRef = useRef<number>(-1)
   const searchCaseSensitiveMatchEnableRef = useRef<boolean>(false)
   const searchWholeWordMatchEnableRef = useRef<boolean>(false)
+  const searchBarRefreshFlagRef = useRef<number>(0)
 
   /**
    * 数据结构
@@ -189,6 +190,11 @@ function LocalizationPage(props: MsgInterface) {
     }
   }
 
+  function handleRefreshSearchBar() {
+    searchBarRefreshFlagRef.current += 1
+    setSearchBarRefreshFlag(searchBarRefreshFlagRef.current)
+  }
+
   const handleSearchGrid = (keyword: string) => {
     searchBarKeywordsRef.current = keyword
     const search = getHotInstance().getPlugin('search')
@@ -201,9 +207,18 @@ function LocalizationPage(props: MsgInterface) {
       getHotInstance().deselectCell()
     }
 
+    if (searchResultsRef.current.length > 0) {
+      const res = searchResultsRef.current[searchResIndexRef.current]
+      getHotInstance().scrollViewportTo({
+        row: res.row,
+        col: res.col,
+        verticalSnap: 'top',
+        horizontalSnap: 'end'
+      })
+    }
     console.log('searchResultsRef.current.length: ', searchResultsRef.current.length)
     getHotInstance().render()
-    setSearchBarRefreshFlag(searchBarRefreshFlag + 1)
+    handleRefreshSearchBar()
   }
 
   function handleMoveToCell(next: boolean) {
@@ -221,7 +236,6 @@ function LocalizationPage(props: MsgInterface) {
         index = totalCount - 1
       }
     }
-    console.log(`move to index --> ${index}`)
     const res = searchResList[index]
     getHotInstance().scrollViewportTo({
       row: res.row,
@@ -232,7 +246,7 @@ function LocalizationPage(props: MsgInterface) {
     getHotInstance().render()
 
     searchResIndexRef.current = index
-    setSearchBarRefreshFlag(searchBarRefreshFlag + 1)
+    handleRefreshSearchBar()
   }
 
   function handleReplaceText(keyword: string, targetText: string, replaceAll: boolean) {
@@ -410,7 +424,7 @@ function LocalizationPage(props: MsgInterface) {
             return cellProperties
           }}
           afterChange={(changes: Handsontable.CellChange[] | null, source: Handsontable.ChangeSource | any) => {
-            console.log('afterChange')
+            console.log('afterChange, source: ', source)
             if (searchBarVisibleRef.current && searchBarKeywordsRef.current && source !== replaceSourceKey) {
               handleSearchGrid(searchBarKeywordsRef.current)
             }
@@ -424,6 +438,7 @@ function LocalizationPage(props: MsgInterface) {
   const renderSearchBar = useMemo(() => {
     const currentIndex = searchResIndexRef.current
     const totalCount = searchResultsRef.current.length
+    // console.log(`renderSearchBar, currentIndex: ${currentIndex}, totalCount: ${totalCount}`)
     return (
       <LocalizationSearchBar
         currentIndex={currentIndex}
@@ -432,11 +447,11 @@ function LocalizationPage(props: MsgInterface) {
         wholeWordMatchEnable={searchWholeWordMatchEnableRef.current}
         onChangeCaseSensitiveMatch={(enable: boolean) => {
           searchCaseSensitiveMatchEnableRef.current = enable
-          setSearchBarRefreshFlag(searchBarRefreshFlag + 1)
+          handleRefreshSearchBar()
         }}
         onChangeWholeWordMatch={(enable: boolean) => {
           searchWholeWordMatchEnableRef.current = enable
-          setSearchBarRefreshFlag(searchBarRefreshFlag + 1)
+          handleRefreshSearchBar()
         }}
         onViewVisible={(visible) => {
           searchBarVisibleRef.current = visible
