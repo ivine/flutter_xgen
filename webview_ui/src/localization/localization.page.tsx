@@ -5,6 +5,7 @@ import { ContextMenu } from 'handsontable/plugins'
 import { registerAllModules } from 'handsontable/registry'
 import { HotTable, HotTableClass } from '@handsontable/react'
 import 'handsontable/dist/handsontable.full.min.css'
+import CircularProgress from '@mui/material/CircularProgress'
 
 import './localization.page.css'
 
@@ -15,6 +16,7 @@ import LocalizationSearchBar from './localization.search_bar'
 import FXGProjectInfoPanel from '../component/project_info_panel'
 
 export const l10n_local_key_name = 'key'
+const replaceSourceKey = 'FXG_Search_And_Replace'
 
 registerAllModules()
 
@@ -26,6 +28,7 @@ function LocalizationPage(props: MsgInterface) {
   const [height, setHeight] = useState(0)
   const [configsBarHeight, setConfigsBarHeight] = useState(LocalizationConfigViewCollapsedHeight)
   const [searchBarRefreshFlag, setSearchBarRefreshFlag] = useState<number>(0)
+  const [loading, setLoading] = useState<boolean>(false)
 
   // ref
   const containerRef = useRef(null)
@@ -197,8 +200,76 @@ function LocalizationPage(props: MsgInterface) {
       disableShiftAndEnterKeyWhenSearching()
       getHotInstance().deselectCell()
     }
+
+    console.log('searchResultsRef.current.length: ', searchResultsRef.current.length)
     getHotInstance().render()
     setSearchBarRefreshFlag(searchBarRefreshFlag + 1)
+  }
+
+  function handleMoveToCell(next: boolean) {
+    const totalCount = searchResultsRef.current.length
+    const searchResList = searchResultsRef.current
+    let index = searchResIndexRef.current
+    if (next) {
+      index += 1
+      if (index >= totalCount) {
+        index = 0
+      }
+    } else {
+      index -= 1
+      if (index < 0) {
+        index = totalCount - 1
+      }
+    }
+    console.log(`move to index --> ${index}`)
+    const res = searchResList[index]
+    getHotInstance().scrollViewportTo({
+      row: res.row,
+      col: res.col,
+      verticalSnap: 'top',
+      horizontalSnap: 'end'
+    })
+    getHotInstance().render()
+
+    searchResIndexRef.current = index
+    setSearchBarRefreshFlag(searchBarRefreshFlag + 1)
+  }
+
+  function handleReplaceText(keyword: string, targetText: string, replaceAll: boolean) {
+    if (targetText.length === 0) {
+      return
+    }
+
+    if (replaceAll) {
+      const shouldLoading: boolean = searchResultsRef.current.length > 100
+      setLoading(shouldLoading)
+      if (shouldLoading) {
+        setTimeout(() => {
+          for (let sr of searchResultsRef.current) {
+            const data = getHotInstance().getDataAtCell(sr.row, sr.col) as string
+            const replaceResult = data.replace(new RegExp(keyword, 'gi'), targetText)
+            getHotInstance().setDataAtCell(sr.row, sr.col, replaceResult, replaceSourceKey)
+          }
+          handleSearchGrid(keyword)
+          setLoading(false)
+        }, 200)
+      } else {
+        for (let sr of searchResultsRef.current) {
+          const data = getHotInstance().getDataAtCell(sr.row, sr.col) as string
+          const replaceResult = data.replace(new RegExp(keyword, 'gi'), targetText)
+          getHotInstance().setDataAtCell(sr.row, sr.col, replaceResult, replaceSourceKey)
+        }
+        handleSearchGrid(keyword)
+      }
+    } else {
+      const currentIndex = searchResIndexRef.current
+      const currentSearchCellRes = searchResultsRef.current[currentIndex]
+      const data = getHotInstance().getDataAtCell(currentSearchCellRes.row, currentSearchCellRes.col) as string
+      const replaceResult = data.replace(new RegExp(keyword, 'gi'), targetText)
+      getHotInstance().setDataAtCell(currentSearchCellRes.row, currentSearchCellRes.col, replaceResult, replaceSourceKey)
+      handleMoveToCell(true)
+      handleSearchGrid(keyword)
+    }
   }
 
   const renderL10nConfigsBar = () => {
@@ -338,8 +409,9 @@ function LocalizationPage(props: MsgInterface) {
             // }
             return cellProperties
           }}
-          afterChange={(changes: Handsontable.CellChange[] | null, source: Handsontable.ChangeSource) => {
-            if (searchBarVisibleRef.current && searchBarKeywordsRef.current) {
+          afterChange={(changes: Handsontable.CellChange[] | null, source: Handsontable.ChangeSource | any) => {
+            console.log('afterChange')
+            if (searchBarVisibleRef.current && searchBarKeywordsRef.current && source !== replaceSourceKey) {
               handleSearchGrid(searchBarKeywordsRef.current)
             }
           }}
@@ -376,44 +448,16 @@ function LocalizationPage(props: MsgInterface) {
           }
         }}
         onMovePrevious={() => {
-          const searchResList = searchResultsRef.current
-          const index = Math.max(0, currentIndex - 1)
-          if (index >= searchResList.length || index < 0) {
-            return
-          }
-          const res = searchResList[index]
-          getHotInstance().scrollViewportTo({
-            row: res.row,
-            col: res.col,
-            verticalSnap: 'top',
-            horizontalSnap: 'end',
-            considerHiddenIndexes: true
-          })
-          getHotInstance().render()
-
-          searchResIndexRef.current = index
-          setSearchBarRefreshFlag(searchBarRefreshFlag + 1)
+          handleMoveToCell(false)
         }}
         onMoveNext={() => {
-          const searchResList = searchResultsRef.current
-          const index = Math.min(searchResList.length - 1, currentIndex + 1)
-          if (index >= searchResList.length || index < 0) {
-            return
-          }
-          const res = searchResList[index]
-          getHotInstance().scrollViewportTo({
-            row: res.row,
-            col: res.col,
-            verticalSnap: 'top',
-            horizontalSnap: 'end'
-          })
-          getHotInstance().render()
-
-          searchResIndexRef.current = index
-          setSearchBarRefreshFlag(searchBarRefreshFlag + 1)
+          handleMoveToCell(true)
         }}
         onSearching={(keyword) => {
           handleSearchGrid(keyword)
+        }}
+        onReplacingText={(keyword: string, targetText: string, replaceAll: boolean) => {
+          handleReplaceText(keyword, targetText, replaceAll)
         }}
       />
     )
@@ -447,6 +491,37 @@ function LocalizationPage(props: MsgInterface) {
         {renderGridWithMemo}
       </div>
       {renderSearchBar}
+
+      {loading ? (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            position: 'absolute',
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            top: 0,
+            left: 0,
+            bottom: 0,
+            right: 0,
+            zIndex: 10000 // TODO: 整理一下
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 80,
+              height: 80,
+              backgroundColor: '#fff',
+              borderRadius: 20,
+            }}
+          >
+            <CircularProgress color="info" />
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

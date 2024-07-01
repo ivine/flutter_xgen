@@ -6,8 +6,12 @@ import InputAdornment from '@mui/material/InputAdornment'
 import SouthOutlined from '@mui/icons-material/SouthOutlined'
 import NorthOutlined from '@mui/icons-material/NorthOutlined'
 import CloseIcon from '@mui/icons-material/Close'
+import KeyboardArrowRightOutlinedIcon from '@mui/icons-material/KeyboardArrowRightOutlined'
+import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined'
 import CaseSensitive from '../assets/case-sensitive.svg'
 import WholeWord from '../assets/whole-word.svg'
+import ReplaceIcon from '../assets/replace.svg'
+import ReplaceAllIcon from '../assets/replace-all.svg'
 
 import FXGSpacer from '../component/spacer'
 import FXGContainer from '../component/container'
@@ -23,14 +27,21 @@ export interface LocalizationSearchBarInterface {
   onMovePrevious: () => void
   onMoveNext: () => void
   onSearching: (keyword: string) => void
+  onReplacingText: (keyword: string, targetText: string, replaceAll: boolean) => void
 }
 
 function LocalizationSearchBar(props: LocalizationSearchBarInterface) {
   const [visible, setVisible] = useState(false)
+  const [replaceBarVisible, setReplaceBarVisible] = useState(false)
+
   const [keyword, setKeyword] = useState('')
+  const [replaceKeyword, setReplaceKeyword] = useState('')
+
   const keywordRef = useRef<string>('')
+  const replaceKeywordRef = useRef<string>('')
 
   const inputRef = useRef(null)
+  const replaceInputRef = useRef(null)
 
   useEffect(() => {
     if (visible && inputRef.current && keywordRef.current.length > 0) {
@@ -110,24 +121,18 @@ function LocalizationSearchBar(props: LocalizationSearchBarInterface) {
     }
   }
 
-  function renderBody() {
+  function renderKeywordSearchBar() {
     return (
       <FXGContainer
         style={{
           flexDirection: 'row',
-          position: 'absolute',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: '0px 0px 10px #5B86E5',
-          borderRadius: 8,
-          padding: 10,
-          top: 30,
-          right: 30,
           height: 50,
           backgroundColor: '#fff'
         }}
       >
-        <FXGSpacer width={10} />
+        <FXGSpacer width={6} />
         <TextField
           inputRef={inputRef}
           autoFocus
@@ -208,11 +213,11 @@ function LocalizationSearchBar(props: LocalizationSearchBarInterface) {
         <FXGSpacer width={20} />
         <div
           style={{
+            userSelect: 'none',
             color: '#222',
             fontSize: 14,
             fontWeight: 500,
-            minWidth: 40,
-            userSelect: 'none'
+            minWidth: 40
           }}
         >
           {getSearchResultDisplayContent()}
@@ -256,6 +261,151 @@ function LocalizationSearchBar(props: LocalizationSearchBarInterface) {
           }}
         />
       </FXGContainer>
+    )
+  }
+
+  function renderKeywordReplaceBar() {
+    return (
+      <FXGContainer
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+          // boxShadow: '0px 0px 10px #5B86E5',
+          borderRadius: 8,
+          width: '100%',
+          height: 40,
+          backgroundColor: '#fff'
+        }}
+      >
+        <FXGContainer
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: 50,
+            backgroundColor: '#fff'
+          }}
+        >
+          <FXGSpacer width={6} />
+          <TextField
+            inputRef={replaceInputRef}
+            sx={{
+              userSelect: 'none'
+            }}
+            value={replaceKeyword}
+            placeholder="替换"
+            variant="standard"
+            onChange={(e) => {
+              if (e.target && typeof e.target.value === 'string') {
+                setReplaceKeyword(e.target.value)
+                replaceKeywordRef.current = e.target.value
+              }
+            }}
+          />
+          <FXGSpacer width={20} />
+          <FXGContainer
+            style={{
+              userSelect: 'none',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 30,
+              height: '100%'
+            }}
+            onClick={() => {
+              if (replaceKeywordRef.current.length === 0) {
+                return
+              }
+              props.onReplacingText(keywordRef.current, replaceKeywordRef.current, false)
+            }}
+          >
+            <img
+              src={ReplaceIcon}
+              style={{
+                color: '#707070',
+                width: 20,
+                height: 20
+              }}
+            />
+          </FXGContainer>
+          <FXGSpacer width={10} />
+          <FXGContainer
+            style={{
+              userSelect: 'none',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 30,
+              height: '100%'
+            }}
+            onClick={() => {
+              if (replaceKeywordRef.current.length === 0) {
+                return
+              }
+              props.onReplacingText(keywordRef.current, replaceKeywordRef.current, true)
+            }}
+          >
+            <img
+              src={ReplaceAllIcon}
+              style={{
+                borderWidth: 2,
+                borderColor: '#d8d8d8',
+                borderRadius: 4,
+                color: '#222222',
+                width: 20,
+                height: 20
+              }}
+            />
+          </FXGContainer>
+        </FXGContainer>
+      </FXGContainer>
+    )
+  }
+
+  function renderBody() {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          position: 'absolute',
+          boxShadow: '0px 0px 10px #5B86E5',
+          borderRadius: 8,
+          padding: 6,
+          top: 30,
+          right: 30,
+          minHeight: 50,
+          backgroundColor: '#fff'
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 14,
+            minHeight: 50
+          }}
+          onClick={() => {
+            setReplaceBarVisible(!replaceBarVisible)
+          }}
+        >
+          {replaceBarVisible ? (
+            <KeyboardArrowDownOutlinedIcon style={{ color: '#222' }} />
+          ) : (
+            <KeyboardArrowRightOutlinedIcon style={{ color: '#222' }} />
+          )}
+        </div>
+        <FXGContainer
+          style={{
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          {renderKeywordSearchBar()}
+          {replaceBarVisible ? renderKeywordReplaceBar() : null}
+        </FXGContainer>
+      </div>
     )
   }
 
