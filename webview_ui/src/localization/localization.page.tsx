@@ -195,12 +195,19 @@ function LocalizationPage(props: MsgInterface) {
     setSearchBarRefreshFlag(searchBarRefreshFlagRef.current)
   }
 
-  const handleSearchGrid = (keyword: string) => {
+  const handleSearchGrid = (keyword: string, keepCurrentIndex: boolean) => {
     searchBarKeywordsRef.current = keyword
     const search = getHotInstance().getPlugin('search')
     const queryResult = search.query(keyword)
     searchResultsRef.current = queryResult
-    searchResIndexRef.current = queryResult.length > 0 ? 0 : -1
+    let toIndex: number = queryResult.length > 0 ? 0 : -1
+    if (keepCurrentIndex) {
+      toIndex = searchResIndexRef.current
+      toIndex = Math.max(0, toIndex)
+      toIndex = Math.min(toIndex, Math.max(0, queryResult.length - 1))
+      searchResIndexRef.current = toIndex
+    }
+    searchResIndexRef.current = toIndex
 
     if (queryResult.length > 0) {
       disableShiftAndEnterKeyWhenSearching()
@@ -216,7 +223,6 @@ function LocalizationPage(props: MsgInterface) {
         horizontalSnap: 'end'
       })
     }
-    console.log('searchResultsRef.current.length: ', searchResultsRef.current.length)
     getHotInstance().render()
     handleRefreshSearchBar()
   }
@@ -250,7 +256,7 @@ function LocalizationPage(props: MsgInterface) {
   }
 
   function handleReplaceText(keyword: string, targetText: string, replaceAll: boolean) {
-    if (targetText.length === 0) {
+    if (targetText.length === 0 || searchResultsRef.current.length === 0) {
       return
     }
 
@@ -264,7 +270,7 @@ function LocalizationPage(props: MsgInterface) {
             const replaceResult = data.replace(new RegExp(keyword, 'gi'), targetText)
             getHotInstance().setDataAtCell(sr.row, sr.col, replaceResult, replaceSourceKey)
           }
-          handleSearchGrid(keyword)
+          handleSearchGrid(keyword, false)
           setLoading(false)
         }, 200)
       } else {
@@ -273,7 +279,7 @@ function LocalizationPage(props: MsgInterface) {
           const replaceResult = data.replace(new RegExp(keyword, 'gi'), targetText)
           getHotInstance().setDataAtCell(sr.row, sr.col, replaceResult, replaceSourceKey)
         }
-        handleSearchGrid(keyword)
+        handleSearchGrid(keyword, false)
       }
     } else {
       const currentIndex = searchResIndexRef.current
@@ -282,7 +288,7 @@ function LocalizationPage(props: MsgInterface) {
       const replaceResult = data.replace(new RegExp(keyword, 'gi'), targetText)
       getHotInstance().setDataAtCell(currentSearchCellRes.row, currentSearchCellRes.col, replaceResult, replaceSourceKey)
       handleMoveToCell(true)
-      handleSearchGrid(keyword)
+      handleSearchGrid(keyword, true)
     }
   }
 
@@ -424,9 +430,9 @@ function LocalizationPage(props: MsgInterface) {
             return cellProperties
           }}
           afterChange={(changes: Handsontable.CellChange[] | null, source: Handsontable.ChangeSource | any) => {
-            console.log('afterChange, source: ', source)
+            // console.log('afterChange, source: ', source)
             if (searchBarVisibleRef.current && searchBarKeywordsRef.current && source !== replaceSourceKey) {
-              handleSearchGrid(searchBarKeywordsRef.current)
+              handleSearchGrid(searchBarKeywordsRef.current, true)
             }
           }}
           licenseKey="non-commercial-and-evaluation"
@@ -459,7 +465,7 @@ function LocalizationPage(props: MsgInterface) {
             // 搜索框第一次出现
             getHotInstance().deselectCell()
           } else {
-            handleSearchGrid('')
+            handleSearchGrid('', false)
           }
         }}
         onMovePrevious={() => {
@@ -469,7 +475,7 @@ function LocalizationPage(props: MsgInterface) {
           handleMoveToCell(true)
         }}
         onSearching={(keyword) => {
-          handleSearchGrid(keyword)
+          handleSearchGrid(keyword, false)
         }}
         onReplacingText={(keyword: string, targetText: string, replaceAll: boolean) => {
           handleReplaceText(keyword, targetText, replaceAll)
