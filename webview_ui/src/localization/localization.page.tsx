@@ -195,7 +195,7 @@ function LocalizationPage(props: MsgInterface) {
     setSearchBarRefreshFlag(searchBarRefreshFlagRef.current)
   }
 
-  const handleSearchGrid = (keyword: string, keepCurrentIndex: boolean) => {
+  const handleSearchGrid = (keyword: string, keepCurrentIndex: boolean, shouldScrollToIndex: boolean = true) => {
     searchBarKeywordsRef.current = keyword
     const search = getHotInstance().getPlugin('search')
     const queryResult = search.query(keyword)
@@ -214,7 +214,7 @@ function LocalizationPage(props: MsgInterface) {
       getHotInstance().deselectCell()
     }
 
-    if (searchResultsRef.current.length > 0) {
+    if (searchResultsRef.current.length > 0 && shouldScrollToIndex) {
       const res = searchResultsRef.current[searchResIndexRef.current]
       getHotInstance().scrollViewportTo({
         row: res.row,
@@ -270,7 +270,7 @@ function LocalizationPage(props: MsgInterface) {
             const replaceResult = data.replace(new RegExp(keyword, 'gi'), targetText)
             getHotInstance().setDataAtCell(sr.row, sr.col, replaceResult, replaceSourceKey)
           }
-          handleSearchGrid(keyword, false)
+          handleSearchGrid(keyword, false, false)
           setLoading(false)
         }, 200)
       } else {
@@ -279,7 +279,7 @@ function LocalizationPage(props: MsgInterface) {
           const replaceResult = data.replace(new RegExp(keyword, 'gi'), targetText)
           getHotInstance().setDataAtCell(sr.row, sr.col, replaceResult, replaceSourceKey)
         }
-        handleSearchGrid(keyword, false)
+        handleSearchGrid(keyword, false, false)
       }
     } else {
       const currentIndex = searchResIndexRef.current
@@ -287,8 +287,7 @@ function LocalizationPage(props: MsgInterface) {
       const data = getHotInstance().getDataAtCell(currentSearchCellRes.row, currentSearchCellRes.col) as string
       const replaceResult = data.replace(new RegExp(keyword, 'gi'), targetText)
       getHotInstance().setDataAtCell(currentSearchCellRes.row, currentSearchCellRes.col, replaceResult, replaceSourceKey)
-      handleMoveToCell(true)
-      handleSearchGrid(keyword, true)
+      handleSearchGrid(keyword, true, false)
     }
   }
 
