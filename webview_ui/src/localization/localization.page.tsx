@@ -31,6 +31,7 @@ function LocalizationPage(props: MsgInterface) {
   const containerRef = useRef(null)
   const hotTableRef = useRef<HotTableClass | null>(null)
   const searchBarVisibleRef = useRef<boolean>(false)
+  const searchBarKeywordsRef = useRef<string>('')
   const searchResultsRef = useRef<any[]>([])
   const searchResIndexRef = useRef<number>(-1)
   const searchCaseSensitiveMatchEnableRef = useRef<boolean>(false)
@@ -68,7 +69,7 @@ function LocalizationPage(props: MsgInterface) {
     try {
       const cell = getHotInstance().getCell(res.row, res.col)
       cell.style.background = 'rgba(50, 196, 124, 0.5)'
-    } catch (error) {}
+    } catch (error) { }
   }, [searchResultsRef.current, searchResIndexRef.current])
 
   useEffect(() => {
@@ -183,6 +184,21 @@ function LocalizationPage(props: MsgInterface) {
         }
       })
     }
+  }
+
+  const handleSearchGrid = (keyword: string) => {
+    searchBarKeywordsRef.current = keyword
+    const search = getHotInstance().getPlugin('search')
+    const queryResult = search.query(keyword)
+    searchResultsRef.current = queryResult
+    searchResIndexRef.current = queryResult.length > 0 ? 0 : -1
+
+    if (queryResult.length > 0) {
+      disableShiftAndEnterKeyWhenSearching()
+      getHotInstance().deselectCell()
+    }
+    getHotInstance().render()
+    setSearchBarRefreshFlag(searchBarRefreshFlag + 1)
   }
 
   const renderL10nConfigsBar = () => {
@@ -322,6 +338,11 @@ function LocalizationPage(props: MsgInterface) {
             // }
             return cellProperties
           }}
+          afterChange={(changes: Handsontable.CellChange[] | null, source: Handsontable.ChangeSource) => {
+            if (searchBarVisibleRef.current && searchBarKeywordsRef.current) {
+              handleSearchGrid(searchBarKeywordsRef.current)
+            }
+          }}
           licenseKey="non-commercial-and-evaluation"
         />
       </div>
@@ -351,10 +372,7 @@ function LocalizationPage(props: MsgInterface) {
             // 搜索框第一次出现
             getHotInstance().deselectCell()
           } else {
-            const search = getHotInstance().getPlugin('search')
-            search.query('')
-            getHotInstance().render()
-            searchResultsRef.current = []
+            handleSearchGrid('')
           }
         }}
         onMovePrevious={() => {
@@ -395,15 +413,7 @@ function LocalizationPage(props: MsgInterface) {
           setSearchBarRefreshFlag(searchBarRefreshFlag + 1)
         }}
         onSearching={(keyword) => {
-          const search = getHotInstance().getPlugin('search')
-          const queryResult = search.query(keyword)
-          searchResultsRef.current = queryResult
-          disableShiftAndEnterKeyWhenSearching()
-          getHotInstance().deselectCell()
-          getHotInstance().render()
-
-          searchResIndexRef.current = queryResult.length > 0 ? 0 : -1
-          setSearchBarRefreshFlag(searchBarRefreshFlag + 1)
+          handleSearchGrid(keyword)
         }}
       />
     )

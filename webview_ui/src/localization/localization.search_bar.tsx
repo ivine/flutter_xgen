@@ -252,6 +252,7 @@ function LocalizationSearchBar(props: LocalizationSearchBarInterface) {
           style={{ color: '#707070', width: 30 }}
           onClick={() => {
             setVisible(false)
+            props.onViewVisible(false)
           }}
         />
       </FXGContainer>
