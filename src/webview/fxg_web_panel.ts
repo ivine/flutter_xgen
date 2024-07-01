@@ -247,7 +247,7 @@ export class FXGUIWebPanel {
               try {
                 const json = JSON.parse(data.data)
                 project.runGenerator(data.type, json)
-              } catch (error) { }
+              } catch (error) {}
             }
             break
 

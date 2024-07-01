@@ -124,5 +124,5 @@ export enum InteractionEventType {
   webToExt_preview_nextItem = 600911,
 
   // save_data
-  extToWeb_save_data_to_l10n_arb = 700100,
+  extToWeb_save_data_to_l10n_arb = 700100
 }

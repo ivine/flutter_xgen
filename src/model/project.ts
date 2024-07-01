@@ -197,7 +197,7 @@ export default class FXGProject {
     let result: string = ''
     try {
       result = this.pubspecDoc.get('name') as string
-    } catch (error) { }
+    } catch (error) {}
     return result
   }
 
@@ -445,10 +445,10 @@ export default class FXGProject {
         } catch (error) {
           console.log('IntlGenerator.getInstance().run - error: ', error)
         }
-        break;
+        break
 
       default:
-        break;
+        break
     }
   }
 
